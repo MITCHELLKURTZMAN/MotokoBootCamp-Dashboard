@@ -213,12 +213,6 @@ actor verifier {
     };
 
     //test suite
-
-    //simulated. this is in another canister
-    public shared func isEven(number : Int) : async Bool {
-        return number % 2 == 0
-    };
-
     public shared func isEvenTest(number : Int) : async Bool {
         return number % 2 == 0
     };

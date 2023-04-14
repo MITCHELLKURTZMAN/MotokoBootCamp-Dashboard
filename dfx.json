@@ -1,11 +1,15 @@
 {
   "canisters": {
-    "counter": {
-      "main": "canisters/counter/main.mo",
+    "Verifier": {
+      "main": "canisters/Verifier/main.mo",
+      "type": "motoko"
+    },
+    "TestProject": {
+      "main": "canisters/TestProject/main.mo",
       "type": "motoko"
     },
     "assets": {
-      "dependencies": ["counter"],
+      "dependencies": ["Verifier"],
       "frontend": {
         "entrypoint": "dist/index.html"
       },

@@ -1,63 +1,49 @@
 import React from "react"
-import logo from "./assets/dfinity.svg"
-/*
- * Connect2ic provides essential utilities for IC app development
- */
-import { createClient } from "@connect2ic/core"
-import { defaultProviders } from "@connect2ic/core/providers"
-import { ConnectButton, ConnectDialog, Connect2ICProvider } from "@connect2ic/react"
-import "@connect2ic/core/style.css"
-/*
- * Import canister definitions like this:
- */
-import * as counter from "../.dfx/local/canisters/counter"
-/*
- * Some examples to get you started
- */
-import { Counter } from "./components/Counter"
-import { Transfer } from "./components/Transfer"
-import { Profile } from "./components/Profile"
+import "./index.scss"
+import Header from "./components/Header"
+import Nav from "./components/Nav"
+import TeamList from "./components/TeamList"
+import IndividualList from "./components/IndividualList"
+import ActivityList from "./components/ActivityList"
+import Footer from "./components/Footer"
+
+// Dummy data for testing purposes
+const teams = [
+  {
+    id: 1,
+    name: "Team Alpha",
+    mission: "Infiltrate the Network",
+    progress: 75,
+  },
+  { id: 2, name: "Team Bravo", mission: "Secure the Database", progress: 40 },
+]
+
+const individuals = [
+  { id: 1, name: "John Smith", rank: "Captain", progress: 80 },
+  { id: 2, name: "Jane Doe", rank: "Lieutenant", progress: 60 },
+]
+
+const activities = [
+  {
+    id: 1,
+    description: 'John Smith completed the mission "Infiltrate the Network"',
+  },
+  { id: 2, description: "Jane Doe has been promoted to Lieutenant" },
+]
 
 function App() {
   return (
     <div className="App">
-      <div className="auth-section">
-        <ConnectButton />
-      </div>
-      <ConnectDialog />
-
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p className="slogan">
-          React+TypeScript Template
-        </p>
-        <p className="twitter">by <a href="https://twitter.com/miamaruq">@miamaruq</a></p>
-      </header>
-
-      <p className="examples-title">
-        Examples
-      </p>
-      <div className="examples">
-        <Counter />
-        <Profile />
-        <Transfer />
-      </div>
+      <Header />
+      <Nav />
+      <main>
+        <TeamList teams={teams} />
+        <IndividualList individuals={individuals} />
+        <ActivityList activities={activities} />
+      </main>
+      <Footer />
     </div>
   )
 }
 
-const client = createClient({
-  canisters: {
-    counter,
-  },
-  providers: defaultProviders,
-  globalProviderConfig: {
-    dev: import.meta.env.DEV,
-  },
-})
-
-export default () => (
-  <Connect2ICProvider client={client}>
-    <App />
-  </Connect2ICProvider>
-)
+export default App
