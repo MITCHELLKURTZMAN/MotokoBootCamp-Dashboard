@@ -1,21 +1,23 @@
 import React, { lazy, Suspense } from "react"
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import "./index.scss"
+
 const Header = lazy(() => import("./components/Header"))
 const Nav = lazy(() => import("./components/Nav"))
 const TeamList = lazy(() => import("./components/TeamList"))
 const ActivityList = lazy(() => import("./components/ActivityList"))
 const Footer = lazy(() => import("./components/Footer"))
+
 import { createClient } from "@connect2ic/core"
 import { defaultProviders } from "@connect2ic/core/providers"
 import { Connect2ICProvider } from "@connect2ic/react"
 import "@connect2ic/core/style.css"
 import { client } from "./context/GlobalStateContext"
-/*
- * Import canister definitions like this:
- */
+
 import * as Verifier from "../src/declarations/Verifier"
 import { GlobalStateProvider } from "./context/GlobalStateContext"
 import LoadingScreen from "./components/LoadingScreen"
+import Submit from "./components/Submit"
 
 // Dummy data for testing purposes
 const teams = [
@@ -89,16 +91,30 @@ const activities = [
 function App() {
   return (
     <div className="App">
-      <Suspense fallback={<LoadingScreen />}>
-        <Header />
-
-        <Nav />
-        <main>
-          <TeamList teams={teams} />
-          <ActivityList activities={activities} />
-        </main>
-        <Footer />
-      </Suspense>
+      <Router>
+        <Suspense fallback={<LoadingScreen />}>
+          <Header />
+          <Nav />
+          <main>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <>
+                    <TeamList teams={teams} />
+                    <ActivityList activities={activities} />
+                  </>
+                }
+              />
+              <Route path="Submit" element={<Submit />} />
+              <Route path="Schedule" element={<div>Schedule</div>} />
+              <Route path="Resources" element={<div>Resources</div>} />
+              <Route path="Admin" element={<div>Admin</div>} />
+            </Routes>
+          </main>
+          <Footer />
+        </Suspense>
+      </Router>
     </div>
   )
 }
