@@ -1,0 +1,53 @@
+type TestResults = 
+ record {
+   day1: text;
+   day2: text;
+   day3: text;
+   day4: text;
+   day5: text;
+ };
+type Team = 
+ record {
+   score: int;
+   teamId: text;
+   teamMembers: vec text;
+ };
+type Student = 
+ record {
+   name: text;
+   principalId: text;
+   rank: text;
+   score: int;
+   strikes: int;
+   teamId: text;
+ };
+type Result_3 = 
+ variant {
+   err: text;
+   ok: vec text;
+ };
+type Result_2 = 
+ variant {
+   err: text;
+   ok: Student;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: Team;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok;
+ };
+service : {
+  buildStudent: (text) -> (Result_2);
+  getAdmins: () -> (Result_3) query;
+  isEvenTest: (int) -> (bool);
+  registerAdmin: (text) -> (Result);
+  registerStudent: (text) -> (Result_2);
+  registerTeamMembers: (vec text, bool, text) -> (Result_1);
+  unregisterAdmin: (text) -> (Result);
+  verifyProject: (text, nat) -> (TestResults);
+}

@@ -44,7 +44,7 @@ actor verifier {
     var canisterIdHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash);
 
     //activity feed
-    var activityHashmap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the activity feed stored by activity id
+    var activityHashmap = HashMap.HashMap<Text, Activity>(maxHashmapSize, isEq, Text.hash); //the activity feed stored by activity id
 
     stable var teamIdCounter : Nat = 0;
     stable var activityIdCounter : Nat = 0;
@@ -67,7 +67,8 @@ actor verifier {
 
     public type Activity = {
         activityId : Text;
-        activity : Text
+        activity : Text;
+        specialAnnouncement : Bool
     };
 
     public type Rank = {
@@ -119,6 +120,20 @@ actor verifier {
         }
     };
 
+    func textToNat(txt : Text) : Nat {
+        assert (txt.size() > 0);
+        let chars = txt.chars();
+
+        var num : Nat = 0;
+        for (v in chars) {
+            let charToNum = Nat32.toNat(Char.toNat32(v) -48);
+            assert (charToNum >= 0 and charToNum <= 9);
+            num := num * 10 + charToNum
+        };
+
+        num
+    };
+
     //admins
     stable var admins : List.List<Text> = List.nil<Text>();
     func isAdmin(caller : Principal) : Bool {
@@ -144,6 +159,16 @@ actor verifier {
         if (not List.some<Text>(admins, func(val : Text) : Bool { val == id })) {
             admins := List.push<Text>(id, admins)
         };
+
+        activityHashmap.put(
+            Nat.toText(activityIdCounter),
+            {
+                activityId = Nat.toText(activityIdCounter);
+                activity = "Attention on Deck! A new admin has registered";
+                specialAnnouncement = true
+            },
+        );
+        activityIdCounter += 1;
 
         #ok()
     };
@@ -177,6 +202,16 @@ actor verifier {
 
         principalIdHashMap.put(principalId, name);
         studentScoreHashMap.put(principalId, 0);
+
+        activityHashmap.put(
+            Nat.toText(activityIdCounter),
+            {
+                activityId = Nat.toText(activityIdCounter);
+                activity = name # " has registered for Motoko Bootcamp";
+                specialAnnouncement = false
+            },
+        );
+        activityIdCounter := activityIdCounter + 1;
 
         #ok(student)
     };
@@ -227,6 +262,16 @@ actor verifier {
             teamHashMap.put(Nat.toText(teamIdCounter), Buffer.toArray(teamBuffer));
             teamScoreHashMap.put(team, 0);
 
+            activityHashmap.put(
+                Nat.toText(activityIdCounter),
+                {
+                    activityId = Nat.toText(activityIdCounter);
+                    activity = "A new team has been created, the competition is heating up!";
+                    specialAnnouncement = true
+                },
+            );
+            activityIdCounter := activityIdCounter + 1;
+
             return #ok({
                 teamId = Nat.toText(teamIdCounter);
                 teamMembers = newTeamMembers;
@@ -260,6 +305,16 @@ actor verifier {
 
             teamHashMap.put(team, Buffer.toArray(teambuffer));
 
+            activityHashmap.put(
+                Nat.toText(activityIdCounter),
+                {
+                    activityId = Nat.toText(activityIdCounter);
+                    activity = "A new team member has joined team " # team;
+                    specialAnnouncement = false
+                },
+            );
+            activityIdCounter := activityIdCounter + 1;
+
             return #ok({
                 teamId = team;
                 teamMembers = safeGet(teamHashMap, team, []);
@@ -281,6 +336,16 @@ actor verifier {
         day5 : Text
     };
 
+    public shared func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
+        var activityBuffer = Buffer.Buffer<Activity>(1);
+        for (activity in activityHashmap.vals()) {
+            if (textToNat(activity.activityId) >= lowerBound and textToNat(activity.activityId) <= upperBound) {
+                activityBuffer.add(activity)
+            }
+        };
+        return Buffer.toArray(activityBuffer)
+    };
+
     public func verifyProject(canisterId : Text, day : Nat) : async TestResults {
 
         //qaa6y-5yaaa-aaaaa-aaafa-cai
@@ -292,6 +357,9 @@ actor verifier {
         let result : Bool = await projectActor.isEven(2);
         let testCase : Bool = await isEvenTest(2);
         let day1 = if (result == testCase) { "pass" } else { "fail" };
+
+        // activityHashmap.put(Nat.toText(activityIdCounter), " 🎉 " # "Day 1 test passed for " # canisterId #");
+        // activityIdCounter := activityIdCounter + 1;
 
         return {
             day1 = day1;

@@ -12,11 +12,6 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
   const handleToggle = (event) => {
     event.stopPropagation()
     setIsActive(!isActive)
-    if (!isActive) {
-      document.body.classList.add("menu-open")
-    } else {
-      document.body.classList.remove("menu-open")
-    }
   }
 
   return (
@@ -32,25 +27,23 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
       <div className="progress-bar">
         <div className="progress" style={{ width: `${team.progress}%` }}></div>
       </div>
-      {isActive && (
-        <div
-          className={`menu-overlay ${isActive ? "menu-overlay-open" : ""}`}
-          onClick={handleToggle}
-        >
-          <div className="menu-container">
-            <button className="close-button" onClick={handleToggle}>
-              &times;
-            </button>
-            <div className="individual-list-container">
-              <div className="individual-list">
-                {team.individuals.map((individual) => (
-                  <IndividualItem key={individual.id} individual={individual} />
-                ))}
-              </div>
+      <div
+        className={`menu-overlay ${isActive ? "menu-overlay-open" : ""}`}
+        onClick={handleToggle}
+      >
+        <div className="menu-container">
+          <button className="close-button" onClick={handleToggle}>
+            &times;
+          </button>
+          <div className="individual-list-container">
+            <div className="individual-list">
+              {team.individuals.map((individual) => (
+                <IndividualItem key={individual.id} individual={individual} />
+              ))}
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

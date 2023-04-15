@@ -5,10 +5,10 @@ const Nav: React.FC = () => {
     <nav>
       <ul>
         <li>Home</li>
-        <li>Missions</li>
-        <li>Achievements</li>
-        <li>Rankings</li>
-        <li>Communication</li>
+        <li>Submit Code</li>
+        <li>LeaderBoard</li>
+        <li>Resources</li>
+        <li>Admin</li>
       </ul>
     </nav>
   )

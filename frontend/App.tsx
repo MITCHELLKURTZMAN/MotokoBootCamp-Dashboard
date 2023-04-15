@@ -1,18 +1,21 @@
-import React from "react"
+import React, { lazy, Suspense } from "react"
 import "./index.scss"
-import Header from "./components/Header"
-import Nav from "./components/Nav"
-import TeamList from "./components/TeamList"
-import ActivityList from "./components/ActivityList"
-import Footer from "./components/Footer"
+const Header = lazy(() => import("./components/Header"))
+const Nav = lazy(() => import("./components/Nav"))
+const TeamList = lazy(() => import("./components/TeamList"))
+const ActivityList = lazy(() => import("./components/ActivityList"))
+const Footer = lazy(() => import("./components/Footer"))
 import { createClient } from "@connect2ic/core"
 import { defaultProviders } from "@connect2ic/core/providers"
 import { Connect2ICProvider } from "@connect2ic/react"
 import "@connect2ic/core/style.css"
+import { client } from "./context/GlobalStateContext"
 /*
  * Import canister definitions like this:
  */
-import * as Verifier from "../.dfx/local/canisters/Verifier"
+import * as Verifier from "../src/declarations/Verifier"
+import { GlobalStateProvider } from "./context/GlobalStateContext"
+import LoadingScreen from "./components/LoadingScreen"
 
 // Dummy data for testing purposes
 const teams = [
@@ -86,30 +89,24 @@ const activities = [
 function App() {
   return (
     <div className="App">
-      <Header />
+      <Suspense fallback={<LoadingScreen />}>
+        <Header />
 
-      <Nav />
-      <main>
-        <TeamList teams={teams} />
-        <ActivityList activities={activities} />
-      </main>
-      <Footer />
+        <Nav />
+        <main>
+          <TeamList teams={teams} />
+          <ActivityList activities={activities} />
+        </main>
+        <Footer />
+      </Suspense>
     </div>
   )
 }
 
-const client = createClient({
-  canisters: {
-    Verifier,
-  },
-  providers: defaultProviders,
-  globalProviderConfig: {
-    dev: import.meta.env.DEV,
-  },
-})
-
 export default () => (
-  <Connect2ICProvider client={client}>
-    <App />
-  </Connect2ICProvider>
+  <GlobalStateProvider>
+    <Connect2ICProvider client={client}>
+      <App />
+    </Connect2ICProvider>
+  </GlobalStateProvider>
 )
