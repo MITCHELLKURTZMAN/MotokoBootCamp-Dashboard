@@ -72,15 +72,15 @@ actor verifier {
     };
 
     public type Rank = {
-        #recruit : Text;
-        //private : Text; //cant use 🤣
-        #corporal : Text;
-        #sergeant : Text;
-        #lieutenant : Text;
-        #captain : Text;
-        #major : Text;
-        #colonel : Text;
-        #general : Text
+        #cyberNovice : Text;
+        #dataDefender : Text;
+        #motokoMarksman : Text;
+        #asyncSergeant : Text;
+        #ghostNavigator : Text;
+        #digitalCaptain : Text;
+        #networkNoble : Text;
+        #aiArchitect : Text;
+        #quantumConsul : Text
     };
 
     public type AlphabetTeams = {
