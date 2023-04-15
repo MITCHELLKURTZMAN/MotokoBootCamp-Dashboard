@@ -419,8 +419,12 @@ actor verifier {
         let testCase : Bool = await isEvenTest(2);
         let day1 = if (result == testCase) { "pass" } else { "fail" };
 
+        //update students daily project array, add timestamp
+
         // activityHashmap.put(Nat.toText(activityIdCounter), " 🎉 " # "Day 1 test passed for " # canisterId #");
         // activityIdCounter := activityIdCounter + 1;
+
+        //rank team up +add time stamp so we can track the first team to complete each day
 
         return {
             day1 = day1;
