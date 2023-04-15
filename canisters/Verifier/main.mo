@@ -76,7 +76,8 @@ actor verifier {
     public type Activity = {
         activityId : Text;
         activity : Text;
-        specialAnnouncement : Bool
+        specialAnnouncement : Text; //We may want to customize these and add more as we go to parse on the frontend.
+        //so far, we can use: "newProject", "newStudent", "newTeam", "newAdmin", "newRank", "newTeamScore", "LectureEvent"
     };
 
     public type Rank = {
@@ -174,7 +175,7 @@ actor verifier {
             {
                 activityId = Nat.toText(activityIdCounter);
                 activity = "Attention on Deck! A new admin has registered";
-                specialAnnouncement = true
+                specialAnnouncement = "newAdmin"
             },
         );
         activityIdCounter += 1;
@@ -220,7 +221,7 @@ actor verifier {
             {
                 activityId = Nat.toText(activityIdCounter);
                 activity = name # " has registered for Motoko Bootcamp";
-                specialAnnouncement = false
+                specialAnnouncement = "newStudent"
             },
         );
         activityIdCounter := activityIdCounter + 1;
@@ -328,7 +329,7 @@ actor verifier {
                 {
                     activityId = Nat.toText(activityIdCounter);
                     activity = "A new team has been created, the competition is heating up!";
-                    specialAnnouncement = true
+                    specialAnnouncement = "newTeam"
                 },
             );
             activityIdCounter := activityIdCounter + 1;
@@ -371,7 +372,7 @@ actor verifier {
                 {
                     activityId = Nat.toText(activityIdCounter);
                     activity = "A new team member has joined team " # team;
-                    specialAnnouncement = false
+                    specialAnnouncement = "newTeamMember"
                 },
             );
             activityIdCounter := activityIdCounter + 1;
