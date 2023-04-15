@@ -5,7 +5,7 @@
   }
   
   body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
     background-color: #202020;
     color: #FFFFFF;
   }
@@ -18,10 +18,24 @@
   }
   
   h1 {
-    font-family: 'Stencil', sans-serif;
+    font-family: 'Orbitron', sans-serif;
+    margin: 0;
+    color: #4CAF50;
+    
+  }
+
+  h3 {
+    color: white;
+    
+  }
+
+  h4 {
+    font-family: 'Orbitron', sans-serif;
     margin: 0;
     color: #4CAF50;
   }
+
+
   
   nav {
     background-color: #2E2E2E;
@@ -31,6 +45,7 @@
     height: 100%;
     overflow: auto;
     box-shadow: 2px 0 4px rgba(0, 0, 0, 0.4);
+    font-family: 'Orbitron', sans-serif;
   }
   
   nav ul {
@@ -39,7 +54,7 @@
   
   nav li {
     padding: 10px 0;
-    border-bottom: 1px solid #4CAF50;
+    border-bottom: 1px solid gray;
     font-weight: 600;
     cursor: pointer;
   }
@@ -47,6 +62,12 @@
   nav li:last-child {
     border-bottom: none;
   }
+  
+  nav li:hover {
+    text-shadow: 0 0 1px #4CAF50, 0 0 20px #4CAF50;
+    color: #4CAF50;
+  }
+  
   
   main {
     margin-left: 200px;
@@ -60,12 +81,22 @@
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   }
+  .activities {
+    margin-bottom: 20px;
+    background-color: #2E2E2E;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    max-height: 500px;
+    overflow: scroll;
+  }
   
   h2 {
-    font-family: 'Arial', sans-serif;
-    border-bottom: 2px solid #4CAF50;
+    font-family: 'Orbitron', sans-serif;
+    border-bottom: 2px solid gray;
     padding-bottom: 10px;
     margin-bottom: 20px;
+    text-shadow:  0 0 1px #4CAF50, 0 0 20px #4CAF50;
   }
   
   .team-item,
@@ -88,9 +119,10 @@
     background-color: #2E2E2E;
     padding: 20px;
     text-align: center;
-    position: fixed;
-    bottom: 0;
-    left: 0;
+    position: relative;
+    // bottom: 0;
+    // left: 0;
+    z-index: 100;
     width: 100%;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.4);
   }
@@ -114,6 +146,242 @@
     height: auto;
     margin-right: 15px;
   }
+
+  .team-item {
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  
+    &:hover {
+      background-color: #4a4a4a;
+    }
+  
+    h3 {
+      margin-bottom: 10px;
+    }
+  }
+  
+  .individual-list {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    min-width: 100%;
+    background-color: #393939;
+    border-radius: 0 0 5px 5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.3s, transform 0.3s;
+    opacity: 10%;
+    transform: translateY(-10px);
+    pointer-events: none;
+    z-index: 10;
+
+  }
+  .individual-list-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-in-out;
+  }
+  
+  .team-item.active .individual-list-container {
+    max-height: 1000px; 
+  }
+
+  .footer-logo {
+    width: 50px; 
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  
+  
+  
+  
+  .team-item.active .individual-list {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+  
+  .individual-item {
+    padding: 25px;
+  
+    &:not(:last-child) {
+      border-bottom: 1px solid gray;
+    }
+  }
+
+  .team-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  span {
+    font-size: 1.2em;
+    margin-left: 0.5em;
+  }
+
+  .toggle-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+  .menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 20px;
+    max-height: 100%;
+    overflow: scroll;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: opacity 10s ease, transform 10s ease;
+  }
+  
+  .menu-overlay-open {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+  
+  
+  .menu-container {
+    background-color: #2e2e2e;
+    
+    padding: 20px;
+    position: relative;
+    width: 80%;
+    max-width: 400px;
+    z-index: 1001;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    color: #ffffff;
+    cursor: pointer;
+  }
+  
+  body.menu-open {
+    overflow: hidden;
+  }
+  
+  
+  .rotated {
+    transform: rotate(180deg);
+  }
+
+  .menu-open {
+    overflow: hidden;
+  }
+  
+  .menu-open::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 1;
+  }
+
+  
+  .individual-list-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-in-out;
+  }
+  
+  .visible {
+    max-height: 1000px; // Adjust this value based on the maximum height you expect the list to have
+  }
+  
+  .hidden {
+    max-height: 0;
+  }
+
+  .progress-bar {
+    background-color: #2E2E2E;
+    border-radius: 5px;
+    height: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+    filter: drop-shadow(1px 2px 0px black);
+    
+  }
+  
+  .progress {
+    background-color: #4CAF50;
+    height: 100%;
+    opacity: 0.5;
+    
+  }
+  .special-announcement {
+    background: linear-gradient(45deg, #5a5a5a 25%, #202020 25%, #202020 50%, #5a5a5a 50%, #5a5a5a 75%, #202020 75%);
+    background-size: 300% 300%;
+    animation: metallic 300s linear infinite;
+    border: 2px solid #4caf50;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #4caf50;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .special-announcement::before {
+    content: "";
+    position: absolute;
+    left: -50%;
+    width: 100%;
+    height: 100%;
+   background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%);
+    background-size: 100px 100px;
+    animation: reflection 300s linear infinite;
+  }
+  
+  @keyframes metallic {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  @keyframes reflection {
+    0% {
+      left: -50%;
+    }
+    100% {
+      left: 150%;
+    }
+  }
+  
+  
+  .hidden {
+    display: none;
+  }
+  
+    
   
 
   @media screen and (max-width: 768px) {

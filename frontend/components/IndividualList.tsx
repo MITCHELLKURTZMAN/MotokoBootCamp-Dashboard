@@ -1,25 +1,22 @@
 import React from "react"
+import { Individual } from "../types/types"
 import IndividualItem from "./IndividualItem"
 
-interface Individual {
-  id: number
-  name: string
-  rank: string
-  progress: number
-}
-
 interface IndividualListProps {
-  individuals: Individual[]
+  individuals?: Individual[]
 }
 
 const IndividualList: React.FC<IndividualListProps> = ({ individuals }) => {
+  if (!individuals) {
+    return null
+  }
+
   return (
-    <section>
-      <h2>Individuals</h2>
+    <div className="individual-list">
       {individuals.map((individual) => (
         <IndividualItem key={individual.id} individual={individual} />
       ))}
-    </section>
+    </div>
   )
 }
 

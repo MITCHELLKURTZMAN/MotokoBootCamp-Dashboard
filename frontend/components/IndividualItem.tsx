@@ -1,11 +1,5 @@
 import React from "react"
-
-interface Individual {
-  id: number
-  name: string
-  rank: string
-  progress: number
-}
+import { Individual } from "../types/types"
 
 interface IndividualItemProps {
   individual: Individual
@@ -14,9 +8,15 @@ interface IndividualItemProps {
 const IndividualItem: React.FC<IndividualItemProps> = ({ individual }) => {
   return (
     <div className="individual-item">
-      <h3>{individual.name}</h3>
+      <h4>{individual.name}</h4>
       <p>Rank: {individual.rank}</p>
       <p>Progress: {individual.progress}%</p>
+      <div className="progress-bar">
+        <div
+          className="progress"
+          style={{ width: `${individual.progress}%` }}
+        ></div>
+      </div>
     </div>
   )
 }

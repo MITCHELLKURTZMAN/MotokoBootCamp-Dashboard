@@ -1,12 +1,6 @@
 import React from "react"
 import TeamItem from "./TeamItem"
-
-interface Team {
-  id: number
-  name: string
-  mission: string
-  progress: number
-}
+import { Team } from "../types/types"
 
 interface TeamListProps {
   teams: Team[]

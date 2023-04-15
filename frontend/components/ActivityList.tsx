@@ -1,10 +1,6 @@
 import React from "react"
 import ActivityItem from "./ActivityItem"
-
-interface Activity {
-  id: number
-  description: string
-}
+import { Activity } from "../types/types"
 
 interface ActivityListProps {
   activities: Activity[]
@@ -12,8 +8,8 @@ interface ActivityListProps {
 
 const ActivityList: React.FC<ActivityListProps> = ({ activities }) => {
   return (
-    <section>
-      <h2>Activities</h2>
+    <section className="activities">
+      <h2>Intelligence Updates</h2>
       {activities.map((activity) => (
         <ActivityItem key={activity.id} activity={activity} />
       ))}

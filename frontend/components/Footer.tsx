@@ -1,9 +1,11 @@
 import React from "react"
+import footerLogo from "../assets/Motoko.png"
+import dfinity from "../assets/dfinity.svg"
 
 const Footer: React.FC = () => {
   return (
     <footer>
-      <p>&copy; 2023 MotokoBootCamp. All rights reserved.</p>
+      <img src={dfinity} alt="Footer Logo" className="footer-logo" />
     </footer>
   )
 }

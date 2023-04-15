@@ -17,17 +17,13 @@ import IC "mo:base/ExperimentalInternetComputer";
 import Nat64 "mo:base/Nat64";
 
 //todo:
-//Register/store principal ids of students
-//create a unique id for teams and a way to register students to teams
-//collect canister ids of students completed work to be checked
 
-//The verifier can check students work with interface from projects and the corresponding canister id
-//If the project is accepted the score of the student is updated and the score of his team.
-
-//The students will need to ensure functions are name exactly as the verifier expects
-//this way we can pass the canisterId and the project name to the verifier and it will check the project
-
+//If the project is accepted the score of the student is updated and the score of his team updated.
 //we need timestamps because all projects could technically finish and achieve the same score.
+//store activity data when students achieve milestones
+//store student rank data
+//make teams in military alphabet
+//team scores may need to be weighted for different sized teams
 
 actor verifier {
 
@@ -41,12 +37,17 @@ actor verifier {
     var studentScoreHashMap = HashMap.HashMap<Text, Int>(maxHashmapSize, isEq, Text.hash); //the score of the student
     var studentTeamHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the team the student is on
     var studentStrikesHashMap = HashMap.HashMap<Text, Int>(maxHashmapSize, isEq, Text.hash); //a way to detect if a student is cheating
+    var studentRankHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the rank of the student (recruit, private (cant use 🤣), corporal, sergeant, lieutenant, captain, major, colonel, general)
 
     //canister may be unnecessary, because we can just check controller == student, may also explore assigning students 1 canister so we can verify in a secure way
     var studentCanisterHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash);
     var canisterIdHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash);
 
+    //activity feed
+    var activityHashmap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the activity feed stored by activity id
+
     stable var teamIdCounter : Nat = 0;
+    stable var activityIdCounter : Nat = 0;
 
     //types
     public type Student = {
@@ -55,12 +56,59 @@ actor verifier {
         teamId : Text;
         score : Int;
         strikes : Int; //will use this if a student attempts to submit someone elses canister
+        rank : Text
     };
 
     public type Team = {
         teamId : Text;
         teamMembers : [Text];
         score : Int
+    };
+
+    public type Activity = {
+        activityId : Text;
+        activity : Text
+    };
+
+    public type Rank = {
+        #recruit : Text;
+        //private : Text; //cant use 🤣
+        #corporal : Text;
+        #sergeant : Text;
+        #lieutenant : Text;
+        #captain : Text;
+        #major : Text;
+        #colonel : Text;
+        #general : Text
+    };
+
+    public type AlphabetTeams = {
+        #alpha : Text;
+        #bravo : Text;
+        #charlie : Text;
+        #delta : Text;
+        #echo : Text;
+        #foxtrot : Text;
+        #golf : Text;
+        #hotel : Text;
+        #india : Text;
+        #juliet : Text;
+        #kilo : Text;
+        #lima : Text;
+        #mike : Text;
+        #november : Text;
+        #oscar : Text;
+        #papa : Text;
+        #quebec : Text;
+        #romeo : Text;
+        #sierra : Text;
+        #tango : Text;
+        #uniform : Text;
+        #victor : Text;
+        #whiskey : Text;
+        #xray : Text;
+        #yankee : Text;
+        #zulu : Text
     };
 
     //utils
@@ -119,7 +167,8 @@ actor verifier {
             name = name;
             teamId = "";
             score = 0;
-            strikes = 0
+            strikes = 0;
+            rank = "recruit"
         };
 
         if (safeGet(principalIdHashMap, principalId, "") != "") {
@@ -141,16 +190,23 @@ actor verifier {
         var teamId = safeGet(studentTeamHashMap, principalId, "");
         var score = safeGet(studentScoreHashMap, principalId, 0);
         var strikes = safeGet(studentStrikesHashMap, principalId, 0);
+        var rank = safeGet(studentRankHashMap, principalId, "recruit");
 
         var student = {
             principalId = principalId;
             name = name;
             teamId = teamId;
             score = score;
-            strikes = strikes
+            strikes = strikes;
+            rank = rank
         };
 
         #ok(student)
+    };
+
+    private func incTeamIdCounter() : async () {
+        teamIdCounter := teamIdCounter + 1
+        //todo set aplhabet team
     };
 
     public func registerTeamMembers(newTeamMembers : [Text], createNewTeam : Bool, team : Text) : async Result.Result<Team, Text> {
@@ -158,7 +214,7 @@ actor verifier {
         //create new team or add to existing team
         if (createNewTeam) {
 
-            teamIdCounter += 1;
+            await incTeamIdCounter();
 
             var teamBuffer = Buffer.Buffer<Text>(1);
             for (newMembers in newTeamMembers.vals()) {
