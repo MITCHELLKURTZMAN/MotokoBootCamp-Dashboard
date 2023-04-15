@@ -63,7 +63,8 @@ actor verifier {
     public type DailyProject = {
         day : Nat;
         canisterId : Text;
-        completed : Bool
+        completed : Bool;
+        timeStamp : Nat64
     };
 
     public type Team = {
@@ -229,7 +230,7 @@ actor verifier {
 
     func generateStudentScore(principalId : Text) : Nat {
         var score = 0;
-        var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false }]);
+        var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
         let length = completedDays.size();
 
         for (day in completedDays.vals()) {
@@ -255,7 +256,7 @@ actor verifier {
         var strikes = safeGet(studentStrikesHashMap, principalId, 0);
         var rank = safeGet(studentRankHashMap, principalId, "recruit");
         var canisterIds = safeGet(studentCanisterIdHashMap, principalId, [""]);
-        var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false }]);
+        var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
 
         var student = {
             principalId = principalId;
