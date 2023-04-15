@@ -33,7 +33,7 @@ actor verifier {
     var principalIdHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the name of the student stored by principal id
 
     var teamHashMap = HashMap.HashMap<Text, [Text]>(maxHashmapSize, isEq, Text.hash); //the students on the team stored by team id in an array
-    var teamScoreHashMap = HashMap.HashMap<Text, Int>(maxHashmapSize, isEq, Text.hash); //the score of the team stored by team id
+    var teamScoreHashMap = HashMap.HashMap<Text, Nat>(maxHashmapSize, isEq, Text.hash); //the score of the team stored by team id
     var studentScoreHashMap = HashMap.HashMap<Text, Int>(maxHashmapSize, isEq, Text.hash); //the score of the student
     var studentTeamHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the team the student is on
     var studentStrikesHashMap = HashMap.HashMap<Text, Int>(maxHashmapSize, isEq, Text.hash); //a way to detect if a student is cheating
@@ -62,7 +62,7 @@ actor verifier {
     public type Team = {
         teamId : Text;
         teamMembers : [Text];
-        score : Int
+        score : Nat
     };
 
     public type Activity = {
@@ -183,7 +183,7 @@ actor verifier {
         #ok()
     };
 
-    //registration
+    //student
     public shared ({ caller }) func registerStudent(name : Text) : async Result.Result<Student, Text> {
 
         let principalId = Principal.toText(caller);
@@ -238,6 +238,34 @@ actor verifier {
         };
 
         #ok(student)
+    };
+
+    //teams
+
+    func generateTeamScore(teamId : Text) : async (Nat) {
+        var teamMembers = safeGet(teamHashMap, teamId, []);
+        var teamScore = 0;
+        for (member in teamMembers.vals()) {
+            teamScore := teamScore + Int.abs(safeGet(studentScoreHashMap, member, 0))
+        };
+        teamScoreHashMap.put(teamId, teamScore);
+        teamScore;
+
+    };
+
+    public shared func buildTeam(teamId : Text) : async Result.Result<Team, Text> {
+
+        let updatedScore = await generateTeamScore(teamId);
+        var teamMembers = safeGet(teamHashMap, teamId, []);
+        var teamScore = safeGet(teamScoreHashMap, teamId, 0);
+
+        var team = {
+            teamId = teamId;
+            teamMembers = teamMembers;
+            score = (updatedScore)
+        };
+
+        return #ok(team)
     };
 
     private func incTeamIdCounter() : async () {
