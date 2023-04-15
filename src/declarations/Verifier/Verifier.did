@@ -8,16 +8,18 @@ type TestResults =
  };
 type Team = 
  record {
-   score: int;
+   score: nat;
    teamId: text;
    teamMembers: vec text;
  };
 type Student = 
  record {
+   canisterIds: vec text;
+   completedDays: vec DailyProject;
    name: text;
    principalId: text;
    rank: text;
-   score: int;
+   score: nat;
    strikes: int;
    teamId: text;
  };
@@ -41,8 +43,23 @@ type Result =
    err: text;
    ok;
  };
+type DailyProject = 
+ record {
+   canisterId: text;
+   completed: bool;
+   day: nat;
+   timeStamp: nat64;
+ };
+type Activity = 
+ record {
+   activity: text;
+   activityId: text;
+   specialAnnouncement: bool;
+ };
 service : {
   buildStudent: (text) -> (Result_2);
+  buildTeam: (text) -> (Result_1);
+  getActivity: (nat, nat) -> (vec Activity);
   getAdmins: () -> (Result_3) query;
   isEvenTest: (int) -> (bool);
   registerAdmin: (text) -> (Result);

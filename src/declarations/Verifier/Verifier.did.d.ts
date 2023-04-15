@@ -1,6 +1,17 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 
+export interface Activity {
+  'activityId' : string,
+  'specialAnnouncement' : boolean,
+  'activity' : string,
+}
+export interface DailyProject {
+  'day' : bigint,
+  'timeStamp' : bigint,
+  'completed' : boolean,
+  'canisterId' : string,
+}
 export type Result = { 'ok' : null } |
   { 'err' : string };
 export type Result_1 = { 'ok' : Team } |
@@ -10,8 +21,10 @@ export type Result_2 = { 'ok' : Student } |
 export type Result_3 = { 'ok' : Array<string> } |
   { 'err' : string };
 export interface Student {
+  'completedDays' : Array<DailyProject>,
   'name' : string,
   'rank' : string,
+  'canisterIds' : Array<string>,
   'score' : bigint,
   'teamId' : string,
   'principalId' : string,
@@ -31,6 +44,8 @@ export interface TestResults {
 }
 export interface _SERVICE {
   'buildStudent' : ActorMethod<[string], Result_2>,
+  'buildTeam' : ActorMethod<[string], Result_1>,
+  'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
   'getAdmins' : ActorMethod<[], Result_3>,
   'isEvenTest' : ActorMethod<[bigint], boolean>,
   'registerAdmin' : ActorMethod<[string], Result>,
