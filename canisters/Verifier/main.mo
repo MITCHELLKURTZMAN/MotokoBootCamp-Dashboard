@@ -34,14 +34,13 @@ actor verifier {
 
     var teamHashMap = HashMap.HashMap<Text, [Text]>(maxHashmapSize, isEq, Text.hash); //the students on the team stored by team id in an array
     var teamScoreHashMap = HashMap.HashMap<Text, Nat>(maxHashmapSize, isEq, Text.hash); //the score of the team stored by team id
-    var studentScoreHashMap = HashMap.HashMap<Text, Int>(maxHashmapSize, isEq, Text.hash); //the score of the student
+    var studentScoreHashMap = HashMap.HashMap<Text, Nat>(maxHashmapSize, isEq, Text.hash); //the score of the student
     var studentTeamHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the team the student is on
     var studentStrikesHashMap = HashMap.HashMap<Text, Int>(maxHashmapSize, isEq, Text.hash); //a way to detect if a student is cheating
-    var studentRankHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the rank of the student (recruit, private (cant use 🤣), corporal, sergeant, lieutenant, captain, major, colonel, general)
-
-    //canister may be unnecessary, because we can just check controller == student, may also explore assigning students 1 canister so we can verify in a secure way
-    var studentCanisterHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash);
-    var canisterIdHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash);
+    var studentRankHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the rank of the student (see Public Type Rank for names)
+    var studentCompletedDaysHashMap = HashMap.HashMap<Text, [DailyProject]>(maxHashmapSize, isEq, Text.hash); //the days the student has completed
+    var studentCanisterIdHashMap = HashMap.HashMap<Text, [Text]>(maxHashmapSize, isEq, Text.hash); //the canister id or [ids] the student has registered (can use one or many but cannot be someone elses)
+    var canisterIdHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the global list of canister ids to cross check against
 
     //activity feed
     var activityHashmap = HashMap.HashMap<Text, Activity>(maxHashmapSize, isEq, Text.hash); //the activity feed stored by activity id
@@ -54,9 +53,17 @@ actor verifier {
         principalId : Text;
         name : Text;
         teamId : Text;
-        score : Int;
+        score : Nat;
         strikes : Int; //will use this if a student attempts to submit someone elses canister
-        rank : Text
+        rank : Text;
+        canisterIds : [Text]; //can be one or multiple, but cannot be someone elses
+        completedDays : [DailyProject]
+    };
+
+    public type DailyProject = {
+        day : Nat;
+        canisterId : Text;
+        completed : Bool
     };
 
     public type Team = {
@@ -194,7 +201,10 @@ actor verifier {
             teamId = "";
             score = 0;
             strikes = 0;
-            rank = "recruit"
+            rank = "recruit";
+            canisterIds = [];
+            completedDays = [];
+
         };
 
         if (safeGet(principalIdHashMap, principalId, "") != "") {
@@ -217,16 +227,35 @@ actor verifier {
         #ok(student)
     };
 
+    func generateStudentScore(principalId : Text) : Nat {
+        var score = 0;
+        var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false }]);
+        let length = completedDays.size();
+
+        for (day in completedDays.vals()) {
+            if (day.completed) {
+                score += 1
+            }
+        };
+
+        studentScoreHashMap.put(principalId, score);
+        score
+
+    };
+
     public func buildStudent(principalId : Text) : async Result.Result<Student, Text> {
+        let score = generateStudentScore(principalId);
         var name = safeGet(principalIdHashMap, principalId, "");
         if (name == "") {
             return #err("Principal id not registered")
         };
 
         var teamId = safeGet(studentTeamHashMap, principalId, "");
-        var score = safeGet(studentScoreHashMap, principalId, 0);
+
         var strikes = safeGet(studentStrikesHashMap, principalId, 0);
         var rank = safeGet(studentRankHashMap, principalId, "recruit");
+        var canisterIds = safeGet(studentCanisterIdHashMap, principalId, [""]);
+        var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false }]);
 
         var student = {
             principalId = principalId;
@@ -234,7 +263,9 @@ actor verifier {
             teamId = teamId;
             score = score;
             strikes = strikes;
-            rank = rank
+            rank = rank;
+            canisterIds = canisterIds;
+            completedDays = completedDays
         };
 
         #ok(student)
