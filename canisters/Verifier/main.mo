@@ -72,6 +72,7 @@ actor verifier {
     };
 
     public type Rank = {
+        #recruit : Text;
         #cyberNovice : Text;
         #dataDefender : Text;
         #motokoMarksman : Text;
@@ -84,32 +85,32 @@ actor verifier {
     };
 
     public type AlphabetTeams = {
-        #alpha : Text;
-        #bravo : Text;
-        #charlie : Text;
-        #delta : Text;
-        #echo : Text;
-        #foxtrot : Text;
-        #golf : Text;
-        #hotel : Text;
-        #india : Text;
-        #juliet : Text;
-        #kilo : Text;
-        #lima : Text;
-        #mike : Text;
-        #november : Text;
-        #oscar : Text;
-        #papa : Text;
-        #quebec : Text;
-        #romeo : Text;
-        #sierra : Text;
-        #tango : Text;
-        #uniform : Text;
-        #victor : Text;
-        #whiskey : Text;
-        #xray : Text;
-        #yankee : Text;
-        #zulu : Text
+        #auraAlpha : Text;
+        #binaryBravo : Text;
+        #cyberCharlie : Text;
+        #digitalDelta : Text;
+        #echoEngine : Text;
+        #fluxFoxtrot : Text;
+        #glitchGolf : Text;
+        #hackerHotel : Text;
+        #interfaceIndia : Text;
+        #jumpstartJuliet : Text;
+        #kineticKilo : Text;
+        #logicLima : Text;
+        #mainframeMike : Text;
+        #nanotechNovember : Text;
+        #overdriveOscar : Text;
+        #pixelPapa : Text;
+        #quantumQuebec : Text;
+        #reactiveRomeo : Text;
+        #syncSierra : Text;
+        #techTango : Text;
+        #uploadUniform : Text;
+        #virtualVictor : Text;
+        #wavelengthWhiskey : Text;
+        #xenonXray : Text;
+        #yottabyteYankee : Text;
+        #zenithZulu : Text
     };
 
     //utils
