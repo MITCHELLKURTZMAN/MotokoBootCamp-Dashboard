@@ -7,7 +7,6 @@ const Submit: React.FC = () => {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // Handle form submission logic here
     console.log(`Submitting canister ID: ${canisterId}, Day: ${day}`)
   }
 
@@ -41,7 +40,6 @@ const Submit: React.FC = () => {
         <button type="submit">Submit</button>
       </form>
 
-      {/* Add the submission status and the More Info button */}
       <div className="submission-status">
         <h2 className="submit__header">Submission Status</h2>
         <ul className="submission-status__list">
@@ -54,7 +52,6 @@ const Submit: React.FC = () => {
         </ul>
       </div>
 
-      {/* Add the modal for displaying more information on failures */}
       {showModal && (
         <div className="modal" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
