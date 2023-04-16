@@ -407,12 +407,19 @@
     left: 0;
     background-color: #2e2e2e;
     z-index: 999;
+   
+  background-size: 0 0;
   }
   
   .loading-image {
     width: 100px;
     height: auto;
     animation: float 3s ease-in-out infinite;
+  }
+  .loading-image-placeholder {
+   
+    width: 100px;
+    height: 100px;
   }
   
   .loading-text {

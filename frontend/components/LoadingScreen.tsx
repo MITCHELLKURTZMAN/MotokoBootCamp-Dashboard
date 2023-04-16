@@ -1,5 +1,5 @@
 // src/components/LoadingScreen.tsx
-import React from "react"
+import React, { useEffect, useState, useRef } from "react"
 import motokoBootcampImage from "../assets/motokobootcamp.png"
 
 const funnySayings = [
@@ -60,15 +60,41 @@ const getRandomSaying = () => {
 }
 
 const LoadingScreen: React.FC = () => {
-  const [loadingText, setLoadingText] = React.useState(getRandomSaying())
+  const [loadingText, setLoadingText] = useState(getRandomSaying())
+  const [isImageVisible, setImageVisible] = useState(false)
+  const imageRef = useRef<HTMLImageElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setImageVisible(true)
+          observer.disconnect()
+        }
+      })
+    })
+
+    if (imageRef.current) {
+      observer.observe(imageRef.current)
+    }
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   return (
     <div className="loading-screen">
-      <img
-        src={motokoBootcampImage}
-        alt="Motoko Bootcamp"
-        className="loading-image"
-      />
+      {isImageVisible ? (
+        <img
+          ref={imageRef}
+          src={motokoBootcampImage}
+          alt="Motoko Bootcamp"
+          className="loading-image"
+        />
+      ) : (
+        <div ref={imageRef} className="loading-image-placeholder" />
+      )}
       <p className="loading-text">{loadingText}</p>
     </div>
   )

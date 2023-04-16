@@ -54,14 +54,14 @@ type Activity =
  record {
    activity: text;
    activityId: text;
-   specialAnnouncement: bool;
+   specialAnnouncement: text;
  };
 service : {
-  buildStudent: (text) -> (Result_2);
-  buildTeam: (text) -> (Result_1);
-  getActivity: (nat, nat) -> (vec Activity);
+  buildStudent: (text) -> (Result_2) query;
+  buildTeam: (text) -> (Result_1) query;
+  getActivity: (nat, nat) -> (vec Activity) query;
   getAdmins: () -> (Result_3) query;
-  isEvenTest: (int) -> (bool);
+  isEvenTest: (int) -> (bool) query;
   registerAdmin: (text) -> (Result);
   registerStudent: (text) -> (Result_2);
   registerTeamMembers: (vec text, bool, text) -> (Result_1);

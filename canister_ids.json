@@ -1,11 +1,14 @@
 {
   "TestProject": {
-    "ic": "2ekwf-dqaaa-aaaan-qdmaa-cai"
+    "ic": "2ekwf-dqaaa-aaaan-qdmaa-cai",
+    "local": "qsgjb-riaaa-aaaaa-aaaga-cai"
   },
   "Verifier": {
-    "ic": "rww3b-zqaaa-aaaam-abioa-cai"
+    "ic": "rww3b-zqaaa-aaaam-abioa-cai",
+    "local": "qvhpv-4qaaa-aaaaa-aaagq-cai"
   },
   "assets": {
-    "ic": "24ytc-bqaaa-aaaan-qdl7q-cai"
+    "ic": "24ytc-bqaaa-aaaan-qdl7q-cai",
+    "local": "qjdve-lqaaa-aaaaa-aaaeq-cai"
   }
 }

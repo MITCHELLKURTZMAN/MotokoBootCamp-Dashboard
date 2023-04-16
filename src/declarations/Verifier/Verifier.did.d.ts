@@ -3,7 +3,7 @@ import type { ActorMethod } from '@dfinity/agent';
 
 export interface Activity {
   'activityId' : string,
-  'specialAnnouncement' : boolean,
+  'specialAnnouncement' : string,
   'activity' : string,
 }
 export interface DailyProject {

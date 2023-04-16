@@ -8,14 +8,8 @@ const TeamList = lazy(() => import("./components/TeamList"))
 const ActivityList = lazy(() => import("./components/ActivityList"))
 const Footer = lazy(() => import("./components/Footer"))
 
-import { createClient } from "@connect2ic/core"
-import { defaultProviders } from "@connect2ic/core/providers"
-import { Connect2ICProvider } from "@connect2ic/react"
-import "@connect2ic/core/style.css"
-import { client } from "./context/GlobalStateContext"
-
 import * as Verifier from "../src/declarations/Verifier"
-import { GlobalStateProvider } from "./context/GlobalStateContext"
+
 import LoadingScreen from "./components/LoadingScreen"
 import Submit from "./components/Submit"
 
@@ -119,10 +113,4 @@ function App() {
   )
 }
 
-export default () => (
-  <GlobalStateProvider>
-    <Connect2ICProvider client={client}>
-      <App />
-    </Connect2ICProvider>
-  </GlobalStateProvider>
-)
+export default () => <App />

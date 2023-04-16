@@ -245,7 +245,7 @@ actor verifier {
 
     };
 
-    public func buildStudent(principalId : Text) : async Result.Result<Student, Text> {
+    public query func buildStudent(principalId : Text) : async Result.Result<Student, Text> {
         let score = generateStudentScore(principalId);
         var name = safeGet(principalIdHashMap, principalId, "");
         if (name == "") {
@@ -275,7 +275,7 @@ actor verifier {
 
     //teams
 
-    func generateTeamScore(teamId : Text) : async (Nat) {
+    func generateTeamScore(teamId : Text) : (Nat) {
         var teamMembers = safeGet(teamHashMap, teamId, []);
         var teamScore = 0;
         for (member in teamMembers.vals()) {
@@ -286,9 +286,9 @@ actor verifier {
 
     };
 
-    public shared func buildTeam(teamId : Text) : async Result.Result<Team, Text> {
+    public shared query func buildTeam(teamId : Text) : async Result.Result<Team, Text> {
 
-        let updatedScore = await generateTeamScore(teamId);
+        let updatedScore = generateTeamScore(teamId);
         var teamMembers = safeGet(teamHashMap, teamId, []);
         var teamScore = safeGet(teamScoreHashMap, teamId, 0);
 
@@ -386,7 +386,7 @@ actor verifier {
     };
 
     //test suite
-    public shared func isEvenTest(number : Int) : async Bool {
+    public shared query func isEvenTest(number : Int) : async Bool {
         return number % 2 == 0
     };
 
@@ -398,7 +398,7 @@ actor verifier {
         day5 : Text
     };
 
-    public shared func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
+    public shared query func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
         var activityBuffer = Buffer.Buffer<Activity>(1);
         for (activity in activityHashmap.vals()) {
             if (textToNat(activity.activityId) >= lowerBound and textToNat(activity.activityId) <= upperBound) {
