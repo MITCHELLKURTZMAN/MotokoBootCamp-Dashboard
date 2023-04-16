@@ -36,6 +36,29 @@
   }
 
 
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-family: 'Roboto', sans-serif;
+    text-decoration: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    transition: background-color 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    background-color: #45a049;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+  }
+
+  .btn:active {
+    background-color: #379a3b;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
 
   .nav-link {
     text-decoration: none;

@@ -26,9 +26,13 @@ const Header: React.FC = () => {
         }}
       >
         {isAuthenticated ? (
-          <button onClick={logout}>Logout</button>
+          <button className="btn" onClick={logout}>
+            Logout
+          </button>
         ) : (
-          <button onClick={login}>Login</button>
+          <button className="btn" onClick={login}>
+            Login
+          </button>
         )}
       </div>
     </header>
