@@ -273,6 +273,12 @@ actor verifier {
         #ok(student)
     };
 
+    public shared func getStudent(principalId : Text) : async Result.Result<Student, Text> {
+
+        await buildStudent(principalId);
+
+    };
+
     //teams
 
     func generateTeamScore(teamId : Text) : (Nat) {

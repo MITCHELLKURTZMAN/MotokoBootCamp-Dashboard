@@ -1,4 +1,4 @@
-import create, { GetState, SetState, StateCreator, StoreApi } from 'zustand';
+import  { GetState, SetState, StateCreator, StoreApi, create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AuthClient, AuthClientLoginOptions } from '@dfinity/auth-client';
 import { Principal } from '@dfinity/principal';
@@ -33,6 +33,7 @@ interface AuthState {
       onError?: ((error?: string) => void) | ((error?: string) => Promise<void>);
     }) => Promise<void>;
     logout: () => Promise<void>;
+    getIdentity: () => Promise<void>;
     init: () => Promise<void>;
   }
   
@@ -92,7 +93,20 @@ login: async () => {
       identityProvider: identityProvider,
       ...loginOptions
     });
+
+    
   },
+
+  getIdentity: async () => {
+    const client = await getAuthClient();
+    const identity = await client.getIdentity();
+    if (identity) {
+        const principal = identity.getPrincipal();
+        set({ principal: principal, identity: identity, isAuthenticated: true });
+    } else {
+        set({ principal: null, identity: null, isAuthenticated: false });
+    }
+    },
   
 
       logout: async () => {

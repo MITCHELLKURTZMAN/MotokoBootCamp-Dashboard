@@ -11,7 +11,7 @@ const ActivityList: React.FC<ActivityListProps> = ({ activities }) => {
     <section className="activities">
       <h2>Intelligence Updates</h2>
       {activities.map((activity) => (
-        <ActivityItem key={activity.id} activity={activity} />
+        <ActivityItem key={activity.activityId} activity={activity} />
       ))}
     </section>
   )

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react"
+import React, { lazy, Suspense, useEffect } from "react"
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import "./index.scss"
 
@@ -9,80 +9,53 @@ const ActivityList = lazy(() => import("./components/ActivityList"))
 const Footer = lazy(() => import("./components/Footer"))
 
 import * as Verifier from "../src/declarations/Verifier"
+import { Team, Activity } from "./types/types"
 
 import LoadingScreen from "./components/LoadingScreen"
 import Submit from "./components/Submit"
+import { useActivityStore } from "./store/activityStore"
 
 // Dummy data for testing purposes
-const teams = [
+const teams: Team[] = [
   {
-    id: 1,
-    name: "Team Alpha",
-    mission: "Basic training day 1",
-    progress: 75,
-    score: 150,
-    individuals: [
-      { id: 1, name: "John Smith", rank: "Captain", progress: 80 },
-      { id: 2, name: "Jane Doe", rank: "Lieutenant", progress: 60 },
-      { id: 3, name: "Mike Johnson", rank: "Private", progress: 50 },
-      { id: 4, name: "Sarah Brown", rank: "Sergeant", progress: 70 },
-      { id: 5, name: "Tom Davis", rank: "Corporal", progress: 55 },
-    ],
+    teamMembers: ["1", "2", "3", "4", "5"],
+    score: BigInt(150),
+    teamId: "1",
   },
   {
-    id: 2,
-    name: "Team Bravo",
-    mission: "Secure the Database",
-    progress: 40,
-    score: 100,
-    individuals: [
-      { id: 6, name: "Mary Smith", rank: "Major", progress: 90 },
-      { id: 7, name: "Brian Doe", rank: "Lieutenant", progress: 65 },
-      { id: 8, name: "Linda Johnson", rank: "Private", progress: 45 },
-      { id: 9, name: "Steven Brown", rank: "Sergeant", progress: 75 },
-      { id: 10, name: "Jennifer Davis", rank: "Corporal", progress: 60 },
-    ],
+    teamMembers: ["6", "7", "8", "9", "10"],
+    score: BigInt(100),
+    teamId: "2",
   },
 ]
 
-const activities = [
-  {
-    id: 1,
-    description: 'John Smith completed the mission "Basic training day 1"',
-  },
-  { id: 2, description: "Jane Doe has been promoted to Lieutenant" },
-  {
-    id: 3,
-    description: "Team Bravo has achieved a new high score",
-    specialAnnouncement: true,
-  },
-  {
-    id: 4,
-    description:
-      "Samantha Brown received a medal for her outstanding performance",
-  },
-  { id: 5, description: "Team Alpha successfully completed their operation" },
-  {
-    id: 6,
-    description:
-      "Carlos Davis led the team during a challenging field exercise",
-  },
-  {
-    id: 7,
-    description: "Rebecca Martin has been appointed as the new team leader",
-  },
-  {
-    id: 8,
-    description: "David Thompson achieved top marks in marksmanship training",
-  },
-  {
-    id: 9,
-    description: "Team Alpha has achieved a new high score",
-    specialAnnouncement: true,
-  },
-]
+// const activities: Activity[] = [
+//   {
+//     activityId: "1",
+//     specialAnnouncement: "",
+//     activity: 'John Smith completed the mission "Basic training day 1"',
+//   },
+//   {
+//     activityId: "2",
+//     specialAnnouncement: "",
+//     activity: "Jane Doe has been promoted to Lieutenant",
+//   },
+//   {
+//     activityId: "3",
+//     specialAnnouncement: "true",
+//     activity: "Team Bravo has achieved a new high score",
+//   },
+// ]
 
 function App() {
+  const activities = useActivityStore((state) => state.activities)
+  const getActivity = useActivityStore((state) => state.getActivity)
+
+  useEffect(() => {
+    // Fetch activities when the component is mounted
+    getActivity()
+  }, [getActivity])
+
   return (
     <div className="App">
       <Router>

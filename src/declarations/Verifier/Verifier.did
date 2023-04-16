@@ -61,6 +61,7 @@ service : {
   buildTeam: (text) -> (Result_1) query;
   getActivity: (nat, nat) -> (vec Activity) query;
   getAdmins: () -> (Result_3) query;
+  getStudent: (text) -> (Result_2);
   isEvenTest: (int) -> (bool) query;
   registerAdmin: (text) -> (Result);
   registerStudent: (text) -> (Result_2);

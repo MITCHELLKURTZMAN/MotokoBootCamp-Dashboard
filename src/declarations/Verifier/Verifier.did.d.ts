@@ -47,6 +47,7 @@ export interface _SERVICE {
   'buildTeam' : ActorMethod<[string], Result_1>,
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
   'getAdmins' : ActorMethod<[], Result_3>,
+  'getStudent' : ActorMethod<[string], Result_2>,
   'isEvenTest' : ActorMethod<[bigint], boolean>,
   'registerAdmin' : ActorMethod<[string], Result>,
   'registerStudent' : ActorMethod<[string], Result_2>,

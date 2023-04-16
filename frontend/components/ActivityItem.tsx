@@ -32,7 +32,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
       }`}
     >
       <p>
-        {activity.description} {randomEmoji()}
+        {activity.activity} {randomEmoji()}
       </p>
     </div>
   )

@@ -1,21 +1,5 @@
-export type Individual = {
-  id: number
-  name: string
-  rank: string
-  progress: number
-}
+import { Student } from "src/declarations/Verifier/Verifier.did"
+import { Team } from "src/declarations/Verifier/Verifier.did"
+import { Activity } from "src/declarations/Verifier/Verifier.did"
 
-export type Team = {
-  id: number
-  name: string
-  mission: string
-  progress: number
-  score: number
-  individuals: Individual[]
-}
-
-export type Activity = {
-  id: number
-  description: string
-  specialAnnouncement?: Boolean
-}
+export type { Student, Team, Activity }

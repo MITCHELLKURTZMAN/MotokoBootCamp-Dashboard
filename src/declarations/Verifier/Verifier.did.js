@@ -45,6 +45,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAdmins' : IDL.Func([], [Result_3], ['query']),
+    'getStudent' : IDL.Func([IDL.Text], [Result_2], []),
     'isEvenTest' : IDL.Func([IDL.Int], [IDL.Bool], ['query']),
     'registerAdmin' : IDL.Func([IDL.Text], [Result], []),
     'registerStudent' : IDL.Func([IDL.Text], [Result_2], []),
