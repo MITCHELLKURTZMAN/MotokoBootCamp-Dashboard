@@ -1,11 +1,12 @@
 import React from "react"
 import "./_footer.scss"
-import dfinity from "../../assets/dfinity.svg"
+import { images } from "../../constants/constants"
+import logo from "../../assets/images/dfinity.svg"
 
 const Footer: React.FC = () => {
   return (
     <footer>
-      <img src={dfinity} alt="Footer Logo" className="footer-logo" />
+      <img src={logo} alt="Footer Logo" className="footer-logo" />
     </footer>
   )
 }

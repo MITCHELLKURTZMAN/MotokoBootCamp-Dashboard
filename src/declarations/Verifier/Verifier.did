@@ -23,10 +23,15 @@ type Student =
    strikes: int;
    teamId: text;
  };
-type Result_3 = 
+type Result_4 = 
  variant {
    err: text;
    ok: vec text;
+ };
+type Result_3 = 
+ variant {
+   err: text;
+   ok: vec Student;
  };
 type Result_2 = 
  variant {
@@ -60,8 +65,10 @@ service : {
   buildStudent: (text) -> (Result_2) query;
   buildTeam: (text) -> (Result_1) query;
   getActivity: (nat, nat) -> (vec Activity) query;
-  getAdmins: () -> (Result_3) query;
+  getAdmins: () -> (Result_4) query;
   getStudent: (text) -> (Result_2);
+  getStudentsFromTeam: (text) -> (Result_3);
+  getTeam: (text) -> (Result_1);
   isEvenTest: (int) -> (bool) query;
   registerAdmin: (text) -> (Result);
   registerStudent: (text) -> (Result_2);

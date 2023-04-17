@@ -7,7 +7,10 @@ interface ActivityItemProps {
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
-  const isSpecialAnnouncement = activity.specialAnnouncement
+  const isSpecialAnnouncement =
+    activity.specialAnnouncement === "newStudent" ||
+    activity.specialAnnouncement === "newTeam"
+
   const emojis = [
     "🎉",
     "🪖",
@@ -29,7 +32,9 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
   return (
     <div
       className={`activity-item ${
-        isSpecialAnnouncement ? "special-announcement" : ""
+        isSpecialAnnouncement
+          ? `special-announcement-${activity.specialAnnouncement}`
+          : ""
       }`}
     >
       <p>

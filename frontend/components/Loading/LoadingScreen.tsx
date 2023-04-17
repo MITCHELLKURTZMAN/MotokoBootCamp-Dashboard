@@ -1,6 +1,7 @@
 // src/components/LoadingScreen.tsx
 import React, { useEffect, useState, useRef } from "react"
-import motokoBootcampImage from "../../assets/motokobootcamp.png"
+import { images } from "../../constants/constants"
+import logo from "../../assets/images/motokobootcamp.png"
 import "./_loading.scss"
 
 const funnySayings = [
@@ -89,7 +90,7 @@ const LoadingScreen: React.FC = () => {
       {isImageVisible ? (
         <img
           ref={imageRef}
-          src={motokoBootcampImage}
+          src={logo}
           alt="Motoko Bootcamp"
           className="loading-image"
         />

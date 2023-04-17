@@ -18,7 +18,9 @@ export type Result_1 = { 'ok' : Team } |
   { 'err' : string };
 export type Result_2 = { 'ok' : Student } |
   { 'err' : string };
-export type Result_3 = { 'ok' : Array<string> } |
+export type Result_3 = { 'ok' : Array<Student> } |
+  { 'err' : string };
+export type Result_4 = { 'ok' : Array<string> } |
   { 'err' : string };
 export interface Student {
   'completedDays' : Array<DailyProject>,
@@ -46,8 +48,10 @@ export interface _SERVICE {
   'buildStudent' : ActorMethod<[string], Result_2>,
   'buildTeam' : ActorMethod<[string], Result_1>,
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
-  'getAdmins' : ActorMethod<[], Result_3>,
+  'getAdmins' : ActorMethod<[], Result_4>,
   'getStudent' : ActorMethod<[string], Result_2>,
+  'getStudentsFromTeam' : ActorMethod<[string], Result_3>,
+  'getTeam' : ActorMethod<[string], Result_1>,
   'isEvenTest' : ActorMethod<[bigint], boolean>,
   'registerAdmin' : ActorMethod<[string], Result>,
   'registerStudent' : ActorMethod<[string], Result_2>,

@@ -27,7 +27,8 @@ export const idlFactory = ({ IDL }) => {
     'specialAnnouncement' : IDL.Text,
     'activity' : IDL.Text,
   });
-  const Result_3 = IDL.Variant({ 'ok' : IDL.Vec(IDL.Text), 'err' : IDL.Text });
+  const Result_4 = IDL.Variant({ 'ok' : IDL.Vec(IDL.Text), 'err' : IDL.Text });
+  const Result_3 = IDL.Variant({ 'ok' : IDL.Vec(Student), 'err' : IDL.Text });
   const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
   const TestResults = IDL.Record({
     'day1' : IDL.Text,
@@ -44,8 +45,10 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Activity)],
         ['query'],
       ),
-    'getAdmins' : IDL.Func([], [Result_3], ['query']),
+    'getAdmins' : IDL.Func([], [Result_4], ['query']),
     'getStudent' : IDL.Func([IDL.Text], [Result_2], []),
+    'getStudentsFromTeam' : IDL.Func([IDL.Text], [Result_3], []),
+    'getTeam' : IDL.Func([IDL.Text], [Result_1], []),
     'isEvenTest' : IDL.Func([IDL.Int], [IDL.Bool], ['query']),
     'registerAdmin' : IDL.Func([IDL.Text], [Result], []),
     'registerStudent' : IDL.Func([IDL.Text], [Result_2], []),

@@ -73,6 +73,12 @@ actor verifier {
         score : Nat
     };
 
+    public type DashboardTeam = {
+        teamId : Text;
+        teamMembers : [Student];
+        score : Nat
+    };
+
     public type Activity = {
         activityId : Text;
         activity : Text;
@@ -305,6 +311,31 @@ actor verifier {
         };
 
         return #ok(team)
+    };
+
+    public shared func getTeam(teamId : Text) : async Result.Result<Team, Text> {
+
+        await buildTeam(teamId)
+    };
+
+    public shared func getStudentsFromTeam(teamId : Text) : async Result.Result<[Student], Text> {
+
+        var studentBuffer = Buffer.Buffer<Student>(1);
+        var teamMembers = safeGet(teamHashMap, teamId, []);
+        for (member in teamMembers.vals()) {
+            let student = await buildStudent(member);
+            switch (student) {
+                case (#ok(student)) {
+                    studentBuffer.add(student)
+                };
+                case (#err(err)) {
+                    return #err(err)
+                }
+
+            }
+        };
+        #ok(Buffer.toArray(studentBuffer))
+
     };
 
     private func incTeamIdCounter() : async () {

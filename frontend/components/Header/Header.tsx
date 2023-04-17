@@ -1,5 +1,7 @@
 import React, { useEffect } from "react"
-import logo from "../../assets/motokobootcamp.png"
+
+import { images } from "../../constants/constants"
+import logo from "../../assets/images/motokobootcamp.png"
 import { useAuthStore } from "../../store/authstore"
 import "./_header.scss"
 

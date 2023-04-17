@@ -103,20 +103,6 @@ h2 {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .team-item.active .individual-list {
   display: block;
   opacity: 1;
@@ -124,75 +110,17 @@ h2 {
   pointer-events: all;
 }
 
-
-
-
 span {
   font-size: 1.2em;
   margin-left: 0.5em;
 }
-
-
-
-
-
-
-
-
-
-.hidden {
-  max-height: 0;
-}
-
-
-
-
-@keyframes metallic {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes reflection {
-  0% {
-    left: -50%;
-  }
-  100% {
-    left: 150%;
-  }
-}
-
+ 
 
 .hidden {
   display: none;
+  max-height: 0;
+
 }
-
-
-
-
-
-
-@keyframes float {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-
-  
-
 
 @media screen and (max-width: 768px) {
   nav {
