@@ -1,5 +1,6 @@
 import React from "react"
-import { Activity } from "../types/types"
+import { Activity } from "../../types/types"
+import "./_activity.scss"
 
 interface ActivityItemProps {
   activity: Activity

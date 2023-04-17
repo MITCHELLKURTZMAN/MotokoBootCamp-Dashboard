@@ -1,6 +1,7 @@
 import React from "react"
 import TeamItem from "./TeamItem"
-import { Team } from "../types/types"
+import { Team } from "../../types/types"
+import "./_team.scss"
 
 interface TeamListProps {
   teams: Team[]

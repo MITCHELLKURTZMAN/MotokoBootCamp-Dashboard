@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react"
-import { Team } from "../types/types"
-import StudentItem from "./StudentItem"
-import { getStudent } from "../services/actorService"
-import { Student } from "../types/types"
-import { useAuthStore } from "../store/authstore"
+import { Team } from "../../types/types"
+import StudentItem from "../Student/StudentItem"
+import { getStudent } from "../../services/actorService"
+import { Student } from "../../types/types"
+import { useAuthStore } from "../../store/authstore"
+import "./_team.scss"
 
 interface TeamItemProps {
   team: Team

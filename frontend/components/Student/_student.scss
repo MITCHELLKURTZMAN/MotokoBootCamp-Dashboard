@@ -1,0 +1,46 @@
+.individual-list {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    min-width: 100%;
+    background-color: #393939;
+    border-radius: 0 0 5px 5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.3s, transform 0.3s;
+    opacity: 10%;
+    transform: translateY(-10px);
+    pointer-events: none;
+    z-index: 10;
+  
+  }
+  .individual-list-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-in-out;
+  }
+
+
+.individual-item {
+    padding: 25px;
+  
+    &:not(:last-child) {
+      border-bottom: 1px solid gray;
+    }
+}
+
+.toggle-arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+
+.individual-list-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-in-out;
+  }
+
+  .visible {
+    max-height: 1000px; // Adjust this value based on the maximum height you expect the list to have
+  }

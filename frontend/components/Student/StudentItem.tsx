@@ -1,5 +1,6 @@
 import React from "react"
-import { Student } from "../types/types"
+import { Student } from "../../types/types"
+import "./_student.scss"
 
 interface StudentItemProps {
   student: Student

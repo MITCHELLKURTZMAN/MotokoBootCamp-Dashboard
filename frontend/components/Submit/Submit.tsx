@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import "./_submit.scss"
 
 const Submit: React.FC = () => {
   const [canisterId, setCanisterId] = useState<string>("")

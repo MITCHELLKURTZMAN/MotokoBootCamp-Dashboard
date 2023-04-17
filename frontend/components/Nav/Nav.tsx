@@ -1,5 +1,6 @@
 import React from "react"
 import { Link } from "react-router-dom"
+import "./_nav.scss"
 
 const Nav: React.FC = () => {
   return (

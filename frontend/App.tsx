@@ -2,17 +2,17 @@ import React, { lazy, Suspense, useEffect } from "react"
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import "./index.scss"
 
-const Header = lazy(() => import("./components/Header"))
-const Nav = lazy(() => import("./components/Nav"))
-const TeamList = lazy(() => import("./components/TeamList"))
-const ActivityList = lazy(() => import("./components/ActivityList"))
-const Footer = lazy(() => import("./components/Footer"))
+const Header = lazy(() => import("./components/Header/Header"))
+const Nav = lazy(() => import("./components/Nav/Nav"))
+const TeamList = lazy(() => import("./components/Team/TeamList"))
+const ActivityList = lazy(() => import("./components/Activity/ActivityList"))
+const Footer = lazy(() => import("./components/Footer/Footer"))
 
 import * as Verifier from "../src/declarations/Verifier"
 import { Team, Activity } from "./types/types"
 
-import LoadingScreen from "./components/LoadingScreen"
-import Submit from "./components/Submit"
+import LoadingScreen from "./components/Loading/LoadingScreen"
+import Submit from "./components/Submit/Submit"
 import { useActivityStore } from "./store/activityStore"
 import { Toaster } from "react-hot-toast"
 

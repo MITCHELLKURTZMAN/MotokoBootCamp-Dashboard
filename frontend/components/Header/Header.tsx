@@ -1,6 +1,7 @@
 import React, { useEffect } from "react"
-import logo from "../assets/motokobootcamp.png"
-import { useAuthStore } from "../store/authstore"
+import logo from "../../assets/motokobootcamp.png"
+import { useAuthStore } from "../../store/authstore"
+import "./_header.scss"
 
 const Header: React.FC = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)

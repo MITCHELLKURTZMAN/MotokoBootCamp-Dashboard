@@ -1,0 +1,31 @@
+.activities {
+    margin-bottom: 20px;
+    background-color: #2E2E2E;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    max-height: 500px;
+    overflow: scroll;
+  }
+
+  .special-announcement {
+    background: linear-gradient(45deg, #5a5a5a 25%, #202020 25%, #202020 50%, #5a5a5a 50%, #5a5a5a 75%, #202020 75%);
+    background-size: 300% 300%;
+    animation: metallic 300s linear infinite;
+    border: 2px solid #4caf50;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #4caf50;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .special-announcement::before {
+    content: "";
+    position: absolute;
+    left: -50%;
+    width: 100%;
+    height: 100%;
+   background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.1) 75%, transparent 75%);
+    background-size: 100px 100px;
+    animation: reflection 300s linear infinite;
+  }

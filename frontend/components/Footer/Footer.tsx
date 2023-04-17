@@ -1,6 +1,6 @@
 import React from "react"
-import footerLogo from "../assets/Motoko.png"
-import dfinity from "../assets/dfinity.svg"
+import "./_footer.scss"
+import dfinity from "../../assets/dfinity.svg"
 
 const Footer: React.FC = () => {
   return (

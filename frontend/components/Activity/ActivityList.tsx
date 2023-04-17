@@ -1,6 +1,7 @@
 import React from "react"
 import ActivityItem from "./ActivityItem"
-import { Activity } from "../types/types"
+import { Activity } from "../../types/types"
+import "./_activity.scss"
 
 interface ActivityListProps {
   activities: Activity[]

@@ -1,6 +1,7 @@
 // src/components/LoadingScreen.tsx
 import React, { useEffect, useState, useRef } from "react"
-import motokoBootcampImage from "../assets/motokobootcamp.png"
+import motokoBootcampImage from "../../assets/motokobootcamp.png"
+import "./_loading.scss"
 
 const funnySayings = [
   "Assembling canisters...",

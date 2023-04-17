@@ -1,0 +1,22 @@
+footer {
+    background-color: #2E2E2E;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    // bottom: 0;
+    // left: 0;
+    z-index: 100;
+    width: 100%;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.4);
+  }
+  
+  footer p {
+    margin: 0;
+  }
+
+  .footer-logo {
+    width: 50px; 
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}

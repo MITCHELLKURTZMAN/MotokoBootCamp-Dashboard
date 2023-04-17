@@ -1,6 +1,7 @@
 import React from "react"
-import { Student } from "../types/types"
+import { Student } from "../../types/types"
 import StudentItem from "./StudentItem"
+import "./_student.scss"
 
 interface StudentListProps {
   Students?: Student[]
