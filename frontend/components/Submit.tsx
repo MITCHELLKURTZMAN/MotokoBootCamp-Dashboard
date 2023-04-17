@@ -37,7 +37,9 @@ const Submit: React.FC = () => {
           <option value="5">Day 5</option>
         </select>
 
-        <button type="submit">Submit</button>
+        <button className="btn" type="submit">
+          Submit
+        </button>
       </form>
 
       <div className="submission-status">
@@ -46,7 +48,17 @@ const Submit: React.FC = () => {
           <li>Day 1: Passed</li>
           <li>
             Day 2: Failed{" "}
-            <button onClick={() => setShowModal(true)}>More Info</button>
+            <button
+              style={{
+                borderRadius: "10px",
+                padding: "0 5px",
+                cursor: "pointer",
+                fontSize: "rem",
+              }}
+              onClick={() => setShowModal(true)}
+            >
+              ?
+            </button>
           </li>
           <li>Day 3: Not Submitted</li>
         </ul>
