@@ -20,3 +20,11 @@ footer {
     display: block;
     margin: 0 auto;
 }
+
+@media screen and (max-width: 768px) {
+  
+  footer {
+    position: static;
+    box-shadow: none;
+  }
+}
