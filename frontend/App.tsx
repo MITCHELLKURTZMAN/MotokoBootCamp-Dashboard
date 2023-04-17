@@ -14,6 +14,7 @@ import { Team, Activity } from "./types/types"
 import LoadingScreen from "./components/LoadingScreen"
 import Submit from "./components/Submit"
 import { useActivityStore } from "./store/activityStore"
+import { Toaster } from "react-hot-toast"
 
 // Dummy data for testing purposes
 const teams: Team[] = [
@@ -60,6 +61,7 @@ function App() {
     <div className="App">
       <Router>
         <Suspense fallback={<LoadingScreen />}>
+          <Toaster />
           <Header />
           <Nav />
           <main>
