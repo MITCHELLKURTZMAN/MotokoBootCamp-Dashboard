@@ -1,15 +1,36 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import "./_submit.scss"
+import { useUserStore } from "../../store/userStore"
 
 const Submit: React.FC = () => {
   const [canisterId, setCanisterId] = useState<string>("")
-  const [day, setDay] = useState<string>("1")
+  const [day, setDay] = useState<number>(1)
   const [showModal, setShowModal] = useState<boolean>(false)
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const user = useUserStore((state) => state.user)
+  const verify = useUserStore((state) => state.verifyProject)
+  const result = useUserStore((state) => state.result)
+
+  const mapResultToStatus = () => {
+    return Object.entries(result).map(([day, status]) => {
+      if (status === "pass") return `Day ${day}: Passed`
+      if (status === "fail") return `Day ${day}: Failed`
+      return `Day ${day}: Not Submitted`
+    })
+  }
+
+  const submissionStatusList = mapResultToStatus()
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     console.log(`Submitting canister ID: ${canisterId}, Day: ${day}`)
+    await verify(canisterId, day)
+    mapResultToStatus()
   }
+
+  useEffect(() => {
+    mapResultToStatus()
+  }, [verify, result])
 
   return (
     <div className="submit">
@@ -28,7 +49,7 @@ const Submit: React.FC = () => {
         <select
           id="day"
           value={day}
-          onChange={(e) => setDay(e.target.value)}
+          onChange={(e) => setDay(e.target.value as unknown as number)}
           required
         >
           <option value="1">Day 1</option>
@@ -46,22 +67,9 @@ const Submit: React.FC = () => {
       <div className="submission-status">
         <h2 className="submit__header">Submission Status</h2>
         <ul className="submission-status__list">
-          <li>Day 1: Passed</li>
-          <li>
-            Day 2: Failed{" "}
-            <button
-              style={{
-                borderRadius: "10px",
-                padding: "0 5px",
-                cursor: "pointer",
-                fontSize: "rem",
-              }}
-              onClick={() => setShowModal(true)}
-            >
-              ?
-            </button>
-          </li>
-          <li>Day 3: Not Submitted</li>
+          {submissionStatusList.map((status, index) => (
+            <li key={index}>{status}</li>
+          ))}
         </ul>
       </div>
 

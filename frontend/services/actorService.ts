@@ -78,3 +78,18 @@ export async function getAllTeams(): Promise<Team[] | undefined> {
     return result;
   }
 }
+
+export async function verifyProject(canisterId: string, day: number)
+{
+  const verifier = await getVerifierActor();
+  const result = await verifier.verifyProject(
+    canisterId,
+    BigInt(day)
+  );
+  if ('err' in result) {
+    console.error(result.err);
+    return undefined;
+  } else {
+    return result;
+  }
+}

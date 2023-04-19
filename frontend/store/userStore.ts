@@ -1,20 +1,24 @@
 import { GetState, SetState, StateCreator, StoreApi, create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
-import { getVerifierActor, getStudent } from '../services/actorService';
+import { getVerifierActor, getStudent, verifyProject } from '../services/actorService';
+import { TestResults } from 'src/declarations/Verifier/Verifier.did';
 
 export interface UserStore {
   readonly user: Student | undefined;
   readonly unregistered: boolean;
+  //readonly result: any;
 
   registerUser: (
     handle: string,
-    displayName: string,
-    avatar: string
+    // displayName: string,
+    // avatar: string
   ) => Promise<void>;
   getUser: (principalId: string) => Promise<void>;
   clearUser: () => Promise<void>;
   clearAll: () => void;
+  verifyProject: (canisterId: string, day: number) => Promise<TestResults>;
+  result: any; 
 }
 
 const toUserModel = (user: Student): Student => {
@@ -30,6 +34,7 @@ const createUserStore = (
 ): UserStore => ({
   user: undefined,
   unregistered: true,
+  result: undefined,
 
   registerUser: async (
     handle: string,
@@ -68,7 +73,24 @@ const createUserStore = (
   clearAll: (): void => {
     set({}, true);
   },
+  verifyProject: async (canisterId: string, day: number): Promise<TestResults> => {
+    const result = await (
+      await getVerifierActor()
+    ).verifyProject(canisterId, BigInt(day));
+    if ('err' in result) {
+      console.error(result.err);
+    } else {
+      set({ result: { ...result } });
+      console.log("Result from verifyProject:", result)
+      return result;
+    }
+  }
+  
+
+
 });
+
+
 
 export const useUserStore = create<UserStore>()(
   persist(
