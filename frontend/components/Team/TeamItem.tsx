@@ -22,6 +22,7 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
   useEffect(() => {
     console.log("team", team)
     team.teamMembers.forEach(async (studentId) => {
+      if (studentId.length < 4) return
       const student = await getStudent(studentId)
       console.log("student" + `${studentId}`, student)
       setStudents((students) => [...students, student])
