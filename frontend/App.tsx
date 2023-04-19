@@ -4,7 +4,8 @@ import "./index.scss"
 
 const Header = lazy(() => import("./components/Header/Header"))
 const Nav = lazy(() => import("./components/Nav/Nav"))
-const TeamList = lazy(() => import("./components/Team/TeamList"))
+// const TeamList = lazy(() => import("./components/Team/TeamList"))
+import TeamList from "./components/Team/TeamList"
 
 const ActivityList = lazy(() => import("./components/Activity/ActivityList"))
 const Footer = lazy(() => import("./components/Footer/Footer"))

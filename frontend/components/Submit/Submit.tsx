@@ -12,6 +12,7 @@ const Submit: React.FC = () => {
   const result = useUserStore((state) => state.result)
 
   const mapResultToStatus = () => {
+    if (!result) return []
     return Object.entries(result).map(([day, status]) => {
       if (status === "pass") return `${day}: Passed`
       if (status === "fail") return `${day}: Failed`

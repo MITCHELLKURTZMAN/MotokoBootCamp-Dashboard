@@ -6,6 +6,8 @@ import { Student } from "../../types/types"
 import { useAuthStore } from "../../store/authstore"
 import "./_team.scss"
 import { useUserStore } from "../../store/userStore"
+import LoadingScreen from "../Loading/LoadingScreen"
+import Loader from "../Loading/Loader"
 
 interface TeamItemProps {
   team: Team
@@ -14,6 +16,7 @@ interface TeamItemProps {
 const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
   const [isActive, setIsActive] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
+  const [loading, setLoading] = useState(true)
 
   const { user } = useAuthStore()
 
@@ -21,17 +24,28 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
 
   useEffect(() => {
     console.log("team", team)
-    team.teamMembers.forEach(async (studentId) => {
-      if (studentId.length < 4) return
-      const student = await getStudent(studentId)
-      console.log("student" + `${studentId}`, student)
-      setStudents((students) => [...students, student])
-    })
+    const fetchStudents = async () => {
+      const fetchedStudents = await Promise.all(
+        team.teamMembers.map(async (studentId) => {
+          if (studentId.length < 4) return null
+          return await getStudent(studentId)
+        }),
+      )
+
+      setStudents(fetchedStudents.filter((student) => student !== null))
+      setLoading(false)
+    }
+
+    fetchStudents()
   }, [team])
 
   const handleToggle = (event) => {
     event.stopPropagation()
     setIsActive(!isActive)
+  }
+
+  if (loading) {
+    return <LoadingScreen />
   }
 
   var key = 0
