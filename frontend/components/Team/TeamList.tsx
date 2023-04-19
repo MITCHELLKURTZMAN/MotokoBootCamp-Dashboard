@@ -2,12 +2,20 @@ import React from "react"
 import TeamItem from "./TeamItem"
 import { Team } from "../../types/types"
 import "./_team.scss"
+import { useTeamStore } from "../../store/teamStore"
+import { useEffect } from "react"
 
 interface TeamListProps {
   teams: Team[]
 }
 
 const TeamList: React.FC<TeamListProps> = ({ teams }) => {
+  //const { teams } = useTeamStore()
+
+  // useEffect(() => {
+  //   console.log(teams)
+  // }, [teams])
+
   return (
     <section>
       <h2>Teams</h2>

@@ -46,6 +46,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAdmins' : IDL.Func([], [Result_4], ['query']),
+    'getAllTeams' : IDL.Func([], [IDL.Vec(Team)], []),
     'getStudent' : IDL.Func([IDL.Text], [Result_2], []),
     'getStudentsFromTeam' : IDL.Func([IDL.Text], [Result_3], []),
     'getTeam' : IDL.Func([IDL.Text], [Result_1], []),

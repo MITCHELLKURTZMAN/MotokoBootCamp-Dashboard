@@ -49,6 +49,7 @@ export interface _SERVICE {
   'buildTeam' : ActorMethod<[string], Result_1>,
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
   'getAdmins' : ActorMethod<[], Result_4>,
+  'getAllTeams' : ActorMethod<[], Array<Team>>,
   'getStudent' : ActorMethod<[string], Result_2>,
   'getStudentsFromTeam' : ActorMethod<[string], Result_3>,
   'getTeam' : ActorMethod<[string], Result_1>,

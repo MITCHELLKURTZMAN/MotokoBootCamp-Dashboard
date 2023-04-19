@@ -8,7 +8,8 @@ import {
   idlFactory as verifierFactory,
 } from '../../src/declarations/Verifier';
 
-import { Student } from 'frontend/types/types';
+
+import { Student, Team } from '../types/types';
 import { useAuthStore } from '../store/authstore';
 
 const isLocal: boolean =
@@ -28,53 +29,48 @@ export async function getVerifierActor(): Promise<ActorSubclass<VerifierService>
   });
 }
 
-export async function getStudent(principalId): Promise<Student | undefined> {
-  console.log('getStudent', principalId);
-//   type Student = 
-//  record {
-//    canisterIds: vec text;
-//    completedDays: vec DailyProject;
-//    name: text;
-//    principalId: text;
-//    rank: text;
-//    score: nat;
-//    strikes: int;
-//    teamId: text;
-//  };
-
-// type DailyProject = 
-//  record {
-//    canisterId: text;
-//    completed: bool;
-//    day: nat;
-//    timeStamp: nat64;
-//  };
-  
-  let dummyStudent = {
-    canisterIds: ["dummy"],
-    completedDays: [ { canisterId: "dummy", completed: true, day: BigInt(0), timeStamp: BigInt(0) } ],
-    name: 'dummy',
-    principalId: 'dummy',
-    rank: 'dummy',
-    score: BigInt(0),
-    strikes: BigInt(0),
-    teamId: 'dummy',
-  };
-  return dummyStudent;
-
-  // const verifier = await getVerifierActor();
-  // const result = await verifier.getStudent( principalId);
-  // if ('err' in result) {
-  //   console.error(result.err);
-  //   return undefined;
-  // } else {
-  //   return result.ok;
-  // }
-}
 
 export async function getActivity(): Promise<Activity[] | undefined> {
   const verifier = await getVerifierActor();
   const result = await verifier.getActivity(BigInt(0), BigInt(100));
+  if ('err' in result) {
+    console.error(result.err);
+    return undefined;
+  } else {
+    return result;
+  }
+}
+
+export async function getStudent(PrincipalId: string): Promise<Student | undefined> {
+  const verifier = await getVerifierActor();
+  const result = await verifier.getStudent(
+    PrincipalId
+  );
+  console.log("Result from getStudent:", result); 
+  if ('err' in result) {
+    console.error(result.err);
+    return undefined;
+  } else {
+    return result.ok;
+  }
+}
+
+export async function getTeam(teamId: string): Promise<Team | undefined> {
+  const verifier = await getVerifierActor();
+  const result = await verifier.getTeam(
+    teamId
+  );
+  if ('err' in result) {
+    console.error(result.err);
+    return undefined;
+  } else {
+    return result.ok;
+  }
+}
+
+export async function getAllTeams(): Promise<Team[] | undefined> {
+  const verifier = await getVerifierActor();
+  const result = await verifier.getAllTeams();
   if ('err' in result) {
     console.error(result.err);
     return undefined;

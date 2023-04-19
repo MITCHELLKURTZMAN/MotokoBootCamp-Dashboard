@@ -1,10 +1,11 @@
-import React, { lazy, Suspense, useEffect } from "react"
+import React, { lazy, Suspense, useEffect, useState } from "react"
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import "./index.scss"
 
 const Header = lazy(() => import("./components/Header/Header"))
 const Nav = lazy(() => import("./components/Nav/Nav"))
 const TeamList = lazy(() => import("./components/Team/TeamList"))
+
 const ActivityList = lazy(() => import("./components/Activity/ActivityList"))
 const Footer = lazy(() => import("./components/Footer/Footer"))
 
@@ -14,10 +15,12 @@ import { Team, Activity } from "./types/types"
 import LoadingScreen from "./components/Loading/LoadingScreen"
 import Submit from "./components/Submit/Submit"
 import { useActivityStore } from "./store/activityStore"
+import { useTeamStore } from "./store/teamStore"
 import { Toaster } from "react-hot-toast"
+import { getAllTeams } from "./services/actorService"
 
-// Dummy data for testing purposes
-const teams: Team[] = [
+//Dummy data for testing purposes
+const dummyTeams: Team[] = [
   {
     teamMembers: ["1", "2", "3", "4", "5"],
     score: BigInt(150),
@@ -51,11 +54,25 @@ const teams: Team[] = [
 function App() {
   const activities = useActivityStore((state) => state.activities)
   const getActivity = useActivityStore((state) => state.getActivity)
+  const getAllTeams = useTeamStore((state) => state.getAllTeams)
+  const teams = useTeamStore((state) => state.teams)
+
+  const [team, setTeam] = useState<Team[]>(dummyTeams)
+
+  //set teams with real data from useTeamStore
 
   useEffect(() => {
     // Fetch activities when the component is mounted
     getActivity()
-  }, [getActivity])
+  }, [])
+
+  useEffect(() => {
+    // Fetch teams when the component is mounted
+    getAllTeams()
+    if (teams === undefined) {
+      getAllTeams()
+    }
+  }, [])
 
   return (
     <div className="App">
@@ -70,7 +87,7 @@ function App() {
                 path="/"
                 element={
                   <>
-                    <TeamList teams={teams} />
+                    <TeamList teams={teams ? teams : team} />
                     <ActivityList activities={activities} />
                   </>
                 }

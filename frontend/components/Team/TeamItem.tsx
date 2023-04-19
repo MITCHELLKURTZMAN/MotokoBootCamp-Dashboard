@@ -5,6 +5,7 @@ import { getStudent } from "../../services/actorService"
 import { Student } from "../../types/types"
 import { useAuthStore } from "../../store/authstore"
 import "./_team.scss"
+import { useUserStore } from "../../store/userStore"
 
 interface TeamItemProps {
   team: Team
@@ -16,27 +17,23 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
 
   const { user } = useAuthStore()
 
+  const student = useUserStore((state) => state.user)
+
   useEffect(() => {
-    const fetchStudents = async () => {
-      const fetchedStudents = await Promise.all(
-        team.teamMembers.map(async (principalId) => {
-          const student = await getStudent(principalId)
-
-          return student
-        }),
-      )
-
-      setStudents(fetchedStudents)
-    }
-
-    fetchStudents()
-  }, [team.teamMembers])
+    console.log("team", team)
+    team.teamMembers.forEach(async (studentId) => {
+      const student = await getStudent(studentId)
+      console.log("student" + `${studentId}`, student)
+      setStudents((students) => [...students, student])
+    })
+  }, [team])
 
   const handleToggle = (event) => {
     event.stopPropagation()
     setIsActive(!isActive)
   }
 
+  var key = 0
   return (
     <div
       className={`team-item ${isActive ? "active" : ""}`}

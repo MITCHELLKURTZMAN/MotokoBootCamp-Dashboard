@@ -1,9 +1,9 @@
-import  { GetState, SetState, StateCreator, StoreApi, create } from 'zustand';
+import { GetState, SetState, StateCreator, StoreApi, create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
 import { getVerifierActor, getStudent } from '../services/actorService';
 
-export interface LoginStore {
+export interface UserStore {
   readonly user: Student | undefined;
   readonly unregistered: boolean;
 
@@ -23,14 +23,17 @@ const toUserModel = (user: Student): Student => {
   } as Student;
 };
 
-const createLoginStore: StateCreator<LoginStore> = (set, get) => ({
+const createUserStore = (
+  set: SetState<UserStore>,
+  get: GetState<UserStore>,
+  store: StoreApi<UserStore>
+): UserStore => ({
   user: undefined,
   unregistered: true,
 
   registerUser: async (
     handle: string,
-    // displayName: string,
-    // avatar: string
+   
   ): Promise<void> => {
     const result = await (
       await getVerifierActor()
@@ -67,5 +70,12 @@ const createLoginStore: StateCreator<LoginStore> = (set, get) => ({
   },
 });
 
-
-
+export const useUserStore = create<UserStore>()(
+  persist(
+    (set, get, store) => createUserStore(set, get, store) as any,
+    {
+      name: 'userStore',
+      getStorage: () => sessionStorage,
+    }
+  )
+);
