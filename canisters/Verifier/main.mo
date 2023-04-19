@@ -422,6 +422,24 @@ actor verifier {
         }
     };
 
+    public shared func getAllTeams() : async [Team] {
+
+        var teamBuffer = Buffer.Buffer<Team>(1);
+        for (teamId in teamHashMap.keys()) {
+            let team = await buildTeam(teamId);
+            switch (team) {
+                case (#ok(team)) {
+                    teamBuffer.add(team)
+                };
+                case (#err(err)) {
+                    return []
+                }
+
+            }
+        };
+        return Buffer.toArray(teamBuffer)
+    };
+
     //test suite
     public shared query func isEvenTest(number : Int) : async Bool {
         return number % 2 == 0
