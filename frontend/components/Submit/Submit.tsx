@@ -13,9 +13,9 @@ const Submit: React.FC = () => {
 
   const mapResultToStatus = () => {
     return Object.entries(result).map(([day, status]) => {
-      if (status === "pass") return `Day ${day}: Passed`
-      if (status === "fail") return `Day ${day}: Failed`
-      return `Day ${day}: Not Submitted`
+      if (status === "pass") return `${day}: Passed`
+      if (status === "fail") return `${day}: Failed`
+      return `${day}: Not Submitted`
     })
   }
 

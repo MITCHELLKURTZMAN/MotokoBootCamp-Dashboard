@@ -12,7 +12,7 @@ const StudentItem: React.FC<StudentItemProps> = ({ student }) => {
       <h4>{student.name}</h4>
       <p>Rank: {student.rank}</p>
       <p>
-        <>Progress: {student.score}% </>
+        <>Progress: {student.score.toString()}% </>
       </p>
       <div className="progress-bar">
         <div className="progress" style={{ width: `${student.score}%` }}></div>

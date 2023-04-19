@@ -269,7 +269,7 @@ actor verifier {
             principalId = principalId;
             name = name;
             teamId = teamId;
-            score = score;
+            score = 50;
             strikes = strikes;
             rank = rank;
             canisterIds = canisterIds;
@@ -484,10 +484,10 @@ actor verifier {
 
         return {
             day1 = day1;
-            day2 = "pass";
-            day3 = "pass";
-            day4 = "pass";
-            day5 = "pass"
+            day2 = "Not submitted";
+            day3 = "Not submitted";
+            day4 = "Not submitted";
+            day5 = "Not submitted"
         }
 
     }
