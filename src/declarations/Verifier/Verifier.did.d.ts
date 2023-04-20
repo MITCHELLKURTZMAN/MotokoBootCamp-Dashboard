@@ -46,13 +46,13 @@ export interface TestResults {
 }
 export interface _SERVICE {
   'buildStudent' : ActorMethod<[string], Result_2>,
-  'buildTeam' : ActorMethod<[string], Result_1>,
+  'buildTeam' : ActorMethod<[string], Team>,
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
   'getAdmins' : ActorMethod<[], Result_4>,
   'getAllTeams' : ActorMethod<[], Array<Team>>,
   'getStudent' : ActorMethod<[string], Result_2>,
   'getStudentsFromTeam' : ActorMethod<[string], Result_3>,
-  'getTeam' : ActorMethod<[string], Result_1>,
+  'getTeam' : ActorMethod<[string], Team>,
   'isEvenTest' : ActorMethod<[bigint], boolean>,
   'registerAdmin' : ActorMethod<[string], Result>,
   'registerStudent' : ActorMethod<[string], Result_2>,

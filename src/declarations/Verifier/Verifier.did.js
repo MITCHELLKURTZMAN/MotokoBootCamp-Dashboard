@@ -21,7 +21,6 @@ export const idlFactory = ({ IDL }) => {
     'score' : IDL.Nat,
     'teamId' : IDL.Text,
   });
-  const Result_1 = IDL.Variant({ 'ok' : Team, 'err' : IDL.Text });
   const Activity = IDL.Record({
     'activityId' : IDL.Text,
     'specialAnnouncement' : IDL.Text,
@@ -30,6 +29,7 @@ export const idlFactory = ({ IDL }) => {
   const Result_4 = IDL.Variant({ 'ok' : IDL.Vec(IDL.Text), 'err' : IDL.Text });
   const Result_3 = IDL.Variant({ 'ok' : IDL.Vec(Student), 'err' : IDL.Text });
   const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
+  const Result_1 = IDL.Variant({ 'ok' : Team, 'err' : IDL.Text });
   const TestResults = IDL.Record({
     'day1' : IDL.Text,
     'day2' : IDL.Text,
@@ -39,7 +39,7 @@ export const idlFactory = ({ IDL }) => {
   });
   return IDL.Service({
     'buildStudent' : IDL.Func([IDL.Text], [Result_2], ['query']),
-    'buildTeam' : IDL.Func([IDL.Text], [Result_1], ['query']),
+    'buildTeam' : IDL.Func([IDL.Text], [Team], ['query']),
     'getActivity' : IDL.Func(
         [IDL.Nat, IDL.Nat],
         [IDL.Vec(Activity)],
@@ -49,7 +49,7 @@ export const idlFactory = ({ IDL }) => {
     'getAllTeams' : IDL.Func([], [IDL.Vec(Team)], []),
     'getStudent' : IDL.Func([IDL.Text], [Result_2], []),
     'getStudentsFromTeam' : IDL.Func([IDL.Text], [Result_3], []),
-    'getTeam' : IDL.Func([IDL.Text], [Result_1], []),
+    'getTeam' : IDL.Func([IDL.Text], [Team], []),
     'isEvenTest' : IDL.Func([IDL.Int], [IDL.Bool], ['query']),
     'registerAdmin' : IDL.Func([IDL.Text], [Result], []),
     'registerStudent' : IDL.Func([IDL.Text], [Result_2], []),

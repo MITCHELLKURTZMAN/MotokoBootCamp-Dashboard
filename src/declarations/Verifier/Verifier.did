@@ -63,13 +63,13 @@ type Activity =
  };
 service : {
   buildStudent: (text) -> (Result_2) query;
-  buildTeam: (text) -> (Result_1) query;
+  buildTeam: (text) -> (Team) query;
   getActivity: (nat, nat) -> (vec Activity) query;
   getAdmins: () -> (Result_4) query;
   getAllTeams: () -> (vec Team);
   getStudent: (text) -> (Result_2);
   getStudentsFromTeam: (text) -> (Result_3);
-  getTeam: (text) -> (Result_1);
+  getTeam: (text) -> (Team);
   isEvenTest: (int) -> (bool) query;
   registerAdmin: (text) -> (Result);
   registerStudent: (text) -> (Result_2);

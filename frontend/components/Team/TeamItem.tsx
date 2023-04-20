@@ -61,7 +61,7 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
 
       <p>
         {" "}
-        <>Score: {team.score} </>
+        <>Score: {team.score.toString()} </>
       </p>
 
       <div className="progress-bar">

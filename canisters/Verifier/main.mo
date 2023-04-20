@@ -307,15 +307,23 @@ actor verifier {
 
     //teams
 
-    func generateTeamScore(teamId : Text) : (Nat) {
+    func generateTeamScore(teamId : Text) : Nat {
         var teamMembers = safeGet(teamHashMap, teamId, []);
-        var teamScore = 0;
-        for (member in teamMembers.vals()) {
-            teamScore := teamScore + Int.abs(safeGet(studentScoreHashMap, member, 0))
-        };
-        teamScoreHashMap.put(teamId, teamScore);
-        teamScore;
+        var totalCompletedProjects = 0;
+        var projectsRequiredPerStudent = 5;
 
+        if (teamMembers.size() > 0) {
+            for (member in teamMembers.vals()) {
+                totalCompletedProjects := totalCompletedProjects + Int.abs(safeGet(studentScoreHashMap, member, 0))
+            };
+
+            let teamProgress = (totalCompletedProjects * 100) / (teamMembers.size() * projectsRequiredPerStudent);
+
+            teamScoreHashMap.put(teamId, teamProgress);
+            teamProgress
+        } else {
+            return 0
+        }
     };
 
     public shared query func buildTeam(teamId : Text) : async Team {
@@ -323,6 +331,9 @@ actor verifier {
         let updatedScore = generateTeamScore(teamId);
         var teamMembers = safeGet(teamHashMap, teamId, []);
         var teamScore = safeGet(teamScoreHashMap, teamId, 0);
+
+        Debug.print("team score is " # Nat.toText(teamScore));
+        Debug.print("updated score is " # Nat.toText(updatedScore));
 
         var team = {
             teamId = teamId;
@@ -546,6 +557,7 @@ actor verifier {
 
                 });
                 studentCompletedDaysHashMap.put(principalId, Buffer.toArray(completedDaysBuffer));
+                ignore generateStudentScore(principalId);
 
                 activityHashmap.put(
                     Nat.toText(activityIdCounter),

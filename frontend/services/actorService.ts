@@ -32,7 +32,7 @@ export async function getVerifierActor(): Promise<ActorSubclass<VerifierService>
 
 export async function getActivity(): Promise<Activity[] | undefined> {
   const verifier = await getVerifierActor();
-  const result = await verifier.getActivity(BigInt(0), BigInt(100));
+  const result = await verifier.getActivity(BigInt(0), BigInt(200));
   if ('err' in result) {
     console.error(result.err);
     return undefined;
@@ -64,7 +64,7 @@ export async function getTeam(teamId: string): Promise<Team | undefined> {
     console.error(result.err);
     return undefined;
   } else {
-    return result.ok;
+    return result;
   }
 }
 
