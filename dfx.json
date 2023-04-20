@@ -4,8 +4,8 @@
       "main": "canisters/Verifier/main.mo",
       "type": "motoko"
     },
-    "TestProject": {
-      "main": "canisters/TestProject/main.mo",
+    "day_1": {
+      "main": "canisters/TestProject/day_1/main.mo",
       "type": "motoko"
     },
     "assets": {
