@@ -485,7 +485,8 @@ actor verifier {
                 activityBuffer.add(activity)
             }
         };
-        return Buffer.toArray(activityBuffer)
+
+        return Array.reverse(Buffer.toArray(activityBuffer))
     };
 
     func check(canisterId : Text, day : Nat) : async Bool {
