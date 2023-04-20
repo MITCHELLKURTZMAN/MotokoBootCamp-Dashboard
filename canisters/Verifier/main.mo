@@ -15,6 +15,7 @@ import Result "mo:base/Result";
 import Text "mo:base/Text";
 import IC "mo:base/ExperimentalInternetComputer";
 import Nat64 "mo:base/Nat64";
+import Time "mo:base/Time";
 
 //todo:
 
@@ -98,6 +99,19 @@ actor verifier {
         #aiArchitect : Text;
         #quantumConsul : Text
     };
+
+    var rankArray = [
+        "Recruit",
+        "Cyber Novice",
+        "Data Defender",
+        "Motoko Marksman",
+        "Async Sergeant",
+        "Ghost Navigator",
+        "Digital Captain",
+        "Network Noble",
+        "AI Architect",
+        "Quantum Consul",
+    ];
 
     public type AlphabetTeams = {
         #auraAlpha : Text;
@@ -252,7 +266,13 @@ actor verifier {
     };
 
     public query func buildStudent(principalId : Text) : async Result.Result<Student, Text> {
-        let score = generateStudentScore(principalId);
+        let getScore = generateStudentScore(principalId);
+        let score = generateStudentScore(principalId) * 20; //considering 5 days TODO double check this
+
+        //100% / 5 = 20
+
+        let rank = rankArray[getScore];
+
         var name = safeGet(principalIdHashMap, principalId, "");
         if (name == "") {
             return #err("Principal id not registered")
@@ -261,7 +281,7 @@ actor verifier {
         var teamId = safeGet(studentTeamHashMap, principalId, "");
 
         var strikes = safeGet(studentStrikesHashMap, principalId, 0);
-        var rank = safeGet(studentRankHashMap, principalId, "recruit");
+
         var canisterIds = safeGet(studentCanisterIdHashMap, principalId, [""]);
         var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
 
@@ -269,7 +289,7 @@ actor verifier {
             principalId = principalId;
             name = name;
             teamId = teamId;
-            score = 50;
+            score = score;
             strikes = strikes;
             rank = rank;
             canisterIds = canisterIds;
@@ -298,7 +318,7 @@ actor verifier {
 
     };
 
-    public shared query func buildTeam(teamId : Text) : async Result.Result<Team, Text> {
+    public shared query func buildTeam(teamId : Text) : async Team {
 
         let updatedScore = generateTeamScore(teamId);
         var teamMembers = safeGet(teamHashMap, teamId, []);
@@ -310,10 +330,10 @@ actor verifier {
             score = (updatedScore)
         };
 
-        return #ok(team)
+        return (team)
     };
 
-    public shared func getTeam(teamId : Text) : async Result.Result<Team, Text> {
+    public shared func getTeam(teamId : Text) : async Team {
 
         await buildTeam(teamId)
     };
@@ -427,15 +447,9 @@ actor verifier {
         var teamBuffer = Buffer.Buffer<Team>(1);
         for (teamId in teamHashMap.keys()) {
             let team = await buildTeam(teamId);
-            switch (team) {
-                case (#ok(team)) {
-                    teamBuffer.add(team)
-                };
-                case (#err(err)) {
-                    return []
-                }
 
-            }
+            teamBuffer.add(team)
+
         };
         return Buffer.toArray(teamBuffer)
     };
@@ -463,32 +477,101 @@ actor verifier {
         return Buffer.toArray(activityBuffer)
     };
 
-    public func verifyProject(canisterId : Text, day : Nat) : async TestResults {
+    func check(canisterId : Text, day : Nat) : async Bool {
+        if (day == 1) {
+            let projectActor = actor (canisterId) : actor {
+                isEven : (number : Int) -> async Bool
+            };
+            let testCase : Bool = await isEvenTest(2);
+            let result : Bool = await projectActor.isEven(2);
+            return result == testCase;
 
-        //qaa6y-5yaaa-aaaaa-aaafa-cai
+        } else if (day == 2) {
+            return true
+        } else if (day == 3) {
+            return true
+        } else if (day == 4) {
+            return false
+        } else if (day == 5) {
+            return false
+        };
+        false
+    };
+
+    //TODO: make entire function more dry, specifically the day1, day2, day3, day4, day5 portions
+    public shared ({ caller }) func verifyProject(canisterId : Text, day : Nat) : async TestResults {
+        let principalId = Principal.toText(caller);
+        let student = await buildStudent(principalId);
         let projectActor = actor (canisterId) : actor {
             isEven : (number : Int) -> async Bool
         };
 
-        //day1
-        let result : Bool = await projectActor.isEven(2);
-        let testCase : Bool = await isEvenTest(2);
-        let day1 = if (result == testCase) { "pass" } else { "fail" };
+        let day1 : Text = if (await check(canisterId, 1)) { "pass" } else {
+            "fail"
+        };
+        let day2 : Text = if (await check(canisterId, 2)) { "pass" } else {
+            "fail"
+        };
+        let day3 : Text = if (await check(canisterId, 3)) { "pass" } else {
+            "fail"
+        };
+        let day4 : Text = if (await check(canisterId, 4)) { "pass" } else {
+            "fail"
+        };
+        let day5 : Text = if (await check(canisterId, 5)) { "pass" } else {
+            "fail"
+        };
 
-        //update students daily project array, add timestamp
+        let testResults = [
+            day1,
+            day2,
+            day3,
+            day4,
+            day5,
+        ];
 
-        // activityHashmap.put(Nat.toText(activityIdCounter), " 🎉 " # "Day 1 test passed for " # canisterId #");
-        // activityIdCounter := activityIdCounter + 1;
+        for (i in Iter.range(1, 5)) {
+            let result = testResults[i -1];
+            if (result == "pass") {
+                var completedDaysBuffer = Buffer.Buffer<DailyProject>(1);
+                let completedDays = safeGet(studentCompletedDaysHashMap, principalId, []);
+                for (dailyProject in completedDays.vals()) {
+                    completedDaysBuffer.add(dailyProject)
+                };
+                completedDaysBuffer.add({
+                    day = i;
+                    canisterId = canisterId;
+                    completed = true;
+                    timeStamp = 0 //todo add timestamp
 
-        //rank team up +add time stamp so we can track the first team to complete each day
+                });
+                studentCompletedDaysHashMap.put(principalId, Buffer.toArray(completedDaysBuffer));
 
-        return {
-            day1 = day1;
-            day2 = "Not submitted";
-            day3 = "Not submitted";
-            day4 = "Not submitted";
-            day5 = "Not submitted"
-        }
+                activityHashmap.put(
+                    Nat.toText(activityIdCounter),
+                    {
+                        activityId = Nat.toText(activityIdCounter);
+                        activity = "A challenger has completed day " # Nat.toText(i) # " of the competition!"; //todo add team name and name of student
+                        specialAnnouncement = "ProjectCompleted"
+                    },
+                );
+                activityIdCounter := activityIdCounter + 1;
 
+                let team = await buildTeam(safeGet(studentTeamHashMap, principalId, ""));
+                let teamScore = safeGet(teamScoreHashMap, team.teamId, 0);
+                teamScoreHashMap.put(team.teamId, teamScore + 1)
+            }
+        };
+
+        let finalresult = {
+            day1 = testResults[0];
+            day2 = testResults[1];
+            day3 = testResults[2];
+            day4 = testResults[3];
+            day5 = testResults[4]
+        };
+
+        return finalresult
     }
+
 }
