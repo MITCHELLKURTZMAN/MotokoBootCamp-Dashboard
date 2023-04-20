@@ -16,6 +16,7 @@ import Text "mo:base/Text";
 import IC "mo:base/ExperimentalInternetComputer";
 import Nat64 "mo:base/Nat64";
 import Time "mo:base/Time";
+import Test "test";
 
 //todo:
 
@@ -163,6 +164,33 @@ actor verifier {
 
         num
     };
+
+    // Returns a boolean indicating whether the given principal has completed the given day.
+    // If the principal doesn't correspond to a student, returns false.
+    func _hasStudentCompletedDay(day : Nat, p : Principal) : Bool {
+        let studentId = Principal.toText(p);
+        switch (studentCompletedDaysHashMap.get(studentId)) {
+            case (null) {return false};
+            case (?completedDays) {
+                for(d in completedDays.vals()) {
+                    if (d.day == day) {
+                        return true
+                    }
+                };
+                return false;
+            };
+        };
+    };
+
+    // Returns a boolean indicating whether the given principal is a registered student.
+    func _isStudent(p : Principal) : Bool  {
+        let studentId = Principal.toText(p);
+        switch (principalIdHashMap.get(studentId)) {
+            case (null) {return false};
+            case (?_) {return true};
+        };
+    };
+
 
     //admins
     stable var admins : List.List<Text> = List.nil<Text>();
@@ -344,6 +372,25 @@ actor verifier {
         return (team)
     };
 
+    // Synchronous version of the above.
+    func _buildTeam(teamId : Text) : Team {
+
+        let updatedScore = generateTeamScore(teamId);
+        var teamMembers = safeGet(teamHashMap, teamId, []);
+        var teamScore = safeGet(teamScoreHashMap, teamId, 0);
+
+        Debug.print("team score is " # Nat.toText(teamScore));
+        Debug.print("updated score is " # Nat.toText(updatedScore));
+
+        var team = {
+            teamId = teamId;
+            teamMembers = teamMembers;
+            score = (updatedScore)
+        };
+
+        return (team)
+    };
+
     public shared func getTeam(teamId : Text) : async Team {
 
         await buildTeam(teamId)
@@ -470,13 +517,6 @@ actor verifier {
         return number % 2 == 0
     };
 
-    public type TestResults = {
-        day1 : Text;
-        day2 : Text;
-        day3 : Text;
-        day4 : Text;
-        day5 : Text
-    };
 
     public shared query func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
         var activityBuffer = Buffer.Buffer<Activity>(1);
@@ -489,102 +529,99 @@ actor verifier {
         return Array.reverse(Buffer.toArray(activityBuffer))
     };
 
-    func check(canisterId : Text, day : Nat) : async Bool {
-        if (day == 1) {
-            let projectActor = actor (canisterId) : actor {
-                isEven : (number : Int) -> async Bool
-            };
-            let testCase : Bool = await isEvenTest(2);
-            let result : Bool = await projectActor.isEven(2);
-            return result == testCase;
 
-        } else if (day == 2) {
-            return true
-        } else if (day == 3) {
-            return true
-        } else if (day == 4) {
-            return false
-        } else if (day == 5) {
-            return false
-        };
-        false
-    };
+    public type TestResult = Test.TestResult;
+    // Expand the base type with additional errors.
+    public type VerifyProject = TestResult or Result.Result<() , {
+        #NotAStudent;
+        #InvalidDay;
+        #AlreadyCompleted;
+    }>;
 
-    //TODO: make entire function more dry, specifically the day1, day2, day3, day4, day5 portions
-    public shared ({ caller }) func verifyProject(canisterId : Text, day : Nat) : async TestResults {
-        let principalId = Principal.toText(caller);
-        let student = await buildStudent(principalId);
-        let projectActor = actor (canisterId) : actor {
-            isEven : (number : Int) -> async Bool
+    public shared ({ caller }) func verifyProject(canisterId : Principal, day : Nat) : async VerifyProject {
+        // Step 1: Verify that the caller is a registered student
+        if(not(_isStudent(caller))){
+            return #err(#NotAStudent);
         };
-
-        let day1 : Text = if (await check(canisterId, 1)) { "pass" } else {
-            "fail"
+        // Step 2: Verify that the caller hasn't already completed the project
+        if(_hasStudentCompletedDay(day, caller)){
+            return #err(#AlreadyCompleted);
         };
-        let day2 : Text = if (await check(canisterId, 2)) { "pass" } else {
-            "fail"
+        // Step 3: Verify that the caller is the controller of the submitted canister.
+        if(not(await Test.verifyOwnership(canisterId, caller))){
+            return #err(#NotAController);
         };
-        let day3 : Text = if (await check(canisterId, 3)) { "pass" } else {
-            "fail"
-        };
-        let day4 : Text = if (await check(canisterId, 4)) { "pass" } else {
-            "fail"
-        };
-        let day5 : Text = if (await check(canisterId, 5)) { "pass" } else {
-            "fail"
-        };
-
-        let testResults = [
-            day1,
-            day2,
-            day3,
-            day4,
-            day5,
-        ];
-
-        for (i in Iter.range(1, 5)) {
-            let result = testResults[i -1];
-            if (result == "pass") {
-                var completedDaysBuffer = Buffer.Buffer<DailyProject>(1);
-                let completedDays = safeGet(studentCompletedDaysHashMap, principalId, []);
-                for (dailyProject in completedDays.vals()) {
-                    completedDaysBuffer.add(dailyProject)
+        // Step 4: Run the tests (see test.mo)
+        switch(day){
+            case(1) {
+                switch(await Test.verifyDay1(canisterId)){
+                    case(#ok) {};
+                    case(#err(e)) { return #err(e) };
                 };
-                completedDaysBuffer.add({
-                    day = i;
-                    canisterId = canisterId;
-                    completed = true;
-                    timeStamp = 0 //todo add timestamp
+            };
+            case(2) {
+                switch(await Test.verifyDay2(canisterId)){
+                    case(#ok) {};
+                    case(#err(e)) { return #err(e) };
+                };
+            };
+            case(3) {
+                switch(await Test.verifyDay3(canisterId)){
+                    case(#ok) {};
+                    case(#err(e)) { return #err(e) };
+                };
+            };
+            case(4){
+                switch(await Test.verifyDay4(canisterId)){
+                    case(#ok) {};
+                    case(#err(e)) { return #err(e) };
+                };
+            };
+            case(5){
+                switch(await Test.verifyDay5(canisterId)){
+                    case(#ok) {};
+                    case(#err(e)) { return #err(e) };
+                };
+            };
+            case(_) {
+                return #err(#InvalidDay);
+            }
+        };
+        // Step 5: Update the necessary variables
+        _validated(day, canisterId, caller);
+        return #ok;
+    };  
 
-                });
-                studentCompletedDaysHashMap.put(principalId, Buffer.toArray(completedDaysBuffer));
-                ignore generateStudentScore(principalId);
-
-                activityHashmap.put(
-                    Nat.toText(activityIdCounter),
+    // Performs the necesary updates once a project is completed by a student
+    // 1. Update the studentCompletedDays (in studentCompletedDaysHashMap)
+    // 2. Update the studentScore (where?)
+    // 3. Update the activity feed (activityHashmap) & the activity counter (activityIdCounter)
+    // 4. Update the team score (teamScoreHashMap)
+    // 5. Update the team members (teamHashMap)
+    func _validated(day : Nat, canisterId: Principal, student : Principal) : () {
+        let studentId = Principal.toText(student);
+        // Step 1: Add the new completed project to the student's completed projects (studentCompletedDaysHashMap)
+        let completedDays = safeGet(studentCompletedDaysHashMap, studentId, []);
+        let projectCompleted = { day = day; canisterId = Principal.toText(canisterId); completed = true; timeStamp = Nat64.fromIntWrap(Time.now()) };
+        studentCompletedDaysHashMap.put(Principal.toText(student), Array.append<DailyProject>(completedDays, [projectCompleted]));
+        // Step 2: Generate the new student's score
+        ignore generateStudentScore(Principal.toText(student));
+        // Step 3: Update the activity feed & the activity counter
+        activityHashmap.put(Nat.toText(activityIdCounter),
                     {
                         activityId = Nat.toText(activityIdCounter);
-                        activity = "A challenger has completed day " # Nat.toText(i) # " of the competition!"; //todo add team name and name of student
+                        activity = "A challenger has completed day " # Nat.toText(day) # " of the competition!"; //todo add team name and name of student
                         specialAnnouncement = "ProjectCompleted"
                     },
                 );
-                activityIdCounter := activityIdCounter + 1;
+        activityIdCounter := activityIdCounter + 1;
+        // Step 4: Update the team score
+        let team = _buildTeam(safeGet(studentTeamHashMap, studentId , ""));
+        // Step 5: Update the team members
+        let teamScore = safeGet(teamScoreHashMap, team.teamId, 0);
+        teamScoreHashMap.put(team.teamId, teamScore + 1);
+        return;
+    };
 
-                let team = await buildTeam(safeGet(studentTeamHashMap, principalId, ""));
-                let teamScore = safeGet(teamScoreHashMap, team.teamId, 0);
-                teamScoreHashMap.put(team.teamId, teamScore + 1)
-            }
-        };
+};
 
-        let finalresult = {
-            day1 = testResults[0];
-            day2 = testResults[1];
-            day3 = testResults[2];
-            day4 = testResults[3];
-            day5 = testResults[4]
-        };
-
-        return finalresult
-    }
-
-}
