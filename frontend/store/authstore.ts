@@ -4,7 +4,8 @@ import { Principal } from "@dfinity/principal";
 import { toastError } from "../services/toastService";
 import { Identity } from "@dfinity/agent";
 
-const identityProvider = "https://identity.ic0.app/#authorize";
+const isLocal = process.env.NODE_ENV === "development";
+const identityProvider = isLocal ? 'http://qhbym-qaaaa-aaaaa-aaafq-cai.localhost:8080/#authorize' : "https://identity.ic0.app/#authorize";
 const sessionTimeout = BigInt(480) * BigInt(60) * BigInt(1_000_000_000);
 const fakeProvider = process.env.II_PROVIDER_USE_FAKE == "true";
 

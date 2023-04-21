@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
 import { getVerifierActor, getStudent, verifyProject } from '../services/actorService';
 import { VerifyProject } from 'src/declarations/Verifier/Verifier.did';
+import { toast } from 'react-hot-toast';
 
 export interface UserStore {
   readonly user: Student | undefined;
@@ -46,6 +47,7 @@ const createUserStore = (
     if ('err' in result) {
       console.error(result.err);
     } else {
+      toast.success(`${handle}, welcome to Motoko Bootcamp!`);
       set({ user: toUserModel(result.ok) });
     }
   },
