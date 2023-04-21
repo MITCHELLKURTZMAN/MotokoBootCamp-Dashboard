@@ -69,8 +69,7 @@ module Test {
             ignore day1Actor.sub(1.0); // State : 3.0
             ignore day1Actor.mul(2.0); // State : 6.0
             ignore day1Actor.div(2.0); // State : 3.0
-            // let result = await day1Actor.see(); // State : 3.0
-            let result = 3.0;
+            let result = await day1Actor.see(); // State : 3.0
 
             if (result == 3) {
                 return #ok()
