@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react"
 import "./_submit.scss"
 import { useUserStore } from "../../store/userStore"
+import { useAuthStore } from "../../store/authstore"
+import { toastError } from "../../services/toastService"
+import { DailyProject } from "src/declarations/Verifier/Verifier.did"
 
 const Submit: React.FC = () => {
   const [canisterId, setCanisterId] = useState<string>("")
@@ -12,12 +15,11 @@ const Submit: React.FC = () => {
   const result = useUserStore((state) => state.result)
 
   const mapResultToStatus = () => {
-    if (!result) return []
-    return Object.entries(result).map(([day, status]) => {
-      if (status === "pass") return `${day}: Passed`
-      if (status === "fail") return `${day}: Failed`
-      return `${day}: Not Submitted`
-    })
+    let completedDays: DailyProject[] = useUserStore.getState().completedDays
+    return completedDays.map((day) => ({
+      day: day.day,
+      completed: day.completed,
+    }))
   }
 
   const submissionStatusList = mapResultToStatus()
@@ -25,7 +27,9 @@ const Submit: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     console.log(`Submitting canister ID: ${canisterId}, Day: ${day}`)
+
     await verify(canisterId, day)
+
     mapResultToStatus()
   }
 
@@ -33,6 +37,9 @@ const Submit: React.FC = () => {
     mapResultToStatus()
   }, [verify, result])
 
+  useEffect(() => {
+    //console.log()
+  }, [])
   return (
     <div className="submit">
       <h2 className="submit__header">Submit Your Project</h2>
@@ -69,7 +76,11 @@ const Submit: React.FC = () => {
         <h2 className="submit__header">Submission Status</h2>
         <ul className="submission-status__list">
           {submissionStatusList.map((status, index) => (
-            <li key={index}>{status}</li>
+            <li key={index}>
+              {`Day ${status.day}: ${
+                status.completed ? "Completed" : "Incomplete"
+              }`}
+            </li>
           ))}
         </ul>
       </div>

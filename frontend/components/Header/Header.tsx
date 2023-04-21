@@ -4,9 +4,13 @@ import { images } from "../../constants/constants"
 import logo from "../../assets/images/motokobootcamp.png"
 import { useAuthStore } from "../../store/authstore"
 import "./_header.scss"
+import { Principal } from "@dfinity/candid/lib/cjs/idl"
+import { useUserStore } from "../../store/userStore"
 
 const Header: React.FC = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const isLoggedin = useAuthStore((state) => state.isLoggedin)
+  const unregistered = useUserStore((state) => state.unregistered)
   const login = useAuthStore((state) => state.login)
   const logout = useAuthStore((state) => state.logout)
   const init = useAuthStore((state) => state.init)
@@ -28,7 +32,7 @@ const Header: React.FC = () => {
           filter: "drop-shadow(1px 5px 1px black)",
         }}
       >
-        {isAuthenticated ? (
+        {isLoggedin ? (
           <button className="btn" onClick={logout}>
             Logout
           </button>

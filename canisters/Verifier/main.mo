@@ -144,32 +144,6 @@ actor verifier {
         #zenithZulu : Text
     };
 
-    // Returns a boolean indicating whether the given principal has completed the given day.
-    // If the principal doesn't correspond to a student, returns false.
-    func _hasStudentCompletedDay(day : Nat, p : Principal) : Bool {
-        let studentId = Principal.toText(p);
-        switch (studentCompletedDaysHashMap.get(studentId)) {
-            case (null) { return false };
-            case (?completedDays) {
-                for (d in completedDays.vals()) {
-                    if (d.day == day) {
-                        return true
-                    }
-                };
-                return false
-            }
-        }
-    };
-
-    // Returns a boolean indicating whether the given principal is a registered student.
-    func _isStudent(p : Principal) : Bool {
-        let studentId = Principal.toText(p);
-        switch (principalIdHashMap.get(studentId)) {
-            case (null) { return false };
-            case (?_) { return true }
-        }
-    };
-
     //admins
     stable var admins : List.List<Text> = List.nil<Text>();
     func isAdmin(caller : Principal) : Bool {
@@ -219,6 +193,37 @@ actor verifier {
     };
 
     //student
+    // Returns a boolean indicating whether the given principal has completed the given day.
+    // If the principal doesn't correspond to a student, returns false.
+    func _hasStudentCompletedDay(day : Nat, p : Principal) : Bool {
+        let studentId = Principal.toText(p);
+        switch (studentCompletedDaysHashMap.get(studentId)) {
+            case (null) { return false };
+            case (?completedDays) {
+                for (d in completedDays.vals()) {
+                    if (d.day == day) {
+                        return true
+                    }
+                };
+                return false
+            }
+        }
+    };
+
+    // Returns a boolean indicating whether the given principal is a registered student.
+    func _isStudent(p : Principal) : Bool {
+        let studentId = Principal.toText(p);
+        switch (principalIdHashMap.get(studentId)) {
+            case (null) { return false };
+            case (?_) { return true }
+        }
+    };
+
+    public shared ({ caller }) func getStudentCompletedDays() : async Result.Result<[DailyProject], Text> {
+        let studentId = Principal.toText(caller);
+        return #ok(U.safeGet(studentCompletedDaysHashMap, studentId, []))
+    };
+
     public shared ({ caller }) func registerStudent(name : Text) : async Result.Result<Student, Text> {
 
         let principalId = Principal.toText(caller);
@@ -522,23 +527,23 @@ actor verifier {
 
     public type TestResult = Test.TestResult;
     // Expand the base type with additional errors.
-    public type VerifyProject = TestResult or Result.Result<(), { #NotAStudent; #InvalidDay; #AlreadyCompleted }>;
+    public type VerifyProject = TestResult or Result.Result<(), { #NotAStudent : Text; #InvalidDay : Text; #AlreadyCompleted : Text }>;
 
     public shared ({ caller }) func verifyProject(canisterIdText : Text, day : Nat) : async VerifyProject {
 
         let canisterId = Principal.fromText(canisterIdText);
         // Step 1: Verify that the caller is a registered student
         if (not (_isStudent(caller))) {
-            return #err(#NotAStudent)
+            return #err(#NotAStudent("Please login or register"))
         };
         // Step 2: Verify that the caller hasn't already completed the project
         if (_hasStudentCompletedDay(day, caller)) {
-            return #err(#AlreadyCompleted)
+            return #err(#AlreadyCompleted("You have already completed this project"))
         };
-        // Step 3: Verify that the caller is the controller of the submitted canister.
-        if (not (await Test.verifyOwnership(canisterId, caller))) {
-            return #err(#NotAController)
-        };
+        // // Step 3: Verify that the caller is the controller of the submitted canister. will bring back once register owner is added
+        // if (not (await Test.verifyOwnership(canisterId, caller))) {
+        //     return #err(#NotAController)
+        // };
         // Step 4: Run the tests (see test.mo)
         switch (day) {
             case (1) {
@@ -572,16 +577,18 @@ actor verifier {
                 }
             };
             case (_) {
-                return #err(#InvalidDay)
+                return #err(#InvalidDay("Invalid day"))
             }
         };
         // Step 5: Update the necessary variables
         _validated(day, canisterId, caller);
-        return #ok
+        let updatedStudent = await getStudent(Principal.toText(caller));
+        return #ok()
     };
 
     // Performs the necesary updates once a project is completed by a student
     // 1. Update the studentCompletedDays (in studentCompletedDaysHashMap)
+
     // 2. Update the studentScore (where?)
     // 3. Update the activity feed (activityHashmap) & the activity counter (activityIdCounter)
     // 4. Update the team score (teamScoreHashMap)

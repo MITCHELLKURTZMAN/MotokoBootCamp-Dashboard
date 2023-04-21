@@ -11,6 +11,8 @@ import {
 
 import { Student, Team } from '../types/types';
 import { useAuthStore } from '../store/authstore';
+import { toast } from 'react-hot-toast';
+import { toastError } from './toastService';
 
 const isLocal: boolean =
   window.location.origin.includes('localhost') ||
@@ -29,7 +31,7 @@ export async function getVerifierActor(): Promise<ActorSubclass<VerifierService>
   });
 }
 
-
+//TODO refactor out and use in activitystore
 export async function getActivity(): Promise<Activity[] | undefined> {
   const verifier = await getVerifierActor();
   const result = await verifier.getActivity(BigInt(0), BigInt(200));
@@ -40,7 +42,7 @@ export async function getActivity(): Promise<Activity[] | undefined> {
     return result;
   }
 }
-
+//TODO refactor out and use in userstore
 export async function getStudent(PrincipalId: string): Promise<Student | undefined> {
   const verifier = await getVerifierActor();
   const result = await verifier.getStudent(
@@ -55,6 +57,7 @@ export async function getStudent(PrincipalId: string): Promise<Student | undefin
   }
 }
 
+//TODO refactor out and use in teamstore
 export async function getTeam(teamId: string): Promise<Team | undefined> {
   const verifier = await getVerifierActor();
   const result = await verifier.getTeam(
@@ -68,6 +71,7 @@ export async function getTeam(teamId: string): Promise<Team | undefined> {
   }
 }
 
+//TODO refactor out and use in teamstore
 export async function getAllTeams(): Promise<Team[] | undefined> {
   const verifier = await getVerifierActor();
   const result = await verifier.getAllTeams();
@@ -79,17 +83,3 @@ export async function getAllTeams(): Promise<Team[] | undefined> {
   }
 }
 
-export async function verifyProject(canisterId: string, day: number)
-{
-  const verifier = await getVerifierActor();
-  const result = await verifier.verifyProject(
-    canisterId,
-    BigInt(day)
-  );
-  if ('err' in result) {
-    console.error(result.err);
-    return undefined;
-  } else {
-    return result;
-  }
-}

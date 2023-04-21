@@ -3,6 +3,7 @@ import { AuthClient } from "@dfinity/auth-client";
 import { Principal } from "@dfinity/principal";
 import { toastError } from "../services/toastService";
 import { Identity } from "@dfinity/agent";
+import { useUserStore } from "./userStore";
 
 const isLocal = process.env.NODE_ENV === "development";
 const identityProvider = isLocal ? 'http://qhbym-qaaaa-aaaaa-aaafq-cai.localhost:8080/#authorize' : "https://identity.ic0.app/#authorize";
@@ -15,11 +16,13 @@ interface AuthState {
   principal: Principal | null;
   identity: Identity | null;
   isAuthenticated: boolean;
+  isLoggedIn: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   getIdentity: () => Promise<void>;
   init: () => Promise<void>;
 }
+
 
 async function getAuthClient() {
   if (!authClient) {
@@ -35,9 +38,14 @@ const loginOptions = {
     "toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100",
   onSuccess: () => {
     console.log("Login Successful!");
+    if (useUserStore.getState().user === undefined) {
+      window.location.href = '/register';
+    }
+    useAuthStore.setState({ isLoggedIn: true });
   },
   onError: (error) => {
     console.error("Login Failed: ", error);
+    toastError("Login Failed: " + error);
   },
 };
 
@@ -89,6 +97,7 @@ export const useAuthStore = create(
     principal: null,
     identity: null,
     isAuthenticated: false,
+    
 
     // Actions
     login: async () => {
@@ -102,6 +111,7 @@ export const useAuthStore = create(
       if (identity) {
         const principal = identity.getPrincipal();
         set({ principal: principal, identity: identity, isAuthenticated: true });
+        console.log ("principal: ", principal.toText())
       } else {
         set({ principal: null, identity: null, isAuthenticated: false });
       }
@@ -110,7 +120,7 @@ export const useAuthStore = create(
     logout: async () => {
       const client = await getAuthClient();
       await client.logout();
-      set({ principal: null, identity: null, isAuthenticated: false });
+      set({ principal: null, identity: null, isAuthenticated: false, isLoggedIn: false });
     },
 
     // Initialization

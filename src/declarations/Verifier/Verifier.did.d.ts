@@ -20,7 +20,9 @@ export type Result_2 = { 'ok' : Student } |
   { 'err' : string };
 export type Result_3 = { 'ok' : Array<Student> } |
   { 'err' : string };
-export type Result_4 = { 'ok' : Array<string> } |
+export type Result_4 = { 'ok' : Array<DailyProject> } |
+  { 'err' : string };
+export type Result_5 = { 'ok' : Array<string> } |
   { 'err' : string };
 export interface Student {
   'completedDays' : Array<DailyProject>,
@@ -39,21 +41,23 @@ export interface Team {
 }
 export type VerifyProject = { 'ok' : null } |
   {
-    'err' : { 'NotAController' : null } |
-      { 'NotAStudent' : null } |
+    'err' : { 'NotAController' : string } |
+      { 'NotAStudent' : string } |
       { 'UnexpectedValue' : string } |
-      { 'InvalidDay' : null } |
+      { 'InvalidDay' : string } |
       { 'UnexpectedError' : string } |
-      { 'AlreadyCompleted' : null } |
-      { 'NotImplemented' : null }
+      { 'AlreadyCompleted' : string } |
+      { 'NotImplemented' : string }
   };
 export interface _SERVICE {
   'buildStudent' : ActorMethod<[string], Result_2>,
   'buildTeam' : ActorMethod<[string], Team>,
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
-  'getAdmins' : ActorMethod<[], Result_4>,
+  'getAdmins' : ActorMethod<[], Result_5>,
+  'getAllStudents' : ActorMethod<[], Result_5>,
   'getAllTeams' : ActorMethod<[], Array<Team>>,
   'getStudent' : ActorMethod<[string], Result_2>,
+  'getStudentCompletedDays' : ActorMethod<[], Result_4>,
   'getStudentsFromTeam' : ActorMethod<[string], Result_3>,
   'getTeam' : ActorMethod<[string], Team>,
   'isEvenTest' : ActorMethod<[bigint], boolean>,
@@ -63,6 +67,7 @@ export interface _SERVICE {
     [Array<string>, boolean, string],
     Result_1
   >,
+  'sanityCheckGetEmptyStudent' : ActorMethod<[string], string>,
   'unregisterAdmin' : ActorMethod<[string], Result>,
   'verifyProject' : ActorMethod<[string, bigint], VerifyProject>,
 }

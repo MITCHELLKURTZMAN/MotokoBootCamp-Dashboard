@@ -26,20 +26,24 @@ export const idlFactory = ({ IDL }) => {
     'specialAnnouncement' : IDL.Text,
     'activity' : IDL.Text,
   });
-  const Result_4 = IDL.Variant({ 'ok' : IDL.Vec(IDL.Text), 'err' : IDL.Text });
+  const Result_5 = IDL.Variant({ 'ok' : IDL.Vec(IDL.Text), 'err' : IDL.Text });
+  const Result_4 = IDL.Variant({
+    'ok' : IDL.Vec(DailyProject),
+    'err' : IDL.Text,
+  });
   const Result_3 = IDL.Variant({ 'ok' : IDL.Vec(Student), 'err' : IDL.Text });
   const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
   const Result_1 = IDL.Variant({ 'ok' : Team, 'err' : IDL.Text });
   const VerifyProject = IDL.Variant({
     'ok' : IDL.Null,
     'err' : IDL.Variant({
-      'NotAController' : IDL.Null,
-      'NotAStudent' : IDL.Null,
+      'NotAController' : IDL.Text,
+      'NotAStudent' : IDL.Text,
       'UnexpectedValue' : IDL.Text,
-      'InvalidDay' : IDL.Null,
+      'InvalidDay' : IDL.Text,
       'UnexpectedError' : IDL.Text,
-      'AlreadyCompleted' : IDL.Null,
-      'NotImplemented' : IDL.Null,
+      'AlreadyCompleted' : IDL.Text,
+      'NotImplemented' : IDL.Text,
     }),
   });
   return IDL.Service({
@@ -50,9 +54,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Activity)],
         ['query'],
       ),
-    'getAdmins' : IDL.Func([], [Result_4], ['query']),
+    'getAdmins' : IDL.Func([], [Result_5], ['query']),
+    'getAllStudents' : IDL.Func([], [Result_5], []),
     'getAllTeams' : IDL.Func([], [IDL.Vec(Team)], []),
     'getStudent' : IDL.Func([IDL.Text], [Result_2], []),
+    'getStudentCompletedDays' : IDL.Func([], [Result_4], []),
     'getStudentsFromTeam' : IDL.Func([IDL.Text], [Result_3], []),
     'getTeam' : IDL.Func([IDL.Text], [Team], []),
     'isEvenTest' : IDL.Func([IDL.Int], [IDL.Bool], ['query']),
@@ -63,6 +69,7 @@ export const idlFactory = ({ IDL }) => {
         [Result_1],
         [],
       ),
+    'sanityCheckGetEmptyStudent' : IDL.Func([IDL.Text], [IDL.Text], []),
     'unregisterAdmin' : IDL.Func([IDL.Text], [Result], []),
     'verifyProject' : IDL.Func([IDL.Text, IDL.Nat], [VerifyProject], []),
   });
