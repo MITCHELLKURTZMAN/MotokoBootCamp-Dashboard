@@ -11,9 +11,9 @@ const Header: React.FC = () => {
   const logout = useAuthStore((state) => state.logout)
   const init = useAuthStore((state) => state.init)
 
-  useEffect(() => {
-    init()
-  }, [init])
+  // useEffect(() => {
+  //   init()
+  // }, [init])
 
   return (
     <header>

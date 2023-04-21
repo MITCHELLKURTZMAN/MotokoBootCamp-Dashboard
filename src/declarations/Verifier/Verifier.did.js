@@ -30,12 +30,17 @@ export const idlFactory = ({ IDL }) => {
   const Result_3 = IDL.Variant({ 'ok' : IDL.Vec(Student), 'err' : IDL.Text });
   const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text });
   const Result_1 = IDL.Variant({ 'ok' : Team, 'err' : IDL.Text });
-  const TestResults = IDL.Record({
-    'day1' : IDL.Text,
-    'day2' : IDL.Text,
-    'day3' : IDL.Text,
-    'day4' : IDL.Text,
-    'day5' : IDL.Text,
+  const VerifyProject = IDL.Variant({
+    'ok' : IDL.Null,
+    'err' : IDL.Variant({
+      'NotAController' : IDL.Null,
+      'NotAStudent' : IDL.Null,
+      'UnexpectedValue' : IDL.Text,
+      'InvalidDay' : IDL.Null,
+      'UnexpectedError' : IDL.Text,
+      'AlreadyCompleted' : IDL.Null,
+      'NotImplemented' : IDL.Null,
+    }),
   });
   return IDL.Service({
     'buildStudent' : IDL.Func([IDL.Text], [Result_2], ['query']),
@@ -59,7 +64,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'unregisterAdmin' : IDL.Func([IDL.Text], [Result], []),
-    'verifyProject' : IDL.Func([IDL.Text, IDL.Nat], [TestResults], []),
+    'verifyProject' : IDL.Func([IDL.Text, IDL.Nat], [VerifyProject], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

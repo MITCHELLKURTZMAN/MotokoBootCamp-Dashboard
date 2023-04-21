@@ -37,13 +37,16 @@ export interface Team {
   'score' : bigint,
   'teamId' : string,
 }
-export interface TestResults {
-  'day1' : string,
-  'day2' : string,
-  'day3' : string,
-  'day4' : string,
-  'day5' : string,
-}
+export type VerifyProject = { 'ok' : null } |
+  {
+    'err' : { 'NotAController' : null } |
+      { 'NotAStudent' : null } |
+      { 'UnexpectedValue' : string } |
+      { 'InvalidDay' : null } |
+      { 'UnexpectedError' : string } |
+      { 'AlreadyCompleted' : null } |
+      { 'NotImplemented' : null }
+  };
 export interface _SERVICE {
   'buildStudent' : ActorMethod<[string], Result_2>,
   'buildTeam' : ActorMethod<[string], Team>,
@@ -61,5 +64,5 @@ export interface _SERVICE {
     Result_1
   >,
   'unregisterAdmin' : ActorMethod<[string], Result>,
-  'verifyProject' : ActorMethod<[string, bigint], TestResults>,
+  'verifyProject' : ActorMethod<[string, bigint], VerifyProject>,
 }

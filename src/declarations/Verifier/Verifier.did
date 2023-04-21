@@ -1,10 +1,16 @@
-type TestResults = 
- record {
-   day1: text;
-   day2: text;
-   day3: text;
-   day4: text;
-   day5: text;
+type VerifyProject = 
+ variant {
+   err:
+    variant {
+      AlreadyCompleted;
+      InvalidDay;
+      NotAController;
+      NotAStudent;
+      NotImplemented;
+      UnexpectedError: text;
+      UnexpectedValue: text;
+    };
+   ok;
  };
 type Team = 
  record {
@@ -75,5 +81,5 @@ service : {
   registerStudent: (text) -> (Result_2);
   registerTeamMembers: (vec text, bool, text) -> (Result_1);
   unregisterAdmin: (text) -> (Result);
-  verifyProject: (text, nat) -> (TestResults);
+  verifyProject: (text, nat) -> (VerifyProject);
 }

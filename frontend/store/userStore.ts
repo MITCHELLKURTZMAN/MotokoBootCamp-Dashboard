@@ -2,7 +2,7 @@ import { GetState, SetState, StateCreator, StoreApi, create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
 import { getVerifierActor, getStudent, verifyProject } from '../services/actorService';
-import { TestResults } from 'src/declarations/Verifier/Verifier.did';
+import { VerifyProject } from 'src/declarations/Verifier/Verifier.did';
 
 export interface UserStore {
   readonly user: Student | undefined;
@@ -17,7 +17,7 @@ export interface UserStore {
   getUser: (principalId: string) => Promise<void>;
   clearUser: () => Promise<void>;
   clearAll: () => void;
-  verifyProject: (canisterId: string, day: number) => Promise<TestResults>;
+  verifyProject: (canisterId: string, day: number) => Promise<VerifyProject>;
   result: any; 
 }
 
@@ -73,7 +73,7 @@ const createUserStore = (
   clearAll: (): void => {
     set({}, true);
   },
-  verifyProject: async (canisterId: string, day: number): Promise<TestResults> => {
+  verifyProject: async (canisterId: string, day: number): Promise<VerifyProject> => {
     const result = await (
       await getVerifierActor()
     ).verifyProject(canisterId, BigInt(day));

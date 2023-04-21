@@ -17,10 +17,10 @@ const isLocal: boolean =
   window.location.origin.includes('127.0.0.1');
 
 export async function getVerifierActor(): Promise<ActorSubclass<VerifierService>> {
-  let loginMethod = useAuthStore.getState().loginMethod;
- 
+  await useAuthStore?.getState().getIdentity();
+  console.log ("useAuthStore?.getState().identity", useAuthStore?.getState().identity);
   var identity =
-    (await useAuthStore?.getState().getIdentity()) || new AnonymousIdentity();
+    (await useAuthStore?.getState().identity) || new AnonymousIdentity();
   return createVerifierActor(verifierCanisterId as string, {
     agentOptions: {
       identity,

@@ -17,6 +17,7 @@ import IC "mo:base/ExperimentalInternetComputer";
 import Nat64 "mo:base/Nat64";
 import Time "mo:base/Time";
 import Test "test";
+import U "utils";
 
 //todo:
 
@@ -143,54 +144,31 @@ actor verifier {
         #zenithZulu : Text
     };
 
-    //utils
-    func safeGet<K, V>(hashMap : HashMap.HashMap<K, V>, key : K, defaultValue : V) : V {
-        switch (hashMap.get(key)) {
-            case null defaultValue;
-            case (?value) value
-        }
-    };
-
-    func textToNat(txt : Text) : Nat {
-        assert (txt.size() > 0);
-        let chars = txt.chars();
-
-        var num : Nat = 0;
-        for (v in chars) {
-            let charToNum = Nat32.toNat(Char.toNat32(v) -48);
-            assert (charToNum >= 0 and charToNum <= 9);
-            num := num * 10 + charToNum
-        };
-
-        num
-    };
-
     // Returns a boolean indicating whether the given principal has completed the given day.
     // If the principal doesn't correspond to a student, returns false.
     func _hasStudentCompletedDay(day : Nat, p : Principal) : Bool {
         let studentId = Principal.toText(p);
         switch (studentCompletedDaysHashMap.get(studentId)) {
-            case (null) {return false};
+            case (null) { return false };
             case (?completedDays) {
-                for(d in completedDays.vals()) {
+                for (d in completedDays.vals()) {
                     if (d.day == day) {
                         return true
                     }
                 };
-                return false;
-            };
-        };
+                return false
+            }
+        }
     };
 
     // Returns a boolean indicating whether the given principal is a registered student.
-    func _isStudent(p : Principal) : Bool  {
+    func _isStudent(p : Principal) : Bool {
         let studentId = Principal.toText(p);
         switch (principalIdHashMap.get(studentId)) {
-            case (null) {return false};
-            case (?_) {return true};
-        };
+            case (null) { return false };
+            case (?_) { return true }
+        }
     };
-
 
     //admins
     stable var admins : List.List<Text> = List.nil<Text>();
@@ -257,29 +235,43 @@ actor verifier {
 
         };
 
-        if (safeGet(principalIdHashMap, principalId, "") != "") {
-            return #err("Principal id already registered")
+        if (U.safeGet(principalIdHashMap, principalId, "") == "") {
+
+            principalIdHashMap.put(principalId, name);
+            studentScoreHashMap.put(principalId, 0);
+
+            activityHashmap.put(
+                Nat.toText(activityIdCounter),
+                {
+                    activityId = Nat.toText(activityIdCounter);
+                    activity = name # " has registered for Motoko Bootcamp";
+                    specialAnnouncement = "newStudent"
+                },
+            );
+            activityIdCounter := activityIdCounter + 1;
+
+            #ok(student)
+        } else {
+            #err("Student already registered")
+        }
+    };
+
+    public shared func sanityCheckGetEmptyStudent(principalId : Text) : async Text {
+        let principal = U.safeGet(principalIdHashMap, principalId, "");
+        return principal
+    };
+
+    public shared func getAllStudents() : async Result.Result<[Text], Text> {
+        var studentsBuffer = Buffer.Buffer<Text>(principalIdHashMap.size());
+        for (student in principalIdHashMap.keys()) {
+            studentsBuffer.add(student)
         };
-
-        principalIdHashMap.put(principalId, name);
-        studentScoreHashMap.put(principalId, 0);
-
-        activityHashmap.put(
-            Nat.toText(activityIdCounter),
-            {
-                activityId = Nat.toText(activityIdCounter);
-                activity = name # " has registered for Motoko Bootcamp";
-                specialAnnouncement = "newStudent"
-            },
-        );
-        activityIdCounter := activityIdCounter + 1;
-
-        #ok(student)
+        #ok(Buffer.toArray(studentsBuffer))
     };
 
     func generateStudentScore(principalId : Text) : Nat {
         var score = 0;
-        var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
+        var completedDays = U.safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
         let length = completedDays.size();
 
         for (day in completedDays.vals()) {
@@ -301,17 +293,17 @@ actor verifier {
 
         let rank = rankArray[getScore];
 
-        var name = safeGet(principalIdHashMap, principalId, "");
+        var name = U.safeGet(principalIdHashMap, principalId, "");
         if (name == "") {
-            return #err("Principal id not registered")
+            return #err("User not found")
         };
 
-        var teamId = safeGet(studentTeamHashMap, principalId, "");
+        var teamId = U.safeGet(studentTeamHashMap, principalId, "");
 
-        var strikes = safeGet(studentStrikesHashMap, principalId, 0);
+        var strikes = U.safeGet(studentStrikesHashMap, principalId, 0);
 
-        var canisterIds = safeGet(studentCanisterIdHashMap, principalId, [""]);
-        var completedDays = safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
+        var canisterIds = U.safeGet(studentCanisterIdHashMap, principalId, [""]);
+        var completedDays = U.safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
 
         var student = {
             principalId = principalId;
@@ -336,13 +328,13 @@ actor verifier {
     //teams
 
     func generateTeamScore(teamId : Text) : Nat {
-        var teamMembers = safeGet(teamHashMap, teamId, []);
+        var teamMembers = U.safeGet(teamHashMap, teamId, []);
         var totalCompletedProjects = 0;
         var projectsRequiredPerStudent = 5;
 
         if (teamMembers.size() > 0) {
             for (member in teamMembers.vals()) {
-                totalCompletedProjects := totalCompletedProjects + Int.abs(safeGet(studentScoreHashMap, member, 0))
+                totalCompletedProjects := totalCompletedProjects + Int.abs(U.safeGet(studentScoreHashMap, member, 0))
             };
 
             let teamProgress = (totalCompletedProjects * 100) / (teamMembers.size() * projectsRequiredPerStudent);
@@ -357,8 +349,8 @@ actor verifier {
     public shared query func buildTeam(teamId : Text) : async Team {
 
         let updatedScore = generateTeamScore(teamId);
-        var teamMembers = safeGet(teamHashMap, teamId, []);
-        var teamScore = safeGet(teamScoreHashMap, teamId, 0);
+        var teamMembers = U.safeGet(teamHashMap, teamId, []);
+        var teamScore = U.safeGet(teamScoreHashMap, teamId, 0);
 
         Debug.print("team score is " # Nat.toText(teamScore));
         Debug.print("updated score is " # Nat.toText(updatedScore));
@@ -376,8 +368,8 @@ actor verifier {
     func _buildTeam(teamId : Text) : Team {
 
         let updatedScore = generateTeamScore(teamId);
-        var teamMembers = safeGet(teamHashMap, teamId, []);
-        var teamScore = safeGet(teamScoreHashMap, teamId, 0);
+        var teamMembers = U.safeGet(teamHashMap, teamId, []);
+        var teamScore = U.safeGet(teamScoreHashMap, teamId, 0);
 
         Debug.print("team score is " # Nat.toText(teamScore));
         Debug.print("updated score is " # Nat.toText(updatedScore));
@@ -399,7 +391,7 @@ actor verifier {
     public shared func getStudentsFromTeam(teamId : Text) : async Result.Result<[Student], Text> {
 
         var studentBuffer = Buffer.Buffer<Student>(1);
-        var teamMembers = safeGet(teamHashMap, teamId, []);
+        var teamMembers = U.safeGet(teamHashMap, teamId, []);
         for (member in teamMembers.vals()) {
             let student = await buildStudent(member);
             switch (student) {
@@ -430,7 +422,7 @@ actor verifier {
 
             var teamBuffer = Buffer.Buffer<Text>(1);
             for (newMembers in newTeamMembers.vals()) {
-                if (safeGet(studentTeamHashMap, newMembers, "") != "") {
+                if (U.safeGet(studentTeamHashMap, newMembers, "") != "") {
                     return #err("Student already on a team")
                 };
                 teamBuffer.add(newMembers)
@@ -452,7 +444,7 @@ actor verifier {
             return #ok({
                 teamId = Nat.toText(teamIdCounter);
                 teamMembers = newTeamMembers;
-                score = safeGet(teamScoreHashMap, team, 0)
+                score = U.safeGet(teamScoreHashMap, team, 0)
             })
 
         } else {
@@ -461,12 +453,12 @@ actor verifier {
                 return #err("Team not found")
             };
 
-            var teamScore = safeGet(teamScoreHashMap, team, 0);
-            var teamArray = (safeGet(teamHashMap, team, []));
+            var teamScore = U.safeGet(teamScoreHashMap, team, 0);
+            var teamArray = (U.safeGet(teamHashMap, team, []));
             var teambuffer = Buffer.Buffer<Text>(1);
 
             for (currentMembers in teamArray.vals()) {
-                if (safeGet(studentTeamHashMap, currentMembers, "") != "") {
+                if (U.safeGet(studentTeamHashMap, currentMembers, "") != "") {
                     return #err("Student already on a team")
                 };
 
@@ -474,7 +466,7 @@ actor verifier {
 
             };
             for (newMembers in newTeamMembers.vals()) {
-                if (safeGet(studentTeamHashMap, newMembers, "") != "") {
+                if (U.safeGet(studentTeamHashMap, newMembers, "") != "") {
                     return #err("Student already on a team")
                 };
                 teambuffer.add(newMembers)
@@ -494,7 +486,7 @@ actor verifier {
 
             return #ok({
                 teamId = team;
-                teamMembers = safeGet(teamHashMap, team, []);
+                teamMembers = U.safeGet(teamHashMap, team, []);
                 score = teamScore
             })
         }
@@ -517,11 +509,10 @@ actor verifier {
         return number % 2 == 0
     };
 
-
     public shared query func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
         var activityBuffer = Buffer.Buffer<Activity>(1);
         for (activity in activityHashmap.vals()) {
-            if (textToNat(activity.activityId) >= lowerBound and textToNat(activity.activityId) <= upperBound) {
+            if (U.textToNat(activity.activityId) >= lowerBound and U.textToNat(activity.activityId) <= upperBound) {
                 activityBuffer.add(activity)
             }
         };
@@ -529,68 +520,65 @@ actor verifier {
         return Array.reverse(Buffer.toArray(activityBuffer))
     };
 
-
     public type TestResult = Test.TestResult;
     // Expand the base type with additional errors.
-    public type VerifyProject = TestResult or Result.Result<() , {
-        #NotAStudent;
-        #InvalidDay;
-        #AlreadyCompleted;
-    }>;
+    public type VerifyProject = TestResult or Result.Result<(), { #NotAStudent; #InvalidDay; #AlreadyCompleted }>;
 
-    public shared ({ caller }) func verifyProject(canisterId : Principal, day : Nat) : async VerifyProject {
+    public shared ({ caller }) func verifyProject(canisterIdText : Text, day : Nat) : async VerifyProject {
+
+        let canisterId = Principal.fromText(canisterIdText);
         // Step 1: Verify that the caller is a registered student
-        if(not(_isStudent(caller))){
-            return #err(#NotAStudent);
+        if (not (_isStudent(caller))) {
+            return #err(#NotAStudent)
         };
         // Step 2: Verify that the caller hasn't already completed the project
-        if(_hasStudentCompletedDay(day, caller)){
-            return #err(#AlreadyCompleted);
+        if (_hasStudentCompletedDay(day, caller)) {
+            return #err(#AlreadyCompleted)
         };
         // Step 3: Verify that the caller is the controller of the submitted canister.
-        if(not(await Test.verifyOwnership(canisterId, caller))){
-            return #err(#NotAController);
+        if (not (await Test.verifyOwnership(canisterId, caller))) {
+            return #err(#NotAController)
         };
         // Step 4: Run the tests (see test.mo)
-        switch(day){
-            case(1) {
-                switch(await Test.verifyDay1(canisterId)){
-                    case(#ok) {};
-                    case(#err(e)) { return #err(e) };
-                };
+        switch (day) {
+            case (1) {
+                switch (await Test.verifyDay1(canisterId)) {
+                    case (#ok) {};
+                    case (#err(e)) { return #err(e) }
+                }
             };
-            case(2) {
-                switch(await Test.verifyDay2(canisterId)){
-                    case(#ok) {};
-                    case(#err(e)) { return #err(e) };
-                };
+            case (2) {
+                switch (await Test.verifyDay2(canisterId)) {
+                    case (#ok) {};
+                    case (#err(e)) { return #err(e) }
+                }
             };
-            case(3) {
-                switch(await Test.verifyDay3(canisterId)){
-                    case(#ok) {};
-                    case(#err(e)) { return #err(e) };
-                };
+            case (3) {
+                switch (await Test.verifyDay3(canisterId)) {
+                    case (#ok) {};
+                    case (#err(e)) { return #err(e) }
+                }
             };
-            case(4){
-                switch(await Test.verifyDay4(canisterId)){
-                    case(#ok) {};
-                    case(#err(e)) { return #err(e) };
-                };
+            case (4) {
+                switch (await Test.verifyDay4(canisterId)) {
+                    case (#ok) {};
+                    case (#err(e)) { return #err(e) }
+                }
             };
-            case(5){
-                switch(await Test.verifyDay5(canisterId)){
-                    case(#ok) {};
-                    case(#err(e)) { return #err(e) };
-                };
+            case (5) {
+                switch (await Test.verifyDay5(canisterId)) {
+                    case (#ok) {};
+                    case (#err(e)) { return #err(e) }
+                }
             };
-            case(_) {
-                return #err(#InvalidDay);
+            case (_) {
+                return #err(#InvalidDay)
             }
         };
         // Step 5: Update the necessary variables
         _validated(day, canisterId, caller);
-        return #ok;
-    };  
+        return #ok
+    };
 
     // Performs the necesary updates once a project is completed by a student
     // 1. Update the studentCompletedDays (in studentCompletedDaysHashMap)
@@ -598,30 +586,35 @@ actor verifier {
     // 3. Update the activity feed (activityHashmap) & the activity counter (activityIdCounter)
     // 4. Update the team score (teamScoreHashMap)
     // 5. Update the team members (teamHashMap)
-    func _validated(day : Nat, canisterId: Principal, student : Principal) : () {
+    func _validated(day : Nat, canisterId : Principal, student : Principal) : () {
         let studentId = Principal.toText(student);
         // Step 1: Add the new completed project to the student's completed projects (studentCompletedDaysHashMap)
-        let completedDays = safeGet(studentCompletedDaysHashMap, studentId, []);
-        let projectCompleted = { day = day; canisterId = Principal.toText(canisterId); completed = true; timeStamp = Nat64.fromIntWrap(Time.now()) };
+        let completedDays = U.safeGet(studentCompletedDaysHashMap, studentId, []);
+        let projectCompleted = {
+            day = day;
+            canisterId = Principal.toText(canisterId);
+            completed = true;
+            timeStamp = Nat64.fromIntWrap(Time.now())
+        };
         studentCompletedDaysHashMap.put(Principal.toText(student), Array.append<DailyProject>(completedDays, [projectCompleted]));
         // Step 2: Generate the new student's score
         ignore generateStudentScore(Principal.toText(student));
         // Step 3: Update the activity feed & the activity counter
-        activityHashmap.put(Nat.toText(activityIdCounter),
-                    {
-                        activityId = Nat.toText(activityIdCounter);
-                        activity = "A challenger has completed day " # Nat.toText(day) # " of the competition!"; //todo add team name and name of student
-                        specialAnnouncement = "ProjectCompleted"
-                    },
-                );
+        activityHashmap.put(
+            Nat.toText(activityIdCounter),
+            {
+                activityId = Nat.toText(activityIdCounter);
+                activity = "A challenger has completed day " # Nat.toText(day) # " of the competition!"; //todo add team name and name of student
+                specialAnnouncement = "ProjectCompleted"
+            },
+        );
         activityIdCounter := activityIdCounter + 1;
         // Step 4: Update the team score
-        let team = _buildTeam(safeGet(studentTeamHashMap, studentId , ""));
+        let team = _buildTeam(U.safeGet(studentTeamHashMap, studentId, ""));
         // Step 5: Update the team members
-        let teamScore = safeGet(teamScoreHashMap, team.teamId, 0);
+        let teamScore = U.safeGet(teamScoreHashMap, team.teamId, 0);
         teamScoreHashMap.put(team.teamId, teamScore + 1);
-        return;
+        return
     };
 
-};
-
+}
