@@ -13,33 +13,31 @@ const Submit: React.FC = () => {
   const user = useUserStore((state) => state.user)
   const verify = useUserStore((state) => state.verifyProject)
   const result = useUserStore((state) => state.result)
+  const completedDays = useUserStore((state) => state.completedDays)
 
   const mapResultToStatus = () => {
     let completedDays: DailyProject[] = useUserStore.getState().completedDays
     return completedDays.map((day) => ({
       day: day.day,
+      timeStamp: day.timeStamp,
       completed: day.completed,
+      canisterId: day.canisterId,
     }))
   }
+
+  useEffect(() => {
+    useUserStore.getState().getStudentcompletedDays()
+  }, [])
 
   const submissionStatusList = mapResultToStatus()
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    console.log(`Submitting canister ID: ${canisterId}, Day: ${day}`)
-
     await verify(canisterId, day)
-
+    await useUserStore.getState().getStudentcompletedDays()
     mapResultToStatus()
   }
 
-  useEffect(() => {
-    mapResultToStatus()
-  }, [verify, result])
-
-  useEffect(() => {
-    //console.log()
-  }, [])
   return (
     <div className="submit">
       <h2 className="submit__header">Submit Your Project</h2>

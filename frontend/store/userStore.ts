@@ -63,9 +63,10 @@ const createUserStore = (
       await getVerifierActor()
     ).getStudentCompletedDays();
     if ('err' in result) {
-      console.error(result.err);
+      console.error("err", result.err);
     } else {
       set({ completedDays: result.ok });
+      console.log("completedDays", result.ok)
     }
   },
 
@@ -113,6 +114,7 @@ const createUserStore = (
     }
   } else {
     set({ result: { ...result } });
+    toast.success("Project verified!");
     console.log("Result from verifyProject:", result);
     return result;
   }

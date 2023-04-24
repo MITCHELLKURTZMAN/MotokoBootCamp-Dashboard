@@ -20,6 +20,8 @@ import { useTeamStore } from "./store/teamStore"
 import { Toaster } from "react-hot-toast"
 import { getAllTeams } from "./services/actorService"
 import Registration from "./components/Registration/registration"
+import Schedule from "./components/Schedule/Schedule"
+import Resources from "./components/Resources/Resources"
 //Dummy data for testing purposes
 const dummyTeams: Team[] = [
   {
@@ -94,8 +96,8 @@ function App() {
                 }
               />
               <Route path="Submit" element={<Submit />} />
-              <Route path="Schedule" element={<div>Schedule</div>} />
-              <Route path="Resources" element={<div>Resources</div>} />
+              <Route path="Schedule" element={<Schedule />} />
+              <Route path="Resources" element={<Resources />} />
               <Route path="Admin" element={<div>Admin</div>} />
               <Route path="register" element={<Registration />} />
             </Routes>
