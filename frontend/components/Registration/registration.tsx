@@ -21,14 +21,6 @@ const Registration: React.FC<Props> = ({}) => {
     e.preventDefault()
     // getUser(useAuthStore.getState().principal)
 
-    console.log("UserStore user: " + useUserStore.getState().user)
-    console.log(
-      "UserStore not registered?: " + useUserStore.getState().unregistered,
-    )
-    console.log(
-      "auth store isAuthenticated?: " + useAuthStore.getState().isAuthenticated,
-    )
-    console.log("auth store user?: " + useAuthStore.getState().principal)
     registerUser(username)
   }
 
