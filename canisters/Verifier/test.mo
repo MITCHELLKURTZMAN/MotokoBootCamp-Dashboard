@@ -85,25 +85,25 @@ module Test {
 
     // BEGIN - Day 2
     public func verifyDay2(canisterId : Principal) : async TestResult {
-        return #ok()
+        return #err(#NotImplemented(("Not implemented")))
     };
     // END - Day 2
 
     // BEGIN - Day 3
     public func verifyDay3(canisterId : Principal) : async TestResult {
-        return #ok()
+        return #err(#NotImplemented(("Not implemented")))
     };
     // END - Day 3
 
     // BEGIN - Day 4
     public func verifyDay4(canisterId : Principal) : async TestResult {
-        return #ok()
+        return #err(#NotImplemented("Not implemented"))
     };
     // END - Day 4
 
     // BEGIN - Day 5
     public func verifyDay5(canisterId : Principal) : async TestResult {
-        return #ok()
+        return #err(#NotImplemented("Not implemented"))
     };
     // END - Day 5
 
