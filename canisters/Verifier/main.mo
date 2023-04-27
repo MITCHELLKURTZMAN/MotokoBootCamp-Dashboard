@@ -19,34 +19,39 @@ import Time "mo:base/Time";
 import Test "test";
 import U "utils";
 
-//todo:
-
-//If the project is accepted the score of the student is updated and the score of his team updated.
-//we need timestamps because all projects could technically finish and achieve the same score.
-//store activity data when students achieve milestones
-//store student rank data
-//make teams in military alphabet
-//team scores may need to be weighted for different sized teams
-
 actor verifier {
 
     var maxHashmapSize = 1000000;
     func isEq(x : Text, y : Text) : Bool { x == y };
 
-    var principalIdHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the name of the student stored by principal id
+    stable var principalIdEntries : [(Text, Text)] = [];
+    stable var teamEntries : [(Text, [Text])] = [];
+    stable var teamScoreEntries : [(Text, Nat)] = [];
+    stable var studentScoreEntries : [(Text, Nat)] = [];
+    stable var studentTeamEntries : [(Text, Text)] = [];
+    stable var studentStrikesEntries : [(Text, Int)] = [];
+    stable var studentRankEntries : [(Text, Text)] = [];
+    stable var studentCompletedDaysEntries : [(Text, [DailyProject])] = [];
+    stable var studentCanisterIdEntries : [(Text, [Text])] = [];
+    stable var canisterIdEntries : [(Text, Text)] = [];
+    stable var studentCliPrincipalIdEntries : [(Text, Text)] = [];
+    stable var activityEntries : [(Text, Activity)] = [];
 
-    var teamHashMap = HashMap.HashMap<Text, [Text]>(maxHashmapSize, isEq, Text.hash); //the students on the team stored by team id in an array
-    var teamScoreHashMap = HashMap.HashMap<Text, Nat>(maxHashmapSize, isEq, Text.hash); //the score of the team stored by team id
-    var studentScoreHashMap = HashMap.HashMap<Text, Nat>(maxHashmapSize, isEq, Text.hash); //the score of the student
-    var studentTeamHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the team the student is on
-    var studentStrikesHashMap = HashMap.HashMap<Text, Int>(maxHashmapSize, isEq, Text.hash); //a way to detect if a student is cheating
-    var studentRankHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the rank of the student (see Public Type Rank for names)
-    var studentCompletedDaysHashMap = HashMap.HashMap<Text, [DailyProject]>(maxHashmapSize, isEq, Text.hash); //the days the student has completed
-    var studentCanisterIdHashMap = HashMap.HashMap<Text, [Text]>(maxHashmapSize, isEq, Text.hash); //the canister id or [ids] the student has registered (can use one or many but cannot be someone elses)
-    var canisterIdHashMap = HashMap.HashMap<Text, Text>(maxHashmapSize, isEq, Text.hash); //the global list of canister ids to cross check against
+    var principalIdHashMap = HashMap.fromIter<Text, Text>(principalIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the name of the student stored by principal id
+    var teamHashMap = HashMap.fromIter<Text, [Text]>(teamEntries.vals(), maxHashmapSize, isEq, Text.hash); //the students on the team stored by team id in an array
+    var teamScoreHashMap = HashMap.fromIter<Text, Nat>(teamScoreEntries.vals(), maxHashmapSize, isEq, Text.hash); //the score of the team stored by team id
+    var studentScoreHashMap = HashMap.fromIter<Text, Nat>(studentScoreEntries.vals(), maxHashmapSize, isEq, Text.hash); //the score of the student
+    var studentTeamHashMap = HashMap.fromIter<Text, Text>(studentTeamEntries.vals(), maxHashmapSize, isEq, Text.hash); //the team the student is on
+    var studentStrikesHashMap = HashMap.fromIter<Text, Int>(studentStrikesEntries.vals(), maxHashmapSize, isEq, Text.hash); //a way to detect if a student is cheating
+    var studentRankHashMap = HashMap.fromIter<Text, Text>(studentRankEntries.vals(), maxHashmapSize, isEq, Text.hash); //the rank of the student (see Public Type Rank for names)
+    var studentCompletedDaysHashMap = HashMap.fromIter<Text, [DailyProject]>(studentCompletedDaysEntries.vals(), maxHashmapSize, isEq, Text.hash); //the days the student has completed
+    var studentCanisterIdHashMap = HashMap.fromIter<Text, [Text]>(studentCanisterIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the canister id or [ids] the student has registered (can use one or many but cannot be someone elses)
+    var canisterIdHashMap = HashMap.fromIter<Text, Text>(canisterIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the global list of canister ids to cross check against
+    var studentCliPrincipalIdHashMap = HashMap.fromIter<Text, Text>(studentCliPrincipalIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the CLI principal id of the students dev env stored by principal id
 
     //activity feed
-    var activityHashmap = HashMap.HashMap<Text, Activity>(maxHashmapSize, isEq, Text.hash); //the activity feed stored by activity id
+
+    var activityHashmap = HashMap.fromIter<Text, Activity>(activityEntries.vals(), maxHashmapSize, isEq, Text.hash); //the activity feed stored by activity id
 
     stable var teamIdCounter : Nat = 0;
     stable var activityIdCounter : Nat = 0;
@@ -60,7 +65,8 @@ actor verifier {
         strikes : Int; //will use this if a student attempts to submit someone elses canister
         rank : Text;
         canisterIds : [Text]; //can be one or multiple, but cannot be someone elses
-        completedDays : [DailyProject]
+        completedDays : [DailyProject];
+        cliPrincipalId : Text
     };
 
     public type DailyProject = {
@@ -237,6 +243,7 @@ actor verifier {
             rank = "recruit";
             canisterIds = [];
             completedDays = [];
+            cliPrincipalId = "";
 
         };
 
@@ -309,6 +316,7 @@ actor verifier {
 
         var canisterIds = U.safeGet(studentCanisterIdHashMap, principalId, [""]);
         var completedDays = U.safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
+        var cliPrincipalId = U.safeGet(studentCliPrincipalIdHashMap, principalId, "");
 
         var student = {
             principalId = principalId;
@@ -318,7 +326,8 @@ actor verifier {
             strikes = strikes;
             rank = rank;
             canisterIds = canisterIds;
-            completedDays = completedDays
+            completedDays = completedDays;
+            cliPrincipalId = cliPrincipalId
         };
 
         #ok(student)
@@ -622,6 +631,38 @@ actor verifier {
         let teamScore = U.safeGet(teamScoreHashMap, team.teamId, 0);
         teamScoreHashMap.put(team.teamId, teamScore + 1);
         return
+    };
+
+    //#Upgrade hooks
+    system func preupgrade() {
+
+        principalIdEntries := Iter.toArray(principalIdHashMap.entries());
+        teamEntries := Iter.toArray(teamHashMap.entries());
+        teamScoreEntries := Iter.toArray(teamScoreHashMap.entries());
+        studentTeamEntries := Iter.toArray(studentTeamHashMap.entries());
+        studentCompletedDaysEntries := Iter.toArray(studentCompletedDaysHashMap.entries());
+        studentScoreEntries := Iter.toArray(studentScoreHashMap.entries());
+        activityEntries := Iter.toArray(activityHashmap.entries());
+        studentStrikesEntries := Iter.toArray(studentStrikesHashMap.entries());
+        studentRankEntries := Iter.toArray(studentRankHashMap.entries());
+        studentCanisterIdEntries := Iter.toArray(studentCanisterIdHashMap.entries());
+        canisterIdEntries := Iter.toArray(canisterIdHashMap.entries());
+        studentCliPrincipalIdEntries := Iter.toArray(studentCliPrincipalIdHashMap.entries())
+    };
+
+    system func postupgrade() {
+        principalIdEntries := [];
+        teamEntries := [];
+        teamScoreEntries := [];
+        studentTeamEntries := [];
+        studentCompletedDaysEntries := [];
+        studentScoreEntries := [];
+        activityEntries := [];
+        studentStrikesEntries := [];
+        studentRankEntries := [];
+        studentCanisterIdEntries := [];
+        canisterIdEntries := [];
+        studentCliPrincipalIdEntries := []
     };
 
 }

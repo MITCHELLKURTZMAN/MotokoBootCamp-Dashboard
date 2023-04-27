@@ -44,11 +44,6 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
     setIsActive(!isActive)
   }
 
-  if (loading) {
-    return <LoadingScreen />
-  }
-
-  var key = 0
   return (
     <div
       className={`team-item ${isActive ? "active" : ""}`}
@@ -59,14 +54,22 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
         <span className={`toggle-arrow ${isActive ? "rotated" : ""}`}>▼</span>
       </div>
 
-      <p>
-        {" "}
-        <>Score: {team.score.toString()} </>
-      </p>
+      {loading ? (
+        <div className="skeleton skeleton-score"></div>
+      ) : (
+        <p>
+          {" "}
+          <>Score: {team.score.toString()} </>
+        </p>
+      )}
 
-      <div className="progress-bar">
-        <div className="progress" style={{ width: `${team.score}%` }}></div>
-      </div>
+      {loading ? (
+        <div className="skeleton skeleton-progress-bar"></div>
+      ) : (
+        <div className="progress-bar">
+          <div className="progress" style={{ width: `${team.score}%` }}></div>
+        </div>
+      )}
       <div
         className={`menu-overlay ${isActive ? "menu-overlay-open" : ""}`}
         onClick={handleToggle}

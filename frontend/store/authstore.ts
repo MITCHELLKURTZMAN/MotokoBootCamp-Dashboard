@@ -38,8 +38,9 @@ const loginOptions = {
     "toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100",
   onSuccess: () => {
     console.log("Login Successful!");
-    if (useUserStore.getState().user === undefined) {
-      window.location.href = '/register';
+    useUserStore.getState().getUser(useAuthStore.getState().principal);
+    if (useUserStore.getState().registered === false) {
+     window.location.href = '/register';
     }
     useAuthStore.setState({ isLoggedIn: true });
   },

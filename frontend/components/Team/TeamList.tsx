@@ -10,12 +10,6 @@ interface TeamListProps {
 }
 
 const TeamList: React.FC<TeamListProps> = ({ teams }) => {
-  //const { teams } = useTeamStore()
-
-  // useEffect(() => {
-  //   console.log(teams)
-  // }, [teams])
-
   return (
     <section>
       <h2>Teams</h2>

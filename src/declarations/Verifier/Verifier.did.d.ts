@@ -30,6 +30,7 @@ export interface Student {
   'rank' : string,
   'canisterIds' : Array<string>,
   'score' : bigint,
+  'cliPrincipalId' : string,
   'teamId' : string,
   'principalId' : string,
   'strikes' : bigint,

@@ -12,7 +12,7 @@ const Registration: React.FC<Props> = ({}) => {
 
   const login = useAuthStore((state) => state.login)
   const [unregistered, getUser, registerUser] = useUserStore((state) => [
-    state.unregistered,
+    state.registered,
     state.getUser,
     state.registerUser,
   ])

@@ -10,6 +10,7 @@
 @import './components/Registration/registration';
 @import './components/Schedule/schedule';
 @import './components/Resources/resources';
+@import './components/Profile/profile';
 
 
 * {
@@ -70,6 +71,7 @@ h4 {
 main {
   margin-left: 200px;
   padding: 20px;
+  min-height: 100vh;
   
 }
 

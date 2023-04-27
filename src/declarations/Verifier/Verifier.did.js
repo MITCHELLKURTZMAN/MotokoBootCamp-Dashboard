@@ -11,6 +11,7 @@ export const idlFactory = ({ IDL }) => {
     'rank' : IDL.Text,
     'canisterIds' : IDL.Vec(IDL.Text),
     'score' : IDL.Nat,
+    'cliPrincipalId' : IDL.Text,
     'teamId' : IDL.Text,
     'principalId' : IDL.Text,
     'strikes' : IDL.Int,

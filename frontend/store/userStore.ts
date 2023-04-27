@@ -3,13 +3,12 @@ import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
 import { getVerifierActor } from '../services/actorService';
 import { VerifyProject } from 'src/declarations/Verifier/Verifier.did';
-import { toast } from 'react-hot-toast';
-import { toastError } from '../services/toastService';
+import { toastError, toast, ToastType } from '../services/toastService';
 import { DailyProject } from '../../src/declarations/Verifier/Verifier.did';
 
 export interface UserStore {
   readonly user: Student | undefined;
-  readonly unregistered: boolean;
+  readonly registered: boolean;
   readonly completedDays: DailyProject[];
   //readonly result: any;
 
@@ -32,6 +31,28 @@ const toUserModel = (user: Student): Student => {
   } as Student;
 };
 
+const serialize = (state: UserStore): string => {
+  const replacer = (key: string, value: any) => {
+    if (typeof value === 'bigint') {
+      return value.toString() + 'n';
+    }
+    return value;
+  };
+  return JSON.stringify(state, replacer);
+};
+
+const deserialize = (str: string): UserStore => {
+  const reviver = (key: string, value: any) => {
+    if (typeof value === 'string' && value.endsWith('n')) {
+      return BigInt(value.slice(0, -1));
+    }
+    return value;
+  };
+  return JSON.parse(str, reviver);
+};
+
+
+
 
 const createUserStore = (
   set: SetState<UserStore>,
@@ -40,7 +61,7 @@ const createUserStore = (
 ): UserStore => ({
   completedDays: [],
   user: undefined,
-  unregistered: true,
+  registered: true,
   result: undefined,
 
   registerUser: async (
@@ -53,7 +74,7 @@ const createUserStore = (
     if ('err' in result) {
       console.error(result.err);
     } else {
-      toast.success(`${handle}, welcome to Motoko Bootcamp!`);
+      toast(`${handle}, welcome to Motoko Bootcamp!`, ToastType.Success);
       set({ user: toUserModel(result.ok) });
     }
   },
@@ -71,17 +92,17 @@ const createUserStore = (
   },
 
   getUser: async (principalId): Promise<void> => {
-    const result = await (await getVerifierActor()).getStudent(principalId);
+    const result = await (await getVerifierActor()).getStudent(principalId.toString());
     if ('err' in result) {
       set({
         user: undefined,
-        unregistered: result.err === "Student already registered",
+        registered: false,
       });
     } else {
       let user = toUserModel(result.ok);
       set({
         user,
-        unregistered: false,
+        registered: true,
       });
     }
   },
@@ -110,11 +131,11 @@ const createUserStore = (
       toastError(errorMessage);
       console.error(errorMessage);
     } else {
-      console.error("Unknown error:", result.err);
+      console.error("Unknown error:", result.err as any);
     }
   } else {
     set({ result: { ...result } });
-    toast.success("Project verified!");
+    toast("Project verified!", ToastType.Success);
     console.log("Result from verifyProject:", result);
     return result;
   }
@@ -131,6 +152,7 @@ export const useUserStore = create<UserStore>()(
     {
       name: 'userStore',
       getStorage: () => sessionStorage,
+      
     }
   )
 );

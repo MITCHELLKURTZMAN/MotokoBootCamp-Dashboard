@@ -4,12 +4,10 @@ import "./index.scss"
 
 const Header = lazy(() => import("./components/Header/Header"))
 const Nav = lazy(() => import("./components/Nav/Nav"))
-// const TeamList = lazy(() => import("./components/Team/TeamList"))
-import TeamList from "./components/Team/TeamList"
-
+const TeamList = lazy(() => import("./components/Team/TeamList"))
 const ActivityList = lazy(() => import("./components/Activity/ActivityList"))
 const Footer = lazy(() => import("./components/Footer/Footer"))
-
+import Profile from "./components/Profile/Profile"
 import * as Verifier from "../src/declarations/Verifier"
 import { Team, Activity } from "./types/types"
 
@@ -17,6 +15,7 @@ import LoadingScreen from "./components/Loading/LoadingScreen"
 import Submit from "./components/Submit/Submit"
 import { useActivityStore } from "./store/activityStore"
 import { useTeamStore } from "./store/teamStore"
+import { useAuthStore } from "./store/authstore"
 import { Toaster } from "react-hot-toast"
 import { getAllTeams } from "./services/actorService"
 import Registration from "./components/Registration/registration"
@@ -90,7 +89,9 @@ function App() {
                 path="/"
                 element={
                   <>
-                    <TeamList teams={teams ? teams : team} />
+                    <React.Suspense fallback={<div>Loading TeamList...</div>}>
+                      <TeamList teams={teams ? teams : team} />
+                    </React.Suspense>
                     <ActivityList activities={activities} />
                   </>
                 }
@@ -98,7 +99,7 @@ function App() {
               <Route path="Submit" element={<Submit />} />
               <Route path="Schedule" element={<Schedule />} />
               <Route path="Resources" element={<Resources />} />
-              <Route path="Admin" element={<div>Admin</div>} />
+              <Route path="Profile" element={<Profile />} />
               <Route path="register" element={<Registration />} />
             </Routes>
           </main>

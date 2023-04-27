@@ -16,7 +16,7 @@ const Nav: React.FC = () => {
             Submit Code
           </Link>
         </li>
-        <li>
+        {/* <li>
           <Link to="/schedule" className="nav-link">
             Schedule
           </Link>
@@ -25,10 +25,10 @@ const Nav: React.FC = () => {
           <Link to="/resources" className="nav-link">
             Resources
           </Link>
-        </li>
+        </li> */}
         <li>
-          <Link to="/admin" className="nav-link">
-            Admin
+          <Link to="/Profile" className="nav-link">
+            Profile
           </Link>
         </li>
       </ul>

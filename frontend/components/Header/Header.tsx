@@ -10,14 +10,12 @@ import { useUserStore } from "../../store/userStore"
 const Header: React.FC = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const isLoggedin = useAuthStore((state) => state.isLoggedin)
-  const unregistered = useUserStore((state) => state.unregistered)
+
   const login = useAuthStore((state) => state.login)
   const logout = useAuthStore((state) => state.logout)
   const init = useAuthStore((state) => state.init)
 
-  // useEffect(() => {
-  //   init()
-  // }, [init])
+  useEffect(() => {}, [init])
 
   return (
     <header>

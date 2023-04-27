@@ -21,6 +21,7 @@ type Team =
 type Student = 
  record {
    canisterIds: vec text;
+   cliPrincipalId: text;
    completedDays: vec DailyProject;
    name: text;
    principalId: text;
