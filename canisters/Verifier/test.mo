@@ -200,8 +200,43 @@ module Test {
     // END - Day 3
 
     // BEGIN - Day 4
+    type Subaccount = Blob;
+    type Account = {
+        owner : Principal;
+        subaccount : ?Subaccount;
+    };
+    public type day4Interface = actor {
+        name : shared query () -> async Text;
+        symbol : shared query () -> async Text;
+        totalSupply : shared query () -> async Nat;
+        balanceOf : shared query (account : Account) -> async (Nat);
+        transfer : shared (to : Account, amount : Nat) -> async Result.Result<(), Text>;
+        airdrop : shared () -> async Result.Result<(),Text>;
+    };
     public func verifyDay4(canisterId : Principal) : async TestResult {
-        return #ok()
+        let day4Actor : day4Interface = actor (Principal.toText(canisterId));
+         try {
+            let name = await day4Actor.name();
+            if(not (name == "MotoCoin")){
+                return #err(#UnexpectedValue("Name doesn't corresponds with MotoCoin"))
+            };
+            let symbol = await day4Actor.symbol();
+            if(not (symbol == "MOC")){
+                return #err(#UnexpectedValue("Symbol doesn't corresponds with MOC"))
+            };
+            ignore day4Actor.airdrop();
+            let accountDfxSeb = {
+                owner = Principal.fromText("2ujkt-fujau-bunuv-gt4b6-2s27j-cv5qi-kddkp-jl7m4-wdj3e-bqdrt-qqe");
+                subaccount = null;
+            };
+            let balanceOf = await day4Actor.balanceOf(accountDfxSeb);
+            if(not (balanceOf == 100)){
+                return #err(#UnexpectedValue("Balance doesn't corresponds with 100"))
+            };
+            return #ok()
+        } catch (e) {
+            return #err(#UnexpectedError(Error.message(e)))
+        }
     };
     // END - Day 4
 
