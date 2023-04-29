@@ -5,7 +5,7 @@ import Array "mo:base/Array";
 actor {
   type Homework = Type.Homework;
   var homeworkDiary = Buffer.Buffer<Homework>(0);
-  public shared func createHomework(homework : Homework) : async Nat {
+  public shared func addHomework(homework : Homework) : async Nat {
     homeworkDiary.add(homework);
     //corresponding to the index after adding the book
     homeworkDiary.size() - 1;
@@ -35,7 +35,7 @@ actor {
     Buffer.toArray(homeworkDiary);
   };
   //not in the actor interface
-  public shared func markAsComplete(id : Nat) : async Result.Result<(), Text> {
+  public shared func markAsCompleted(id : Nat) : async Result.Result<(), Text> {
     if (id >= homeworkDiary.size()) {
       return #err("Invalid homework id");
     };

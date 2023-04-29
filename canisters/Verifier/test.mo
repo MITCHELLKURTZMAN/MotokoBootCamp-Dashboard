@@ -8,6 +8,7 @@ import Array "mo:base/Array";
 import Bool "mo:base/Bool";
 import Time "mo:base/Time";
 import Prelude "mo:base/Prelude";
+import Blob "mo:base/Blob";
 module Test {
     // Assumptions during tests
     // No other actor/user is calling the canister and modifying the state
@@ -112,7 +113,7 @@ module Test {
                 dueDate = Time.now();
                 completed = false;
             };
-            let id = await day2Actor.addHomework(homeworkTest); // State : 0
+            let id = await day2Actor.addHomework(homeworkTest);
             ignore day2Actor.markAsCompleted(id); 
             switch(await day2Actor.getHomework(id)){
                 case (#ok(homework)) {
@@ -131,8 +132,70 @@ module Test {
     // END - Day 2
 
     // BEGIN - Day 3
+    public type Content = {
+        #Text : Text;
+        #Image : Blob;
+        #Survey : Survey;
+    };
+    public type Message = {
+        content : Content;
+        vote : Int;
+        creator : Principal;
+    };
+
+    public type Answer = (
+        description : Text, 
+        numberOfVotes : Nat 
+    );
+    public type Survey = {
+        title : Text; 
+        answers : [Answer]; 
+    };
+
+    public type day3Interface = actor {
+        writeMessage: shared (c : Content) -> async Nat;
+        getMessage: shared query (messageId : Nat) -> async Result.Result<Message, Text>;
+        updateMessage: shared (messageId : Nat, c : Content) -> async Result.Result<(), Text>;
+        deleteMessage: shared (messageId : Nat) -> async Result.Result<(), Text>;
+        upVote: shared (messageId  : Nat) -> async Result.Result<(), Text>;
+        downVote: shared (messageId  : Nat) -> async Result.Result<(), Text>;
+        getAllMessages : query () -> async [Message];
+        getAllMessagesRanked : query () -> async [Message];
+    };
+
+
     public func verifyDay3(canisterId : Principal) : async TestResult {
-        return #ok()
+        let day3Actor : day3Interface = actor (Principal.toText(canisterId));
+         try {
+            let contentTest : Content = #Text("Test");
+            let id = await day3Actor.writeMessage(contentTest); 
+            ignore day3Actor.upVote(id);
+            ignore day3Actor.upVote(id);
+            ignore day3Actor.downVote(id);
+            ignore day3Actor.updateMessage(id, #Image(Blob.fromArray([0, 1, 2])));
+            let resultTest = await day3Actor.getMessage(id);
+            switch(resultTest){
+                case(#err(e)){
+                    return #err(#UnexpectedError("Message not found"))
+                };
+                case(#ok(message)){
+                    switch(message.content){
+                        case(#Image(blob)){
+                            if(Blob.equal(blob, Blob.fromArray([0, 1, 2])) and message.vote == 1){
+                                return #ok()
+                            } else {
+                                return #err(#UnexpectedValue("Blob doesn't corresponds with test"))
+                            }
+                        };
+                        case(_){
+                            return #err(#UnexpectedValue("Content doesn't corresponds with test"))
+                        }
+                    };
+                };
+            };
+        } catch (e) {
+            return #err(#UnexpectedError(Error.message(e)))
+        }
     };
     // END - Day 3
 
@@ -144,7 +207,7 @@ module Test {
 
     // BEGIN - Day 5
     public func verifyDay5(canisterId : Principal) : async TestResult {
-        return #ok() //testing
+        return #ok() 
     };
     // END - Day 5
 
