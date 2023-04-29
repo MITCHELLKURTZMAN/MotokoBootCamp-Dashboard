@@ -6,6 +6,7 @@ import IC "ic";
 import Utils "utils";
 import Array "mo:base/Array";
 import Bool "mo:base/Bool";
+import Time "mo:base/Time";
 import Prelude "mo:base/Prelude";
 module Test {
     // Assumptions during tests
@@ -84,8 +85,48 @@ module Test {
     // END - Day 1
 
     // BEGIN - Day 2
+    public type Time = Time.Time;
+    public type Homework = {
+        title : Text;
+        description : Text;
+        dueDate : Time;
+        completed : Bool;
+    };
+    public type day2Interface = actor {
+        addHomework: shared (homework: Homework) -> async Nat;
+        getHomework: shared query (id: Nat) -> async Result.Result<Homework, Text>;
+        updateHomework: shared (id: Nat, homework: Homework) -> async Result.Result<(), Text>;
+        markAsCompleted: shared (id: Nat) -> async Result.Result<(), Text>;
+        deleteHomework: shared (id: Nat) -> async Result.Result<(), Text>;
+        getAllHomework: shared query () -> async [Homework];
+        getPendingHomework: shared query () -> async [Homework];
+        searchHomework: shared query (searchTerm: Text) -> async [Homework];
+    };
+    
     public func verifyDay2(canisterId : Principal) : async TestResult {
-        return #err(#NotImplemented(("Not implemented")))
+        let day2Actor : day2Interface = actor (Principal.toText(canisterId));
+         try {
+            let homeworkTest : Homework = {
+                title = "Test";
+                description = "Test";
+                dueDate = Time.now();
+                completed = false;
+            };
+            let id = await day2Actor.addHomework(homeworkTest); // State : 0
+            ignore day2Actor.markAsCompleted(id); 
+            switch(await day2Actor.getHomework(id)){
+                case (#ok(homework)) {
+                    if (homework.completed == true and homework.title == "Test" and homework.description == "Test") {
+                        return #ok()
+                    } else {
+                        return #err(#UnexpectedValue("Homework doesn't corresponds with test"));
+                    }
+                };
+                case (#err(message)) { return #err(#UnexpectedError("Homework not found")) }
+            };
+        } catch (e) {
+            return #err(#UnexpectedError(Error.message(e)))
+        }
     };
     // END - Day 2
 
