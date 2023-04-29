@@ -272,6 +272,15 @@ actor verifier {
         let principal = U.safeGet(principalIdHashMap, principalId, "");
         return principal
     };
+    
+    //Function needed for the project on Day 4 - Do not delete. See: https://github.com/motoko-bootcamp/motoko-starter/tree/main/days/day-4/project
+    public shared func getAllStudentsPrincipal() : async [Principal] {
+        var studentsBuffer = Buffer.Buffer<Principal>(principalIdHashMap.size());
+        for (student in principalIdHashMap.keys()) {
+            studentsBuffer.add(Principal.fromText(student))
+        };
+        Buffer.toArray(studentsBuffer);
+    };
 
     public shared func getAllStudents() : async Result.Result<[Text], Text> {
         var studentsBuffer = Buffer.Buffer<Text>(principalIdHashMap.size());
