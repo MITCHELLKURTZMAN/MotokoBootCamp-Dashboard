@@ -25,7 +25,7 @@ actor verifier {
     func isEq(x : Text, y : Text) : Bool { x == y };
 
     stable var principalIdEntries : [(Text, Text)] = [];
-    stable var teamEntries : [(Text, [Text])] = [];
+    stable var teamMembersEntries : [(Text, [Text])] = [];
     stable var teamScoreEntries : [(Text, Nat)] = [];
     stable var studentScoreEntries : [(Text, Nat)] = [];
     stable var studentTeamEntries : [(Text, Text)] = [];
@@ -36,10 +36,12 @@ actor verifier {
     stable var canisterIdEntries : [(Text, Text)] = [];
     stable var studentCliPrincipalIdEntries : [(Text, Text)] = [];
     stable var activityEntries : [(Text, Activity)] = [];
+    stable var teamNameEntries : [(Text, Text)] = [];
 
     var principalIdHashMap = HashMap.fromIter<Text, Text>(principalIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the name of the student stored by principal id
-    var teamHashMap = HashMap.fromIter<Text, [Text]>(teamEntries.vals(), maxHashmapSize, isEq, Text.hash); //the students on the team stored by team id in an array
+    var teamMembersHashMap = HashMap.fromIter<Text, [Text]>(teamMembersEntries.vals(), maxHashmapSize, isEq, Text.hash); //the students on the team stored by team id in an array
     var teamScoreHashMap = HashMap.fromIter<Text, Nat>(teamScoreEntries.vals(), maxHashmapSize, isEq, Text.hash); //the score of the team stored by team id
+    var teamNameHashMap = HashMap.fromIter<Text, Text>(teamNameEntries.vals(), maxHashmapSize, isEq, Text.hash); //the name of the team stored by team id
     var studentScoreHashMap = HashMap.fromIter<Text, Nat>(studentScoreEntries.vals(), maxHashmapSize, isEq, Text.hash); //the score of the student
     var studentTeamHashMap = HashMap.fromIter<Text, Text>(studentTeamEntries.vals(), maxHashmapSize, isEq, Text.hash); //the team the student is on
     var studentStrikesHashMap = HashMap.fromIter<Text, Int>(studentStrikesEntries.vals(), maxHashmapSize, isEq, Text.hash); //a way to detect if a student is cheating
@@ -121,34 +123,34 @@ actor verifier {
         "Quantum Consul",
     ];
 
-    public type AlphabetTeams = {
-        #auraAlpha : Text;
-        #binaryBravo : Text;
-        #cyberCharlie : Text;
-        #digitalDelta : Text;
-        #echoEngine : Text;
-        #fluxFoxtrot : Text;
-        #glitchGolf : Text;
-        #hackerHotel : Text;
-        #interfaceIndia : Text;
-        #jumpstartJuliet : Text;
-        #kineticKilo : Text;
-        #logicLima : Text;
-        #mainframeMike : Text;
-        #nanotechNovember : Text;
-        #overdriveOscar : Text;
-        #pixelPapa : Text;
-        #quantumQuebec : Text;
-        #reactiveRomeo : Text;
-        #syncSierra : Text;
-        #techTango : Text;
-        #uploadUniform : Text;
-        #virtualVictor : Text;
-        #wavelengthWhiskey : Text;
-        #xenonXray : Text;
-        #yottabyteYankee : Text;
-        #zenithZulu : Text
-    };
+    var teamNameArray = [
+        "Aura Alpha",
+        "Binary Bravo",
+        "Cyber Charlie",
+        "Digital Delta",
+        "Echo Engine",
+        "Flux Foxtrot",
+        "Glitch Golf",
+        "Hacker Hotel",
+        "Interface India",
+        "Jumpstart Juliet",
+        "Kinetic Kilo",
+        "Logic Lima",
+        "Mainframe Mike",
+        "Nanotech November",
+        "Overdrive Oscar",
+        "Pixel Papa",
+        "Quantum Quebec",
+        "Reactive Romeo",
+        "Sync Sierra",
+        "Tech Tango",
+        "Upload Uniform",
+        "Virtual Victor",
+        "Wavelength Whiskey",
+        "Xenon Xray",
+        "Yottabyte Yankee",
+        "Zenith Zulu",
+    ];
 
     //admins
     stable var admins : List.List<Text> = List.nil<Text>();
@@ -230,20 +232,30 @@ actor verifier {
         return #ok(U.safeGet(studentCompletedDaysHashMap, studentId, []))
     };
 
-    public shared ({ caller }) func registerStudent(name : Text) : async Result.Result<Student, Text> {
+    public shared ({ caller }) func registerStudent(name : Text, teamName : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
 
         let principalId = Principal.toText(caller);
+        if (Text.size(cliPrincipal) <= 9 or cliPrincipal == "2vxsx-fae") {
+            return #err("Invalid CLI Principal ID, run: dfx identity get-principal")
+        };
+
+        //check if student already exists
+        if (_isStudent(caller)) {
+            return #err("Student already registered")
+        };
+
+        //getallteamNames and compare to teamName to prevent errors (should come from a UI dropdown)
 
         var student = {
             principalId = principalId;
-            name = name;
-            teamId = "";
+            name = U.trim(U.lowerCase(name));
+            teamId = U.trim(U.lowerCase(teamName));
             score = 0;
             strikes = 0;
             rank = "recruit";
             canisterIds = [];
             completedDays = [];
-            cliPrincipalId = "";
+            cliPrincipalId = cliPrincipal;
 
         };
 
@@ -268,18 +280,46 @@ actor verifier {
         }
     };
 
+    //todo decide what a student can update without messing things up.
+    // public shared ({ caller }) func updateStudentInfo(name : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
+
+    //     let principalId = Principal.toText(caller);
+
+    //     //getallteamNames and compare to teamName to prevent errors (should come from a UI dropdown)
+
+    //     if (U.safeGet(principalIdHashMap, principalId, "") == "") {
+
+    //         principalIdHashMap.put(principalId, name);
+    //         studentScoreHashMap.put(principalId, 0);
+
+    //         activityHashmap.put(
+    //             Nat.toText(activityIdCounter),
+    //             {
+    //                 activityId = Nat.toText(activityIdCounter);
+    //                 activity = name # " has registered for Motoko Bootcamp";
+    //                 specialAnnouncement = "newStudent"
+    //             },
+    //         );
+    //         activityIdCounter := activityIdCounter + 1;
+
+    //         #ok(student)
+    //     } else {
+    //         #err("Student already registered")
+    //     }
+    // };
+
     public shared func sanityCheckGetEmptyStudent(principalId : Text) : async Text {
         let principal = U.safeGet(principalIdHashMap, principalId, "");
         return principal
     };
-    
+
     //Function needed for the project on Day 4 - Do not delete. See: https://github.com/motoko-bootcamp/motoko-starter/tree/main/days/day-4/project
     public shared func getAllStudentsPrincipal() : async [Principal] {
         var studentsBuffer = Buffer.Buffer<Principal>(principalIdHashMap.size());
         for (student in principalIdHashMap.keys()) {
             studentsBuffer.add(Principal.fromText(student))
         };
-        Buffer.toArray(studentsBuffer);
+        Buffer.toArray(studentsBuffer)
     };
 
     public shared func getAllStudents() : async Result.Result<[Text], Text> {
@@ -350,8 +390,48 @@ actor verifier {
 
     //teams
 
+    func _isTeam(teamId : Text) : Bool {
+        U.safeGet(teamNameHashMap, teamId, "") != ""
+    };
+
+    public shared ({ caller }) func adminCreateTeam(name : Text) : async Result.Result<Text, Text> {
+        let principalId = Principal.toText(caller);
+        let teamId = Nat.toText(teamIdCounter);
+
+        if (U.safeGet(teamNameHashMap, teamId, "") == "") {
+
+            teamNameHashMap.put(teamId, U.trim(U.lowerCase(name)));
+            #ok("Team " # name # "created!")
+        } else {
+            #err("Team already exists")
+        }
+    };
+
+    public shared ({ caller }) func adminDeleteTeam(teamId : Text) : async Result.Result<Text, Text> {
+        let principalId = Principal.toText(caller);
+
+        if (U.safeGet(teamNameHashMap, teamId, "") != "") {
+
+            teamNameHashMap.delete(teamId);
+            #ok("Team " # teamId # "deleted...")
+        } else {
+            #err("Team does not exist")
+        }
+    };
+
+    public shared ({ caller }) func adminGetAllTeamsWithTeamId() : async Result.Result<[(Text, Text)], Text> {
+        let principalId = Principal.toText(caller);
+        var teamsBuffer = Buffer.Buffer<(Text, Text)>(teamNameHashMap.size());
+
+        for (team in teamNameHashMap.entries()) {
+            teamsBuffer.add(team)
+        };
+
+        #ok(Buffer.toArray(teamsBuffer))
+    };
+
     func generateTeamScore(teamId : Text) : Nat {
-        var teamMembers = U.safeGet(teamHashMap, teamId, []);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
         var totalCompletedProjects = 0;
         var projectsRequiredPerStudent = 5;
 
@@ -372,7 +452,7 @@ actor verifier {
     public shared query func buildTeam(teamId : Text) : async Team {
 
         let updatedScore = generateTeamScore(teamId);
-        var teamMembers = U.safeGet(teamHashMap, teamId, []);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
         var teamScore = U.safeGet(teamScoreHashMap, teamId, 0);
 
         Debug.print("team score is " # Nat.toText(teamScore));
@@ -391,7 +471,7 @@ actor verifier {
     func _buildTeam(teamId : Text) : Team {
 
         let updatedScore = generateTeamScore(teamId);
-        var teamMembers = U.safeGet(teamHashMap, teamId, []);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
         var teamScore = U.safeGet(teamScoreHashMap, teamId, 0);
 
         Debug.print("team score is " # Nat.toText(teamScore));
@@ -414,7 +494,7 @@ actor verifier {
     public shared func getStudentsFromTeam(teamId : Text) : async Result.Result<[Student], Text> {
 
         var studentBuffer = Buffer.Buffer<Student>(1);
-        var teamMembers = U.safeGet(teamHashMap, teamId, []);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
         for (member in teamMembers.vals()) {
             let student = await buildStudent(member);
             switch (student) {
@@ -451,7 +531,7 @@ actor verifier {
                 teamBuffer.add(newMembers)
             };
 
-            teamHashMap.put(Nat.toText(teamIdCounter), Buffer.toArray(teamBuffer));
+            teamMembersHashMap.put(Nat.toText(teamIdCounter), Buffer.toArray(teamBuffer));
             teamScoreHashMap.put(team, 0);
 
             activityHashmap.put(
@@ -477,7 +557,7 @@ actor verifier {
             };
 
             var teamScore = U.safeGet(teamScoreHashMap, team, 0);
-            var teamArray = (U.safeGet(teamHashMap, team, []));
+            var teamArray = (U.safeGet(teamMembersHashMap, team, []));
             var teambuffer = Buffer.Buffer<Text>(1);
 
             for (currentMembers in teamArray.vals()) {
@@ -495,7 +575,7 @@ actor verifier {
                 teambuffer.add(newMembers)
             };
 
-            teamHashMap.put(team, Buffer.toArray(teambuffer));
+            teamMembersHashMap.put(team, Buffer.toArray(teambuffer));
 
             activityHashmap.put(
                 Nat.toText(activityIdCounter),
@@ -509,7 +589,7 @@ actor verifier {
 
             return #ok({
                 teamId = team;
-                teamMembers = U.safeGet(teamHashMap, team, []);
+                teamMembers = U.safeGet(teamMembersHashMap, team, []);
                 score = teamScore
             })
         }
@@ -518,7 +598,7 @@ actor verifier {
     public shared func getAllTeams() : async [Team] {
 
         var teamBuffer = Buffer.Buffer<Team>(1);
-        for (teamId in teamHashMap.keys()) {
+        for (teamId in teamMembersHashMap.keys()) {
             let team = await buildTeam(teamId);
 
             teamBuffer.add(team)
@@ -610,7 +690,7 @@ actor verifier {
     // 2. Update the studentScore (where?)
     // 3. Update the activity feed (activityHashmap) & the activity counter (activityIdCounter)
     // 4. Update the team score (teamScoreHashMap)
-    // 5. Update the team members (teamHashMap)
+    // 5. Update the team members (teamMembersHashMap)
     func _validated(day : Nat, canisterId : Principal, student : Principal) : () {
         let studentId = Principal.toText(student);
         // Step 1: Add the new completed project to the student's completed projects (studentCompletedDaysHashMap)
@@ -646,8 +726,9 @@ actor verifier {
     system func preupgrade() {
 
         principalIdEntries := Iter.toArray(principalIdHashMap.entries());
-        teamEntries := Iter.toArray(teamHashMap.entries());
+        teamMembersEntries := Iter.toArray(teamMembersHashMap.entries());
         teamScoreEntries := Iter.toArray(teamScoreHashMap.entries());
+        teamNameEntries := Iter.toArray(teamNameHashMap.entries());
         studentTeamEntries := Iter.toArray(studentTeamHashMap.entries());
         studentCompletedDaysEntries := Iter.toArray(studentCompletedDaysHashMap.entries());
         studentScoreEntries := Iter.toArray(studentScoreHashMap.entries());
@@ -661,8 +742,9 @@ actor verifier {
 
     system func postupgrade() {
         principalIdEntries := [];
-        teamEntries := [];
+        teamMembersEntries := [];
         teamScoreEntries := [];
+        teamNameEntries := [];
         studentTeamEntries := [];
         studentCompletedDaysEntries := [];
         studentScoreEntries := [];

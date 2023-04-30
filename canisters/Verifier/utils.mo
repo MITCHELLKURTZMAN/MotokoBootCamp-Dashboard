@@ -5,6 +5,7 @@ import Principal "mo:base/Principal";
 import HashMap "mo:base/HashMap";
 import Nat32 "mo:base/Nat32";
 import Char "mo:base/Char";
+import Prim "mo:prim";
 
 module {
     // Parses the controllers from the error returned by canister status when the caller is not the controller
@@ -41,6 +42,22 @@ module {
         };
 
         num
+    };
+
+    private func trimPattern(char : Char) : Bool {
+        Char.equal(' ', char) or Char.equal('\r', char) or Char.equal('\n', char)
+    };
+
+    public func trim(value : Text) : Text {
+        Text.trim(value, #predicate(trimPattern))
+    };
+
+    public func lowerCase(value : Text) : Text {
+        Text.map(value, Prim.charToLower)
+    };
+
+    public func upperCase(value : Text) : Text {
+        Text.map(value, Prim.charToUpper)
     };
 
 }
