@@ -8,7 +8,7 @@
     font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 1rem;
-    color: $primary-color;
+    color: $text-color;
   }
 
   &__form {
@@ -18,7 +18,7 @@
     label {
       font-size: 1.1rem;
       margin-bottom: 0.5rem;
-      color: $text-color;
+      color: $primary-color;
     }
 
     input,

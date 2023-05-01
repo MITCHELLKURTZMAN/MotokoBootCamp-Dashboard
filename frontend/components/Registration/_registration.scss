@@ -9,6 +9,10 @@
   background-color: $secondary-color;
 }
 
+.principal-id-container{
+  width: 100%;
+}
+
 .registration-form {
   display: flex;
   flex-direction: column;
@@ -24,14 +28,15 @@
 }
 
 .registration-input,
-#team {
+#team,
+.principalId-field { // Add this new class for the principalId field
   width: 100%;
   padding: 12px;
   margin-bottom: 10px;
-  background-color: #393939;
+  background-color: lighten($secondary-color, 15%);
   border: 1px solid $highlight-color;
   border-radius: 8px;
-  color: $text-color;
+  color: $primary-color;
   font-family: "Roboto", sans-serif;
   font-size: 16px;
 }

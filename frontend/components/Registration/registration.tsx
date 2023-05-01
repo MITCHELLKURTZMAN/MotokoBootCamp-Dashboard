@@ -112,7 +112,7 @@ const Registration: React.FC<Props> = ({}) => {
               id="principal-id"
               type="text"
               placeholder="Command line principal ID"
-              className="form-label"
+              className="principalId-field"
               value={cliPrincipal}
               onChange={(e) => setCliPrincipal(e.target.value)}
               required
