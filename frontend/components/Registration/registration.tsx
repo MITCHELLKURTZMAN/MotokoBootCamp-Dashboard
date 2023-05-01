@@ -7,6 +7,7 @@ import Tippy from "@tippyjs/react"
 import "tippy.js/dist/tippy.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons"
+import { useTeamStore } from "../../store/teamStore"
 
 interface Props {
   //onRegister: (username: string) => void;
@@ -16,11 +17,7 @@ const Registration: React.FC<Props> = ({}) => {
   const [username, setUsername] = useState("")
   const [team, setTeam] = useState("")
   const [cliPrincipal, setCliPrincipal] = useState("")
-  const teams = [
-    { value: "team 1", label: "Team 1" },
-    { value: "team 2", label: "Team 2" },
-    // ... other teams
-  ]
+  const teams = useTeamStore((state) => state.teams)
 
   const login = useAuthStore((state) => state.login)
   const [unregistered, getUser, registerUser] = useUserStore((state) => [
@@ -71,8 +68,8 @@ const Registration: React.FC<Props> = ({}) => {
         >
           <option value="">Select your team (assigned in Discord)</option>
           {teams.map((team) => (
-            <option key={team.value} value={team.value}>
-              {team.label}
+            <option key={team.name} value={team.name}>
+              {team.name}
             </option>
           ))}
         </select>
