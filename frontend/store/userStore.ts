@@ -19,7 +19,7 @@ export interface UserStore {
     CLIPrincipal: string
   ) => Promise<void>;
   
-  getUser: (principalId: string) => Promise<void>;
+  getUser: (principalId: string) => Promise<Student | undefined>;
   clearUser: () => Promise<void>;
   clearAll: () => void;
   verifyProject: (canisterId: string, day: number) => Promise<VerifyProject>;
@@ -104,8 +104,8 @@ const createUserStore = (
     return isStudent;
   },
 
-  getUser: async (principalId): Promise<void> => {
-    const result = await (await getVerifierActor()).getStudent(principalId.toString());
+  getUser: async (principalId): Promise<Student> => {
+    const result = await (await getVerifierActor()).getUser();
     //const registeredStatus = await (await (await getVerifierActor()).isStudent(principalId));
     if ('err' in result) {
       set({
@@ -118,6 +118,8 @@ const createUserStore = (
         user,
         registered: true,
       });
+      console.log("getUser", user)
+      return user;
     }
   },
 

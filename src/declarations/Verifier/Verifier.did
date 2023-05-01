@@ -116,6 +116,7 @@ service : {
   getStudentCompletedDays: () -> (Result_4);
   getStudentsFromTeam: (text) -> (Result_3);
   getTeam: (text) -> (Team);
+  getUser: () -> (Result_2);
   isEvenTest: (int) -> (bool) query;
   isStudent: (text) -> (bool) query;
   registerAdmin: (text) -> (Result);

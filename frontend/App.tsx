@@ -59,6 +59,8 @@ function App() {
   const getActivity = useActivityStore((state) => state.getActivity)
   const getAllTeams = useTeamStore((state) => state.getAllTeams)
   const teams = useTeamStore((state) => state.teams)
+  const user = useUserStore((state) => state.user)
+  const getUser = useUserStore((state) => state.getUser)
 
   const [team, setTeam] = useState<TeamString[]>(dummyTeams)
 
@@ -100,7 +102,10 @@ function App() {
               <Route path="Submit" element={<Submit />} />
               <Route path="Schedule" element={<Schedule />} />
               <Route path="Resources" element={<Resources />} />
-              <Route path="Profile" element={<Profile />} />
+              <Route
+                path="Profile"
+                element={<Profile user={useUserStore.getState().user} />}
+              />
               <Route path="register" element={<Registration />} />
             </Routes>
           </main>

@@ -1,4 +1,5 @@
 import _toast from 'react-hot-toast';
+import colors from '../constants/colors';
 
 export enum ToastType {
   Plain,
@@ -7,56 +8,62 @@ export enum ToastType {
 }
 
 export const toastError = (err: any, preText: string = ''): void => {
+  const frostedGlassStyle = {
+    backdropFilter: 'blur(5px)',
+    backgroundColor: 'rgba(245, 87, 22, 0.1)', // Tinted orange for error
+    borderRadius: '5px',
+    boxShadow: `0 2px 4px ${colors.shadowColor}`,
+  };
+
   if (err.message) {
     _toast.error(preText + err.message, {
       style: {
-        background: '#A53945',
-        color: '#FFFFFF',
-        borderRadius: '5px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
+        ...frostedGlassStyle,
+        color: colors.textColor,
       },
     });
   } else {
     _toast.error(preText + err, {
       style: {
-        background: '#A53945',
-        color: '#FFFFFF',
-        borderRadius: '5px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
+        ...frostedGlassStyle,
+        color: colors.textColor,
       },
     });
   }
 };
 
 export const toast = (message: string, toastType: ToastType): void => {
+  const frostedGlassStyle = {
+    backdropFilter: 'blur(5px)',
+    borderRadius: '5px',
+    boxShadow: `0 2px 4px ${colors.shadowColor}`,
+  };
+
   switch (toastType) {
     case ToastType.Success:
       _toast.success(message, {
         style: {
-          background: '#388E3C',
-          color: '#FFFFFF',
-          borderRadius: '5px',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
+          ...frostedGlassStyle,
+          backgroundColor: 'rgba(67, 138, 196, 0.1)', // Tinted blue for success
+          color: colors.textColor,
         },
       });
       break;
     case ToastType.Error:
       _toast.error(message, {
         style: {
-          background: '#A53945',
-          color: '#FFFFFF',
-          borderRadius: '5px',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
+          ...frostedGlassStyle,
+          backgroundColor: 'rgba(245, 87, 22, 0.1)', // Tinted orange for error
+          color: colors.textColor,
         },
       });
       break;
     default:
       _toast(message, {
         style: {
-          background: '#2E2E2E',
-          color: '#FFFFFF',
-          borderRadius: '5px',
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
+          ...frostedGlassStyle,
+          backgroundColor: 'rgba(255, 255, 255, 0.1)', // Default tint
+          color: colors.textColor,
         },
       });
       break;

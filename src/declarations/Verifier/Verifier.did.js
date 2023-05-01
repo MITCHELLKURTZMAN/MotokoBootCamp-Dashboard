@@ -84,6 +84,7 @@ export const idlFactory = ({ IDL }) => {
     'getStudentCompletedDays' : IDL.Func([], [Result_4], []),
     'getStudentsFromTeam' : IDL.Func([IDL.Text], [Result_3], []),
     'getTeam' : IDL.Func([IDL.Text], [Team], []),
+    'getUser' : IDL.Func([], [Result_2], []),
     'isEvenTest' : IDL.Func([IDL.Int], [IDL.Bool], ['query']),
     'isStudent' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'registerAdmin' : IDL.Func([IDL.Text], [Result], []),

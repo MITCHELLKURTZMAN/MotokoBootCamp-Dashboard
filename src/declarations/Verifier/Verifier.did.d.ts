@@ -82,6 +82,7 @@ export interface _SERVICE {
   'getStudentCompletedDays' : ActorMethod<[], Result_4>,
   'getStudentsFromTeam' : ActorMethod<[string], Result_3>,
   'getTeam' : ActorMethod<[string], Team>,
+  'getUser' : ActorMethod<[], Result_2>,
   'isEvenTest' : ActorMethod<[bigint], boolean>,
   'isStudent' : ActorMethod<[string], boolean>,
   'registerAdmin' : ActorMethod<[string], Result>,

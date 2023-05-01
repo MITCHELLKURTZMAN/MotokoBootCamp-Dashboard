@@ -5,37 +5,42 @@ import { exec } from 'child_process';
 const commands = [
   {
     command: 'npm i',
-    description: 'Installing NPM packages',
+    description: 'Installing NPM packages...',
     emoji: emoji.get('package'),
   },
   {
     command: 'dfx canister stop Verifier',
-    description: 'Stopping the Verifier canister',
+    description: 'Stopping the Verifier canister...',
     emoji: emoji.get('zzz'),
   },
   {
     command: 'dfx canister uninstall-code Verifier',
-    description: 'Uninstalling the Verifier canister code',
+    description: 'Uninstalling the Verifier canister code...',
     emoji: emoji.get('wastebasket'),
   },
   {
     command: 'dfx canister start Verifier',
-    description: 'Starting the Verifier canister',
+    description: 'Starting the Verifier canister...',
     emoji: emoji.get('rocket'),
   },
   {
+    command: 'dfx generate',
+    description: 'Generating declarations...',
+    emoji: emoji.get('gear'),
+  },
+  {
     command: 'dfx deploy',
-    description: 'Deploying the canisters',
+    description: 'Deploying the canisters...',
     emoji: emoji.get('airplane_departure'),
   },
   {
     command: 'dfx canister call Verifier adminCreateTeam "team 1"',
-    description: 'Creating Team 1',
+    description: 'Creating Team 1...',
     emoji: emoji.get('one'),
   },
   {
     command: 'dfx canister call Verifier adminCreateTeam "team 2"',
-    description: 'Creating Team 2',
+    description: 'Creating Team 2...',
     emoji: emoji.get('two'),
   },
 ];

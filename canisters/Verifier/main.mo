@@ -296,6 +296,7 @@ actor verifier {
                 studentTeamHashMap.put(principalId, teamName);
                 principalIdHashMap.put(principalId, name);
                 studentScoreHashMap.put(principalId, 0);
+                studentCliPrincipalIdHashMap.put(principalId, cliPrincipal);
 
                 activityHashmap.put(
                     Nat.toText(activityIdCounter),
@@ -427,6 +428,13 @@ actor verifier {
 
         await buildStudent(principalId);
 
+    };
+
+    //consider methods to use a query for frontend speed
+    public shared ({ caller }) func getUser() : async Result.Result<Student, Text> {
+        let principalId = Principal.toText(caller);
+
+        await buildStudent(principalId)
     };
 
     //teams
