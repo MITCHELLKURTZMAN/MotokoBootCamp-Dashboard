@@ -1,9 +1,10 @@
+@import "../../_variables.scss";
 .activities {
     margin-bottom: 20px;
-    background-color: #2E2E2E;
+    background-color: $secondary-color;
     border-radius: 10px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 4px $shadow-color;
     max-height: 500px;
     overflow: scroll;
   }

@@ -1,105 +1,114 @@
+@import "../../_variables";
+
 .submit {
-    padding: 1rem;
-    height: 100vh;
-  
+  padding: 1rem;
+  height: 100vh;
+
+  &__header {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: $primary-color;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: $text-color;
+    }
+
+    input,
+    select {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      background-color: lighten($secondary-color, 15%);
+      color: $primary-color;
+      border: 1px solid $primary-color;
+    }
+
+    button {
+      font-size: 1.1rem;
+      padding: 0.5rem;
+      background-color: $primary-color;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: darken($primary-color, 10%);
+      }
+    }
+  }
+
+  .submission-status {
     &__header {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       font-weight: bold;
       margin-bottom: 1rem;
+      color: $primary-color;
     }
-  
-    &__form {
-      display: flex;
-      flex-direction: column;
-  
-      label {
+
+    &__list {
+      list-style-type: none;
+      padding: 0;
+
+      li {
         font-size: 1.1rem;
         margin-bottom: 0.5rem;
+        color: $text-color;
       }
-  
-      input,
-      select {
-        font-size: 1rem;
-        padding: 0.5rem;
-        margin-bottom: 1rem;
-      }
-  
+
       button {
-        font-size: 1.1rem;
-        padding: 0.5rem;
-        background-color: #4caf50;
+        font-size: 1rem;
+        padding: 0.25rem 0.5rem;
+        background-color: $primary-color;
         color: white;
         border: none;
         cursor: pointer;
         transition: background-color 0.3s;
-  
+
         &:hover {
-          background-color: #45a049;
-        }
-      }
-    }
-  
-    .submission-status {
-      &__header {
-        font-size: 1.3rem;
-        font-weight: bold;
-        margin-bottom: 1rem;
-      }
-  
-      &__list {
-        list-style-type: none;
-        padding: 0;
-  
-        li {
-          font-size: 1.1rem;
-          margin-bottom: 0.5rem;
-        }
-  
-        button {
-          font-size: 1rem;
-          padding: 0.25rem 0.5rem;
-          background-color: #4caf50;
-          color: white;
-          border: none;
-          cursor: pointer;
-          transition: background-color 0.3s;
-  
-          &:hover {
-            background-color: #45a049;
-          }
+          background-color: darken($primary-color, 10%);
         }
       }
     }
   }
-  
-  
-  .submission-status {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #2E2E2E;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  }
-  
-  .submission-status-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .submission-status-item:last-child {
-    margin-bottom: 0;
-  }
-  
-  .submission-status-icon {
-    font-size: 20px;
-    margin-right: 10px;
-  }
-  
-  .icon-success {
-    color: #4CAF50;
-  }
-  
-  .icon-error {
-    color: #F44336;
-  }
+}
+
+.submission-status {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: $secondary-color;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.submission-status-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.submission-status-item:last-child {
+  margin-bottom: 0;
+}
+
+.submission-status-icon {
+  font-size: 20px;
+  margin-right: 10px;
+  color: $primary-color;
+}
+
+.icon-success {
+  color: lighten($primary-color, 15%);
+}
+
+.icon-error {
+  color: #F44336;
+}
