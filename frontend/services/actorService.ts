@@ -9,7 +9,7 @@ import {
 } from '../../src/declarations/Verifier';
 
 
-import { Student, Team } from '../types/types';
+import { Student, Team, TeamString } from '../types/types';
 import { useAuthStore } from '../store/authstore';
 import { toast } from 'react-hot-toast';
 import { toastError } from './toastService';
@@ -34,7 +34,7 @@ export async function getVerifierActor(): Promise<ActorSubclass<VerifierService>
 //TODO refactor out and use in activitystore
 export async function getActivity(): Promise<Activity[] | undefined> {
   const verifier = await getVerifierActor();
-  const result = await verifier.getActivity(BigInt(0), BigInt(200));
+  const result = await verifier.getActivity(BigInt(0), BigInt(300));
   if ('err' in result) {
     console.error(result.err);
     return undefined;
@@ -72,7 +72,7 @@ export async function getTeam(teamId: string): Promise<Team | undefined> {
 }
 
 //TODO refactor out and use in teamstore
-export async function getAllTeams(): Promise<Team[] | undefined> {
+export async function getAllTeams(): Promise<TeamString[] | undefined> {
   const verifier = await getVerifierActor();
   const result = await verifier.getAllTeams();
   if ('err' in result) {

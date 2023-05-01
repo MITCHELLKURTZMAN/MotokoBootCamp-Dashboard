@@ -5,25 +5,30 @@ import { getVerifierActor } from '../services/actorService';
 import { VerifyProject } from 'src/declarations/Verifier/Verifier.did';
 import { toastError, toast, ToastType } from '../services/toastService';
 import { DailyProject } from '../../src/declarations/Verifier/Verifier.did';
+import { useAuthStore } from './authstore';
 
 export interface UserStore {
   readonly user: Student | undefined;
   readonly registered: boolean;
   readonly completedDays: DailyProject[];
-  //readonly result: any;
+ 
 
   registerUser: (
     handle: string,
-    // displayName: string,
-    // avatar: string
+    teamName: string,
+    CLIPrincipal: string
   ) => Promise<void>;
+  
   getUser: (principalId: string) => Promise<void>;
   clearUser: () => Promise<void>;
   clearAll: () => void;
   verifyProject: (canisterId: string, day: number) => Promise<VerifyProject>;
   getStudentcompletedDays: () => Promise<void>;
+  isStudent: (principalId: string) => Promise<boolean>;
   result: any; 
+
 }
+
 
 const toUserModel = (user: Student): Student => {
   return {
@@ -63,16 +68,19 @@ const createUserStore = (
   user: undefined,
   registered: true,
   result: undefined,
-
+ 
   registerUser: async (
     handle: string,
+    teamName: string,
+    CLIPrincipal: string
    
   ): Promise<void> => {
     const result = await (
       await getVerifierActor()
-    ).registerStudent(handle);
+    ).registerStudent(handle, teamName, CLIPrincipal);
     if ('err' in result) {
       console.error(result.err);
+      toastError(result.err);
     } else {
       toast(`${handle}, welcome to Motoko Bootcamp!`, ToastType.Success);
       set({ user: toUserModel(result.ok) });
@@ -91,8 +99,15 @@ const createUserStore = (
     }
   },
 
+  isStudent: async ( principal ): Promise<boolean> => {
+    const isStudent = await (await (await getVerifierActor()).isStudent(principal));
+    useAuthStore.setState({ isLoggedin: principal !==  "2vxsx-fae" && principal !== null });
+    return isStudent;
+  },
+
   getUser: async (principalId): Promise<void> => {
     const result = await (await getVerifierActor()).getStudent(principalId.toString());
+    //const registeredStatus = await (await (await getVerifierActor()).isStudent(principalId));
     if ('err' in result) {
       set({
         user: undefined,

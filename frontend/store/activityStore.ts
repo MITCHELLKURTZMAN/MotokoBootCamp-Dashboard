@@ -19,7 +19,7 @@ const createActivityStore = (
   getActivityError: undefined,
   getActivity: async (): Promise<Activity[] | undefined> => {
     try {
-      const fetchedActivities: Activity[] = await getActivity();
+    const fetchedActivities: Activity[] = await getActivity();
       set({ activities: fetchedActivities });
       return fetchedActivities;
     } catch (error) {

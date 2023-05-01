@@ -8,14 +8,15 @@ import { Principal } from "@dfinity/candid/lib/cjs/idl"
 import { useUserStore } from "../../store/userStore"
 
 const Header: React.FC = () => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  const isLoggedin = useAuthStore((state) => state.isLoggedin)
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
 
   const login = useAuthStore((state) => state.login)
   const logout = useAuthStore((state) => state.logout)
   const init = useAuthStore((state) => state.init)
 
-  useEffect(() => {}, [init])
+  useEffect(() => {
+    init()
+  }, [init])
 
   return (
     <header>
@@ -30,7 +31,7 @@ const Header: React.FC = () => {
           filter: "drop-shadow(1px 5px 1px black)",
         }}
       >
-        {isLoggedin ? (
+        {isLoggedIn ? (
           <button className="btn" onClick={logout}>
             Logout
           </button>

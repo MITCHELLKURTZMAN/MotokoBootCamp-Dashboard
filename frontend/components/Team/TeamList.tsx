@@ -1,12 +1,12 @@
 import React from "react"
 import TeamItem from "./TeamItem"
-import { Team } from "../../types/types"
+import { Team, TeamString } from "../../types/types"
 import "./_team.scss"
 import { useTeamStore } from "../../store/teamStore"
 import { useEffect } from "react"
 
 interface TeamListProps {
-  teams: Team[]
+  teams: TeamString[]
 }
 
 const TeamList: React.FC<TeamListProps> = ({ teams }) => {
@@ -14,7 +14,7 @@ const TeamList: React.FC<TeamListProps> = ({ teams }) => {
     <section>
       <h2>Teams</h2>
       {teams.map((team) => (
-        <TeamItem key={team.teamId} team={team} />
+        <TeamItem key={team.name} team={team} />
       ))}
     </section>
   )

@@ -12,10 +12,16 @@ type VerifyProject =
     };
    ok;
  };
+type TeamString = 
+ record {
+   name: text;
+   score: text;
+   teamMembers: vec text;
+ };
 type Team = 
  record {
+   name: text;
    score: nat;
-   teamId: text;
    teamMembers: vec text;
  };
 type Student = 
@@ -28,7 +34,20 @@ type Student =
    rank: text;
    score: nat;
    strikes: int;
-   teamId: text;
+   teamName: text;
+ };
+type Result_7 = 
+ variant {
+   err: text;
+   ok: vec record {
+             text;
+             text;
+           };
+ };
+type Result_6 = 
+ variant {
+   err: text;
+   ok: text;
  };
 type Result_5 = 
  variant {
@@ -74,20 +93,27 @@ type Activity =
    specialAnnouncement: text;
  };
 service : {
+  adminCreateTeam: (text) -> (Result_1);
+  adminDeleteTeam: (text) -> (Result_6);
+  adminGetAllTeamsWithTeamId: () -> (Result_7);
+  adminSyncTeamScores: () -> (Result_6);
   buildStudent: (text) -> (Result_2) query;
   buildTeam: (text) -> (Team) query;
   getActivity: (nat, nat) -> (vec Activity) query;
+  getActivityFeed: () -> (vec Activity) query;
   getAdmins: () -> (Result_5) query;
   getAllStudents: () -> (Result_5);
-  getAllTeams: () -> (vec Team);
+  getAllStudentsPrincipal: () -> (vec principal);
+  getAllTeams: () -> (vec TeamString) query;
   getStudent: (text) -> (Result_2);
   getStudentCompletedDays: () -> (Result_4);
   getStudentsFromTeam: (text) -> (Result_3);
   getTeam: (text) -> (Team);
   isEvenTest: (int) -> (bool) query;
+  isStudent: (text) -> (bool) query;
   registerAdmin: (text) -> (Result);
-  registerStudent: (text) -> (Result_2);
-  registerTeamMembers: (vec text, bool, text) -> (Result_1);
+  registerStudent: (text, text, text) -> (Result_2);
+  registerTeamMembers: (vec text, text) -> (Result_1);
   sanityCheckGetEmptyStudent: (text) -> (text);
   unregisterAdmin: (text) -> (Result);
   verifyProject: (text, nat) -> (VerifyProject);

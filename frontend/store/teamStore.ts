@@ -1,14 +1,14 @@
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Team } from '../types/types';
+import { Team, TeamString } from '../types/types';
 import { getTeam, getAllTeams } from '../services/actorService';
 
 export interface TeamStore {
     team: Team | undefined;
-    teams: Team[] | undefined;
+    teams: TeamString[] | undefined;
     getTeamError: string | undefined;
     getTeam: (teamId: string) => Promise<Team | undefined>;
-    getAllTeams: () => Promise<Team[] | undefined>;
+    getAllTeams: () => Promise<TeamString[] | undefined>;
 }
 
 const createTeamStore = (
@@ -18,12 +18,11 @@ const createTeamStore = (
     team: undefined,
     teams: undefined,
     getTeamError: undefined,
-    getAllTeams: async (): Promise<Team[] | undefined> => {
+    getAllTeams: async (): Promise<TeamString[] | undefined> => {
         try {
-            const fetchedTeams: Team[] = await getAllTeams();
-            console.log("teamStore" + fetchedTeams)
+            const fetchedTeams: TeamString[] = await getAllTeams();
             set({ teams: fetchedTeams });
-            console.log ("teamStore" + fetchedTeams)
+            console.log ("teamStore by names: " + useTeamStore.getState().teams.map((team) => team.name + ", "));
             return fetchedTeams;
         } catch (error) {
             // Handle the error and update the state with the error message

@@ -9,7 +9,7 @@ const ActivityList = lazy(() => import("./components/Activity/ActivityList"))
 const Footer = lazy(() => import("./components/Footer/Footer"))
 import Profile from "./components/Profile/Profile"
 import * as Verifier from "../src/declarations/Verifier"
-import { Team, Activity } from "./types/types"
+import { Team, Activity, TeamString } from "./types/types"
 
 import LoadingScreen from "./components/Loading/LoadingScreen"
 import Submit from "./components/Submit/Submit"
@@ -22,16 +22,16 @@ import Registration from "./components/Registration/registration"
 import Schedule from "./components/Schedule/Schedule"
 import Resources from "./components/Resources/Resources"
 //Dummy data for testing purposes
-const dummyTeams: Team[] = [
+const dummyTeams: TeamString[] = [
   {
+    name: "Team Alpha",
     teamMembers: ["1", "2", "3", "4", "5"],
-    score: BigInt(150),
-    teamId: "1",
+    score: "150",
   },
   {
+    name: "Team Bravo",
     teamMembers: ["6", "7", "8", "9", "10"],
-    score: BigInt(100),
-    teamId: "2",
+    score: "200",
   },
 ]
 
@@ -59,7 +59,7 @@ function App() {
   const getAllTeams = useTeamStore((state) => state.getAllTeams)
   const teams = useTeamStore((state) => state.teams)
 
-  const [team, setTeam] = useState<Team[]>(dummyTeams)
+  const [team, setTeam] = useState<TeamString[]>(dummyTeams)
 
   //set teams with real data from useTeamStore
 

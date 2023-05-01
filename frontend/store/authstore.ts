@@ -14,9 +14,10 @@ var authClient;
 
 interface AuthState {
   principal: Principal | null;
+  principalString: string | null;
   identity: Identity | null;
-  isAuthenticated: boolean;
   isLoggedIn: boolean;
+  isAuthenticated: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
   getIdentity: () => Promise<void>;
@@ -36,26 +37,31 @@ const loginOptions = {
   maxTimeToLive: BigInt(7) * BigInt(24) * BigInt(3_600_000_000_000), // 1 week
   windowOpenerFeatures:
     "toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100",
-  onSuccess: () => {
+  onSuccess: async () => {
     console.log("Login Successful!");
-    useUserStore.getState().getUser(useAuthStore.getState().principal);
-    if (useUserStore.getState().registered === false) {
+    let registered = await useUserStore.getState().isStudent(useAuthStore.getState().principalString);
+    if (registered === false) {
      window.location.href = '/register';
     }
-    useAuthStore.setState({ isLoggedIn: true });
+   
+    useUserStore.setState({ registered: registered });
   },
   onError: (error) => {
     console.error("Login Failed: ", error);
     toastError("Login Failed: " + error);
+    
   },
 };
 
 async function initAuth(set) {
+  console.log("initAuth")
   const storedState = sessionStorage.getItem("auth-storage");
+ 
   if (storedState) {
     try {
       const { principal, identity, isAuthenticated } = JSON.parse(storedState);
       set({ principal, identity, isAuthenticated });
+      
     } catch (e) {
       console.error("Unable to parse stored state from sessionStorage:", e);
     }
@@ -111,7 +117,7 @@ export const useAuthStore = create(
       const identity = await client.getIdentity();
       if (identity) {
         const principal = identity.getPrincipal();
-        set({ principal: principal, identity: identity, isAuthenticated: true });
+        set({ principal: principal, identity: identity, isAuthenticated: true, principalString: principal.toText() });
         console.log ("principal: ", principal.toText())
       } else {
         set({ principal: null, identity: null, isAuthenticated: false });

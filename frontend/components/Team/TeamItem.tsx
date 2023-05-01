@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Team } from "../../types/types"
+import { Team, TeamString } from "../../types/types"
 import StudentItem from "../Student/StudentItem"
 import { getStudent } from "../../services/actorService"
 import { Student } from "../../types/types"
@@ -10,7 +10,7 @@ import LoadingScreen from "../Loading/LoadingScreen"
 import Loader from "../Loading/Loader"
 
 interface TeamItemProps {
-  team: Team
+  team: TeamString
 }
 
 const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
@@ -50,7 +50,7 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
       onClick={handleToggle}
     >
       <div className="team-item-header">
-        <h3>{team.teamId}</h3>
+        <h3>{team.name}</h3>
         <span className={`toggle-arrow ${isActive ? "rotated" : ""}`}>▼</span>
       </div>
 

@@ -55,14 +55,13 @@ actor verifier {
 
     var activityHashmap = HashMap.fromIter<Text, Activity>(activityEntries.vals(), maxHashmapSize, isEq, Text.hash); //the activity feed stored by activity id
 
-    stable var teamIdCounter : Nat = 0;
     stable var activityIdCounter : Nat = 0;
 
     //types
     public type Student = {
         principalId : Text;
         name : Text;
-        teamId : Text;
+        teamName : Text;
         score : Nat;
         strikes : Int; //will use this if a student attempts to submit someone elses canister
         rank : Text;
@@ -79,15 +78,15 @@ actor verifier {
     };
 
     public type Team = {
-        teamId : Text;
+        name : Text;
         teamMembers : [Text];
         score : Nat
     };
 
-    public type DashboardTeam = {
-        teamId : Text;
-        teamMembers : [Student];
-        score : Nat
+    public type TeamString = {
+        name : Text;
+        teamMembers : [Text];
+        score : Text
     };
 
     public type Activity = {
@@ -227,15 +226,22 @@ actor verifier {
         }
     };
 
+    //public method for redirecting to registration page
+    public shared query func isStudent(principal : Text) : async Bool {
+        Debug.print("isStudent: " # principal);
+        _isStudent(Principal.fromText(principal))
+    };
+
     public shared ({ caller }) func getStudentCompletedDays() : async Result.Result<[DailyProject], Text> {
         let studentId = Principal.toText(caller);
         return #ok(U.safeGet(studentCompletedDaysHashMap, studentId, []))
     };
 
-    public shared ({ caller }) func registerStudent(name : Text, teamName : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
+    public shared ({ caller }) func registerStudent(name : Text, team : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
 
+        let teamName = U.trim(U.lowerCase(team));
         let principalId = Principal.toText(caller);
-        if (Text.size(cliPrincipal) <= 9 or cliPrincipal == "2vxsx-fae") {
+        if (cliPrincipal == "2vxsx-fae") {
             return #err("Invalid CLI Principal ID, run: dfx identity get-principal")
         };
 
@@ -244,12 +250,14 @@ actor verifier {
             return #err("Student already registered")
         };
 
-        //getallteamNames and compare to teamName to prevent errors (should come from a UI dropdown)
+        if (not _isTeamNameTaken(teamName)) {
+            return #err("Team" # teamName # "does not exist")
+        };
 
         var student = {
             principalId = principalId;
             name = U.trim(U.lowerCase(name));
-            teamId = U.trim(U.lowerCase(teamName));
+            teamName = U.trim(U.lowerCase(teamName));
             score = 0;
             strikes = 0;
             rank = "recruit";
@@ -261,18 +269,32 @@ actor verifier {
 
         if (U.safeGet(principalIdHashMap, principalId, "") == "") {
 
-            principalIdHashMap.put(principalId, name);
-            studentScoreHashMap.put(principalId, 0);
+            // get team id to continue registering by (id, name)
 
-            activityHashmap.put(
-                Nat.toText(activityIdCounter),
-                {
-                    activityId = Nat.toText(activityIdCounter);
-                    activity = name # " has registered for Motoko Bootcamp";
-                    specialAnnouncement = "newStudent"
-                },
-            );
-            activityIdCounter := activityIdCounter + 1;
+            let registerTeam = await registerTeamMembers([principalId], teamName);
+
+            if (Result.isOk(registerTeam)) {
+                studentTeamHashMap.put(principalId, teamName);
+                principalIdHashMap.put(principalId, name);
+                studentScoreHashMap.put(principalId, 0);
+
+                activityHashmap.put(
+                    Nat.toText(activityIdCounter),
+                    {
+                        activityId = Nat.toText(activityIdCounter);
+                        activity = name # " has registered for Motoko Bootcamp";
+                        specialAnnouncement = "newStudent"
+                    },
+                );
+                activityIdCounter := activityIdCounter + 1;
+
+                return #ok(student)
+            } else if (Result.isErr(registerTeam)) {
+
+                return #err("Error registering team")
+            } else {
+                return #err("Other?")
+            };
 
             #ok(student)
         } else {
@@ -359,7 +381,7 @@ actor verifier {
             return #err("User not found")
         };
 
-        var teamId = U.safeGet(studentTeamHashMap, principalId, "");
+        var teamName = U.safeGet(studentTeamHashMap, principalId, "");
 
         var strikes = U.safeGet(studentStrikesHashMap, principalId, 0);
 
@@ -370,7 +392,7 @@ actor verifier {
         var student = {
             principalId = principalId;
             name = name;
-            teamId = teamId;
+            teamName = teamName;
             score = score;
             strikes = strikes;
             rank = rank;
@@ -390,18 +412,44 @@ actor verifier {
 
     //teams
 
-    func _isTeam(teamId : Text) : Bool {
-        U.safeGet(teamNameHashMap, teamId, "") != ""
+    func _isTeamNameTaken(name : Text) : Bool {
+        for (team in teamNameHashMap.vals()) {
+            if (U.trim(U.lowerCase(team)) == U.trim(U.lowerCase(name))) {
+                return true
+            }
+        };
+        false
     };
 
-    public shared ({ caller }) func adminCreateTeam(name : Text) : async Result.Result<Text, Text> {
+    public shared ({ caller }) func adminCreateTeam(name : Text) : async Result.Result<Team, Text> {
         let principalId = Principal.toText(caller);
-        let teamId = Nat.toText(teamIdCounter);
 
-        if (U.safeGet(teamNameHashMap, teamId, "") == "") {
+        if (not _isTeamNameTaken(name)) {
 
-            teamNameHashMap.put(teamId, U.trim(U.lowerCase(name)));
-            #ok("Team " # name # "created!")
+            teamNameHashMap.put(name, U.trim(U.lowerCase(name)));
+            teamScoreHashMap.put(name, 0);
+            teamMembersHashMap.put(name, [""]);
+
+            let teamName = U.safeGet(teamNameHashMap, name, "");
+            let score = U.safeGet(teamScoreHashMap, name, 0);
+            let members = U.safeGet(teamMembersHashMap, name, []);
+
+            //activity
+            activityHashmap.put(
+                Nat.toText(activityIdCounter),
+                {
+                    activityId = Nat.toText(activityIdCounter);
+                    activity = "Welcome team " # teamName # " to Motoko Bootcamp!";
+                    specialAnnouncement = "newTeam"
+                },
+
+            );
+            activityIdCounter := activityIdCounter + 1;
+            #ok({
+                name = teamName;
+                score = score;
+                teamMembers = members
+            })
         } else {
             #err("Team already exists")
         }
@@ -417,6 +465,20 @@ actor verifier {
         } else {
             #err("Team does not exist")
         }
+    };
+
+    public shared ({ caller }) func adminSyncTeamScores() : async Result.Result<Text, Text> {
+        if (not isAdmin(caller)) {
+            return #err("Unauthorized")
+        };
+
+        for (team in teamNameHashMap.entries()) {
+            let teamId = team.0;
+            let teamScore = generateTeamScore(teamId);
+            teamScoreHashMap.put(teamId, teamScore)
+        };
+
+        #ok("Team scores synced")
     };
 
     public shared ({ caller }) func adminGetAllTeamsWithTeamId() : async Result.Result<[(Text, Text)], Text> {
@@ -459,6 +521,7 @@ actor verifier {
         Debug.print("updated score is " # Nat.toText(updatedScore));
 
         var team = {
+            name = U.safeGet(teamNameHashMap, teamId, "");
             teamId = teamId;
             teamMembers = teamMembers;
             score = (updatedScore)
@@ -478,6 +541,7 @@ actor verifier {
         Debug.print("updated score is " # Nat.toText(updatedScore));
 
         var team = {
+            name = U.safeGet(teamNameHashMap, teamId, "");
             teamId = teamId;
             teamMembers = teamMembers;
             score = (updatedScore)
@@ -511,96 +575,65 @@ actor verifier {
 
     };
 
-    private func incTeamIdCounter() : async () {
-        teamIdCounter := teamIdCounter + 1
-        //todo set aplhabet team
+    public func registerTeamMembers(newTeamMembers : [Text], team : Text) : async Result.Result<Team, Text> {
+
+        if (not _isTeamNameTaken(team)) {
+            return #err("Team not found")
+        };
+
+        var teamScore = U.safeGet(teamScoreHashMap, team, 0);
+        var teamMemberArray = (U.safeGet(teamMembersHashMap, team, []));
+        var teamMemberbuffer = Buffer.Buffer<Text>(1);
+
+        for (newMembers in newTeamMembers.vals()) {
+            if (U.safeGet(studentTeamHashMap, newMembers, "") != "") {
+                return #err("Student already on a team")
+            };
+            teamMemberbuffer.add(newMembers)
+        };
+
+        for (member in teamMemberArray.vals()) {
+            for (newMembers in newTeamMembers.vals()) {
+                if (member == newMembers) {
+                    return #err("Student already on team")
+                }
+            };
+            teamMemberbuffer.add(member)
+        };
+
+        teamMembersHashMap.put(team, Buffer.toArray(teamMemberbuffer));
+        teamScoreHashMap.put(team, generateTeamScore(team));
+        teamNameHashMap.put(team, team);
+
+        activityHashmap.put(
+            Nat.toText(activityIdCounter),
+            {
+                activityId = Nat.toText(activityIdCounter);
+                activity = "A new team member has joined team " # team;
+                specialAnnouncement = "newTeamMember"
+            },
+        );
+        activityIdCounter := activityIdCounter + 1;
+
+        return #ok({
+            name = U.safeGet(teamNameHashMap, team, "");
+            teamMembers = U.safeGet(teamMembersHashMap, team, []);
+            score = teamScore
+        })
+
     };
 
-    public func registerTeamMembers(newTeamMembers : [Text], createNewTeam : Bool, team : Text) : async Result.Result<Team, Text> {
+    //only used on frontend, delivers string as a quickfix to deal with bigints
+    public shared query func getAllTeams() : async [TeamString] {
 
-        //create new team or add to existing team
-        if (createNewTeam) {
-
-            await incTeamIdCounter();
-
-            var teamBuffer = Buffer.Buffer<Text>(1);
-            for (newMembers in newTeamMembers.vals()) {
-                if (U.safeGet(studentTeamHashMap, newMembers, "") != "") {
-                    return #err("Student already on a team")
-                };
-                teamBuffer.add(newMembers)
-            };
-
-            teamMembersHashMap.put(Nat.toText(teamIdCounter), Buffer.toArray(teamBuffer));
-            teamScoreHashMap.put(team, 0);
-
-            activityHashmap.put(
-                Nat.toText(activityIdCounter),
-                {
-                    activityId = Nat.toText(activityIdCounter);
-                    activity = "A new team has been created, the competition is heating up!";
-                    specialAnnouncement = "newTeam"
-                },
-            );
-            activityIdCounter := activityIdCounter + 1;
-
-            return #ok({
-                teamId = Nat.toText(teamIdCounter);
-                teamMembers = newTeamMembers;
-                score = U.safeGet(teamScoreHashMap, team, 0)
-            })
-
-        } else {
-
-            if (team == "") {
-                return #err("Team not found")
-            };
-
-            var teamScore = U.safeGet(teamScoreHashMap, team, 0);
-            var teamArray = (U.safeGet(teamMembersHashMap, team, []));
-            var teambuffer = Buffer.Buffer<Text>(1);
-
-            for (currentMembers in teamArray.vals()) {
-                if (U.safeGet(studentTeamHashMap, currentMembers, "") != "") {
-                    return #err("Student already on a team")
-                };
-
-                teambuffer.add(currentMembers)
-
-            };
-            for (newMembers in newTeamMembers.vals()) {
-                if (U.safeGet(studentTeamHashMap, newMembers, "") != "") {
-                    return #err("Student already on a team")
-                };
-                teambuffer.add(newMembers)
-            };
-
-            teamMembersHashMap.put(team, Buffer.toArray(teambuffer));
-
-            activityHashmap.put(
-                Nat.toText(activityIdCounter),
-                {
-                    activityId = Nat.toText(activityIdCounter);
-                    activity = "A new team member has joined team " # team;
-                    specialAnnouncement = "newTeamMember"
-                },
-            );
-            activityIdCounter := activityIdCounter + 1;
-
-            return #ok({
-                teamId = team;
-                teamMembers = U.safeGet(teamMembersHashMap, team, []);
-                score = teamScore
-            })
-        }
-    };
-
-    public shared func getAllTeams() : async [Team] {
-
-        var teamBuffer = Buffer.Buffer<Team>(1);
+        var teamBuffer = Buffer.Buffer<TeamString>(1);
         for (teamId in teamMembersHashMap.keys()) {
-            let team = await buildTeam(teamId);
-
+            let team = {
+                name = U.safeGet(teamNameHashMap, teamId, "");
+                teamId = teamId;
+                teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
+                score = Nat.toText(U.safeGet(teamScoreHashMap, teamId, 0))
+            };
             teamBuffer.add(team)
 
         };
@@ -629,7 +662,7 @@ actor verifier {
 
     public shared ({ caller }) func verifyProject(canisterIdText : Text, day : Nat) : async VerifyProject {
 
-        let canisterId = Principal.fromText(canisterIdText);
+        let canisterId = Principal.fromText(U.trim(canisterIdText));
         // Step 1: Verify that the caller is a registered student
         if (not (_isStudent(caller))) {
             return #err(#NotAStudent("Please login or register"))
@@ -717,9 +750,15 @@ actor verifier {
         // Step 4: Update the team score
         let team = _buildTeam(U.safeGet(studentTeamHashMap, studentId, ""));
         // Step 5: Update the team members
-        let teamScore = U.safeGet(teamScoreHashMap, team.teamId, 0);
-        teamScoreHashMap.put(team.teamId, teamScore + 1);
+        let teamScore = U.safeGet(teamScoreHashMap, team.name, 0);
+        teamScoreHashMap.put(team.name, teamScore + 1);
         return
+    };
+
+    //activity section
+
+    public shared query func getActivityFeed() : async [Activity] {
+        return Array.reverse(Iter.toArray(activityHashmap.vals()))
     };
 
     //#Upgrade hooks
