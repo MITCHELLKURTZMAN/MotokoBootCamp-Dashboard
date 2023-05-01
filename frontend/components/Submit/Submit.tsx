@@ -3,7 +3,10 @@ import "./_submit.scss"
 import { useUserStore } from "../../store/userStore"
 import { useAuthStore } from "../../store/authstore"
 import { toastError } from "../../services/toastService"
-import { DailyProject } from "src/declarations/Verifier/Verifier.did"
+import {
+  DailyProject,
+  DailyProjectText,
+} from "src/declarations/Verifier/Verifier.did"
 
 const Submit: React.FC = () => {
   const [canisterId, setCanisterId] = useState<string>("")
@@ -16,7 +19,8 @@ const Submit: React.FC = () => {
   const completedDays = useUserStore((state) => state.completedDays)
 
   const mapResultToStatus = () => {
-    let completedDays: DailyProject[] = useUserStore.getState().completedDays
+    let completedDays: DailyProjectText[] =
+      useUserStore.getState().completedDays
     return completedDays.map((day) => ({
       day: day.day,
       timeStamp: day.timeStamp,

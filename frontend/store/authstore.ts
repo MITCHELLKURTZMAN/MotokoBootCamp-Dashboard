@@ -43,7 +43,6 @@ const loginOptions = {
     if (registered === false) {
      window.location.href = '/register';
     }
-   
     useUserStore.setState({ registered: registered });
   },
   onError: (error) => {
@@ -59,8 +58,9 @@ async function initAuth(set) {
  
   if (storedState) {
     try {
-      const { principal, identity, isAuthenticated } = JSON.parse(storedState);
+      const { principal, identity, isAuthenticated, isLoggedIn } = JSON.parse(storedState);
       set({ principal, identity, isAuthenticated });
+      set ({ isLoggedIn: useAuthStore.getState().principalString !== "2vxsx-fae" });
       
     } catch (e) {
       console.error("Unable to parse stored state from sessionStorage:", e);

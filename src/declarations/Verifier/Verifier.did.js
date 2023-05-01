@@ -39,8 +39,14 @@ export const idlFactory = ({ IDL }) => {
     'teamMembers' : IDL.Vec(IDL.Text),
     'score' : IDL.Text,
   });
+  const DailyProjectText = IDL.Record({
+    'day' : IDL.Text,
+    'timeStamp' : IDL.Text,
+    'completed' : IDL.Text,
+    'canisterId' : IDL.Text,
+  });
   const Result_4 = IDL.Variant({
-    'ok' : IDL.Vec(DailyProject),
+    'ok' : IDL.Vec(DailyProjectText),
     'err' : IDL.Text,
   });
   const Result_3 = IDL.Variant({ 'ok' : IDL.Vec(Student), 'err' : IDL.Text });

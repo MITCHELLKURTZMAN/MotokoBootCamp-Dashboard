@@ -21,6 +21,7 @@ import { getAllTeams } from "./services/actorService"
 import Registration from "./components/Registration/registration"
 import Schedule from "./components/Schedule/Schedule"
 import Resources from "./components/Resources/Resources"
+import { useUserStore } from "./store/userStore"
 //Dummy data for testing purposes
 const dummyTeams: TeamString[] = [
   {

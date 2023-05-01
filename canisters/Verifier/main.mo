@@ -18,6 +18,7 @@ import Nat64 "mo:base/Nat64";
 import Time "mo:base/Time";
 import Test "test";
 import U "utils";
+import Bool "mo:base/Bool";
 
 actor verifier {
 
@@ -75,6 +76,13 @@ actor verifier {
         canisterId : Text;
         completed : Bool;
         timeStamp : Nat64
+    };
+
+    public type DailyProjectText = {
+        day : Text;
+        canisterId : Text;
+        completed : Text;
+        timeStamp : Text
     };
 
     public type Team = {
@@ -232,9 +240,20 @@ actor verifier {
         _isStudent(Principal.fromText(principal))
     };
 
-    public shared ({ caller }) func getStudentCompletedDays() : async Result.Result<[DailyProject], Text> {
+    public shared ({ caller }) func getStudentCompletedDays() : async Result.Result<[DailyProjectText], Text> {
         let studentId = Principal.toText(caller);
-        return #ok(U.safeGet(studentCompletedDaysHashMap, studentId, []))
+        let studentCompletedDays = U.safeGet(studentCompletedDaysHashMap, studentId, []).vals();
+        let studentCompletedDaysString = Buffer.Buffer<DailyProjectText>(1);
+        for (d in studentCompletedDays) {
+            studentCompletedDaysString.add({
+                day = Nat.toText(d.day);
+                canisterId = d.canisterId;
+                completed = Bool.toText(d.completed);
+                timeStamp = Nat64.toText(d.timeStamp)
+            })
+        };
+        #ok(Buffer.toArray(studentCompletedDaysString))
+
     };
 
     public shared ({ caller }) func registerStudent(name : Text, team : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {

@@ -12,6 +12,12 @@ export interface DailyProject {
   'completed' : boolean,
   'canisterId' : string,
 }
+export interface DailyProjectText {
+  'day' : string,
+  'timeStamp' : string,
+  'completed' : string,
+  'canisterId' : string,
+}
 export type Result = { 'ok' : null } |
   { 'err' : string };
 export type Result_1 = { 'ok' : Team } |
@@ -20,7 +26,7 @@ export type Result_2 = { 'ok' : Student } |
   { 'err' : string };
 export type Result_3 = { 'ok' : Array<Student> } |
   { 'err' : string };
-export type Result_4 = { 'ok' : Array<DailyProject> } |
+export type Result_4 = { 'ok' : Array<DailyProjectText> } |
   { 'err' : string };
 export type Result_5 = { 'ok' : Array<string> } |
   { 'err' : string };

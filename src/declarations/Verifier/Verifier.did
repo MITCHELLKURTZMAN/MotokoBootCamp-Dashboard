@@ -57,7 +57,7 @@ type Result_5 =
 type Result_4 = 
  variant {
    err: text;
-   ok: vec DailyProject;
+   ok: vec DailyProjectText;
  };
 type Result_3 = 
  variant {
@@ -78,6 +78,13 @@ type Result =
  variant {
    err: text;
    ok;
+ };
+type DailyProjectText = 
+ record {
+   canisterId: text;
+   completed: text;
+   day: text;
+   timeStamp: text;
  };
 type DailyProject = 
  record {

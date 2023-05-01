@@ -4,14 +4,14 @@ import { Student } from '../types/types';
 import { getVerifierActor } from '../services/actorService';
 import { VerifyProject } from 'src/declarations/Verifier/Verifier.did';
 import { toastError, toast, ToastType } from '../services/toastService';
-import { DailyProject } from '../../src/declarations/Verifier/Verifier.did';
+import { DailyProject, DailyProjectText } from '../../src/declarations/Verifier/Verifier.did';
 import { useAuthStore } from './authstore';
 
 export interface UserStore {
   readonly user: Student | undefined;
   readonly registered: boolean;
-  readonly completedDays: DailyProject[];
- 
+  readonly completedDays: DailyProjectText[];
+
 
   registerUser: (
     handle: string,
@@ -101,7 +101,6 @@ const createUserStore = (
 
   isStudent: async ( principal ): Promise<boolean> => {
     const isStudent = await (await (await getVerifierActor()).isStudent(principal));
-    useAuthStore.setState({ isLoggedin: principal !==  "2vxsx-fae" && principal !== null });
     return isStudent;
   },
 
@@ -130,6 +129,7 @@ const createUserStore = (
     set({}, true);
   },
   verifyProject: async (canisterId: string, day: number): Promise<VerifyProject> => {
+    console.log("USER STORE day: ", day);
     function getErrorMessage(errorObj: object): string | null {
       const values = Object.values(errorObj);
       if (values.length > 0) {
@@ -149,13 +149,12 @@ const createUserStore = (
       console.error("Unknown error:", result.err as any);
     }
   } else {
-    set({ result: { ...result } });
+    set({ result: { result } });
     toast("Project verified!", ToastType.Success);
     console.log("Result from verifyProject:", result);
     return result;
   }
 
-  return result;
   },
 });
 
