@@ -21,6 +21,7 @@ export const toastError = (err: any, preText: string = ''): void => {
         ...frostedGlassStyle,
         color: colors.textColor,
       },
+      duration: 10000,
     });
   } else {
     _toast.error(preText + err, {
@@ -28,6 +29,7 @@ export const toastError = (err: any, preText: string = ''): void => {
         ...frostedGlassStyle,
         color: colors.textColor,
       },
+      duration: 10000,
     });
   }
 };
@@ -47,6 +49,7 @@ export const toast = (message: string, toastType: ToastType): void => {
           backgroundColor: 'rgba(67, 138, 196, 0.1)', // Tinted blue for success
           color: colors.textColor,
         },
+        duration: 10000,
       });
       break;
     case ToastType.Error:
@@ -55,7 +58,9 @@ export const toast = (message: string, toastType: ToastType): void => {
           ...frostedGlassStyle,
           backgroundColor: 'rgba(245, 87, 22, 0.1)', // Tinted orange for error
           color: colors.textColor,
+        
         },
+        duration: 10000,
       });
       break;
     default:
@@ -65,6 +70,7 @@ export const toast = (message: string, toastType: ToastType): void => {
           backgroundColor: 'rgba(255, 255, 255, 0.1)', // Default tint
           color: colors.textColor,
         },
+        duration: 8000,
       });
       break;
   }

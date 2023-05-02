@@ -17,6 +17,7 @@
     "@tippyjs/react": "^4.2.6",
     "@types/react-tooltip": "^4.2.4",
     "chalk": "^5.2.0",
+    "d3": "^7.8.4",
     "dotenv": "^16.0.3",
     "node-emoji": "^1.11.0",
     "react": "^18.1.0",

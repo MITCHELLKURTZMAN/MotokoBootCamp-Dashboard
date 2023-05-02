@@ -1,8 +1,10 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import "./_profile.scss"
 import { useUserStore } from "../../store/userStore"
 import { useAuthStore } from "../../store/authstore"
 import { Student } from "../../types/types"
+import { toast, ToastType } from "../../services/toastService" // Import toast service
+import Modal from "./Modal"
 
 interface Props {
   user: Student
@@ -10,6 +12,7 @@ interface Props {
 
 const Profile: React.FC<Props> = ({}) => {
   const user = useUserStore((state) => state.user)
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     console.log("Profile component mounted")
@@ -19,6 +22,17 @@ const Profile: React.FC<Props> = ({}) => {
       console.log("Profile component unmounted")
     }
   }, [])
+
+  const handleCopyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        toast("Copied to clipboard", ToastType.Success)
+      },
+      (err) => {
+        toast("Failed to copy", ToastType.Error)
+      },
+    )
+  }
 
   return (
     <div className="profile">
@@ -43,13 +57,39 @@ const Profile: React.FC<Props> = ({}) => {
           <span className="value">{user?.score.toString()}</span>
         </div>
         <div className="profile-info-item">
-          <span className="label">CLI Principal ID:</span>
-          <span className="value">{user?.cliPrincipalId}</span>
+          <span className="label">Principal IDs:</span>
+
+          <button className="view-button" onClick={() => setShowModal(true)}>
+            View
+          </button>
         </div>
-        <div className="profile-info-item">
-          <span className="label">Principal ID:</span>
-          <span className="value">{user?.principalId}</span>
-        </div>
+        {showModal && (
+          <Modal onClose={() => setShowModal(false)}>
+            <div className="principal-id-modal">
+              <h3>Principal IDs</h3>
+              <div className="principal-id-item">
+                <span className="label">CLI Principal ID:</span>
+                <span className="value">{user?.cliPrincipalId}</span>
+                <button
+                  className="view-button"
+                  onClick={() => handleCopyToClipboard(user?.cliPrincipalId)}
+                >
+                  Copy to Clipboard
+                </button>
+              </div>
+              <div className="principal-id-item">
+                <span className="label">Principal ID:</span>
+                <span className="value">{user?.principalId}</span>
+                <button
+                  className="view-button"
+                  onClick={() => handleCopyToClipboard(user?.principalId)}
+                >
+                  Copy to Clipboard
+                </button>
+              </div>
+            </div>
+          </Modal>
+        )}
       </div>
     </div>
   )

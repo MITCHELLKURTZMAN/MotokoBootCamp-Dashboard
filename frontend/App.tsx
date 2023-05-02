@@ -7,6 +7,7 @@ const Nav = lazy(() => import("./components/Nav/Nav"))
 const TeamList = lazy(() => import("./components/Team/TeamList"))
 const ActivityList = lazy(() => import("./components/Activity/ActivityList"))
 const Footer = lazy(() => import("./components/Footer/Footer"))
+import Admin from "./components/Admin/Admin"
 import Profile from "./components/Profile/Profile"
 import * as Verifier from "../src/declarations/Verifier"
 import { Team, Activity, TeamString } from "./types/types"
@@ -22,6 +23,7 @@ import Registration from "./components/Registration/registration"
 import Schedule from "./components/Schedule/Schedule"
 import Resources from "./components/Resources/Resources"
 import { useUserStore } from "./store/userStore"
+
 //Dummy data for testing purposes
 const dummyTeams: TeamString[] = [
   {
@@ -35,24 +37,6 @@ const dummyTeams: TeamString[] = [
     score: "200",
   },
 ]
-
-// const activities: Activity[] = [
-//   {
-//     activityId: "1",
-//     specialAnnouncement: "",
-//     activity: 'John Smith completed the mission "Basic training day 1"',
-//   },
-//   {
-//     activityId: "2",
-//     specialAnnouncement: "",
-//     activity: "Jane Doe has been promoted to Lieutenant",
-//   },
-//   {
-//     activityId: "3",
-//     specialAnnouncement: "true",
-//     activity: "Team Bravo has achieved a new high score",
-//   },
-// ]
 
 function App() {
   const activities = useActivityStore((state) => state.activities)
@@ -107,6 +91,7 @@ function App() {
                 element={<Profile user={useUserStore.getState().user} />}
               />
               <Route path="register" element={<Registration />} />
+              <Route path="Admin" element={<Admin />} />
             </Routes>
           </main>
           <Footer />
