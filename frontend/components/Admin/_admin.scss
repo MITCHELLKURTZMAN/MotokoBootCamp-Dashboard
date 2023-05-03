@@ -1,26 +1,26 @@
 @import "../../_variables";
 
 .admin-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  grid-auto-rows: minmax(200px, auto);
+  align-items: start;
+  justify-items: stretch;
   padding: 20px;
   background-color: $secondary-color;
 }
 
-.admin-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  width: 100%;
-  max-width: 500px;
+.card {
   padding: 30px;
   background-color: $secondary-color;
   border-radius: 15px;
   box-shadow: 0 4px 6px $shadow-color;
-  gap: 20px;
+  min-height: 250px;
+}
+
+.card.double-width {
+  grid-column: span 2;
 }
 
 .stats,
@@ -42,27 +42,25 @@
 }
 
 .admin-submit {
-  align-self: center;
+  align-self: flex-end;
   padding: 12px 20px;
   background-color: $primary-color;
   color: $text-color;
   font-weight: bold;
   font-family: "Roboto", sans-serif;
- 
   text-decoration: none;
   border-radius: 8px;
   box-shadow: 0 2px 4px $shadow-color;
   transition: background-color 0.3s, box-shadow 0.3s;
   cursor: pointer;
-  }
-  
-  .admin-submit:hover {
+}
+
+.admin-submit:hover {
   background-color: darken($primary-color, 10%);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-  }
-  
-  .admin-submit:active {
+}
+
+.admin-submit:active {
   background-color: darken($primary-color, 20%);
   box-shadow: 0 1px 2px $shadow-color;
-  }
-  
+}

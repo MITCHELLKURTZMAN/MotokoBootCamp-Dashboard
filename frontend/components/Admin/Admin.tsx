@@ -46,50 +46,51 @@ const Admin: React.FC = () => {
   return (
     <div className="admin-container">
       <h1>Admin Gateway</h1>
-      <BarChart
-        totalUsers={parseInt(totalStudents)}
-        totalTeams={parseInt(totalTeams)}
-        totalProjectsCompleted={parseInt(totalProjectsCompleted)}
-      />
-      {/* <Heatmap /> */}
-
-      <div className="admin-form">
-        <div className="stats">
-          <h2>App Statistics</h2>
-          <p>Total Users: {totalStudents}</p>
-          <p>Total Teams: {totalTeams}</p>
-          <p>Total Projects Completed: {totalProjectsCompleted}</p>
-        </div>
-        <div className="team-creation">
-          <h2>Create Team</h2>
-          <form onSubmit={handleTeamCreation}>
-            <input
-              className="admin-input"
-              type="text"
-              placeholder="Team Name"
-              value={teamName}
-              onChange={(e) => setTeamName(e.target.value)}
-            />
-            <button className="admin-submit" type="submit">
-              Create Team
-            </button>
-          </form>
-        </div>
-        <div className="project-verification">
-          <h2>Verify Project</h2>
-          <form onSubmit={handleProjectVerification}>
-            <input
-              className="admin-input"
-              type="text"
-              placeholder="Project ID"
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-            />
-            <button className="admin-submit" type="submit">
-              Verify Project
-            </button>
-          </form>
-        </div>
+      <div className="card double-width">
+        <BarChart
+          totalUsers={parseInt(totalStudents)}
+          totalTeams={parseInt(totalTeams)}
+          totalProjectsCompleted={parseInt(totalProjectsCompleted)}
+        />
+      </div>
+      <div className="card double-width">
+        <Heatmap />
+      </div>
+      <div className="card stats">
+        <h2>App Statistics</h2>
+        <p>Total Users: {totalStudents}</p>
+        <p>Total Teams: {totalTeams}</p>
+        <p>Total Projects Completed: {totalProjectsCompleted}</p>
+      </div>
+      <div className="card team-creation">
+        <h2>Create Team</h2>
+        <form onSubmit={handleTeamCreation}>
+          <input
+            className="admin-input"
+            type="text"
+            placeholder="Team Name"
+            value={teamName}
+            onChange={(e) => setTeamName(e.target.value)}
+          />
+          <button className="admin-submit" type="submit">
+            Create Team
+          </button>
+        </form>
+      </div>
+      <div className="card project-verification">
+        <h2>Manual Project Verification</h2>
+        <form onSubmit={handleProjectVerification}>
+          <input
+            className="admin-input"
+            type="text"
+            placeholder="Project ID"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+          />
+          <button className="admin-submit" type="submit">
+            Verify Project
+          </button>
+        </form>
       </div>
     </div>
   )

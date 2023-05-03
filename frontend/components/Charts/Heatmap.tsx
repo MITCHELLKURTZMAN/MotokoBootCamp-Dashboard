@@ -12,7 +12,7 @@ const Heatmap: React.FC = () => {
   const createHeatmap = () => {
     const data = generateDummyData()
     const cellSize = 1000
-    const width = 500
+    const width = 1000
     const height = 500
 
     const svg = d3
