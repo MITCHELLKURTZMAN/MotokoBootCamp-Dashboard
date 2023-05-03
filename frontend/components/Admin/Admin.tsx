@@ -1,6 +1,9 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import "./_admin.scss"
-import Heatmap from "../../Heatmap/Heatmap"
+import Heatmap from "../Charts/Heatmap"
+import BarChart from "../Charts/BarChart"
+import { useAdminDataStore } from "../../store/adminDataStore"
+import { getVerifierActor } from "../../services/actorService"
 
 const Admin: React.FC = () => {
   const [teamName, setTeamName] = useState("")
@@ -11,6 +14,7 @@ const Admin: React.FC = () => {
     // Handle team creation logic
     console.log("Team created:", teamName)
     setTeamName("")
+    adminCreateTeam(teamName)
   }
 
   const handleProjectVerification = (e: React.FormEvent) => {
@@ -20,16 +24,41 @@ const Admin: React.FC = () => {
     setProjectId("")
   }
 
+  const totalStudents = useAdminDataStore((state) => state.totalStudents)
+  const totalTeams = useAdminDataStore((state) => state.totalTeams)
+  const totalProjectsCompleted = useAdminDataStore(
+    (state) => state.totalProjectsCompleted,
+  )
+  const adminCreateTeam = useAdminDataStore((state) => state.adminCreateTeam)
+
+  useEffect(() => {
+    useAdminDataStore.getState().getTotalStudents()
+  }, [])
+
+  useEffect(() => {
+    useAdminDataStore.getState().getTotalTeams()
+  }, [])
+
+  useEffect(() => {
+    useAdminDataStore.getState().getTotalProjectsCompleted()
+  }, [])
+
   return (
     <div className="admin-container">
       <h1>Admin Gateway</h1>
-      <Heatmap />
+      <BarChart
+        totalUsers={parseInt(totalStudents)}
+        totalTeams={parseInt(totalTeams)}
+        totalProjectsCompleted={parseInt(totalProjectsCompleted)}
+      />
+      {/* <Heatmap /> */}
+
       <div className="admin-form">
         <div className="stats">
           <h2>App Statistics</h2>
-          <p>Total Users: 1000</p>
-          <p>Total Teams: 250</p>
-          <p>Total Projects: 500</p>
+          <p>Total Users: {totalStudents}</p>
+          <p>Total Teams: {totalTeams}</p>
+          <p>Total Projects Completed: {totalProjectsCompleted}</p>
         </div>
         <div className="team-creation">
           <h2>Create Team</h2>

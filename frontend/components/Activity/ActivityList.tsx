@@ -11,9 +11,13 @@ const ActivityList: React.FC<ActivityListProps> = ({ activities }) => {
   return (
     <section className="activities">
       <h2>Intelligence Updates</h2>
-      {activities.map((activity) => (
-        <ActivityItem key={activity.activityId} activity={activity} />
-      ))}
+      {activities.length > 0 ? (
+        activities.map((activity) => (
+          <ActivityItem key={activity.activityId} activity={activity} />
+        ))
+      ) : (
+        <p>No activities available at the moment.</p>
+      )}
     </section>
   )
 }

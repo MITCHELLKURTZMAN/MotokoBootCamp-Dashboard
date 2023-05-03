@@ -67,11 +67,15 @@ const Registration: React.FC<Props> = ({}) => {
           onChange={(e) => setTeam(e.target.value)}
         >
           <option value="">Select your team (assigned in Discord)</option>
-          {teams.map((team) => (
-            <option key={team.name} value={team.name}>
-              {team.name}
-            </option>
-          ))}
+          {teams === undefined ? (
+            <option value="">No teams available</option>
+          ) : (
+            teams.map((team) => (
+              <option key={team.name} value={team.name}>
+                {team.name}
+              </option>
+            ))
+          )}
         </select>
 
         <div className="principal-id-container">

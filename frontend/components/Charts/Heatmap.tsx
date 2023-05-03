@@ -1,6 +1,8 @@
 import React, { useEffect } from "react"
-import colors from "../constants/colors"
+import colors from "../../constants/colors"
 import * as d3 from "d3"
+import "./_heatmap.scss"
+import { useAdminDataStore } from "../../store/adminDataStore"
 
 const Heatmap: React.FC = () => {
   useEffect(() => {
@@ -11,7 +13,7 @@ const Heatmap: React.FC = () => {
     const data = generateDummyData()
     const cellSize = 1000
     const width = 500
-    const height = 200
+    const height = 500
 
     const svg = d3
       .select("#heatmap")
@@ -81,7 +83,7 @@ const Heatmap: React.FC = () => {
   return (
     <div>
       <h2>Student Heatmap</h2>
-      <div id="heatmap" />
+      <div className="heatmap" id="heatmap" />
     </div>
   )
 }

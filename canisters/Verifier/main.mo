@@ -788,6 +788,29 @@ actor verifier {
         return Array.reverse(Iter.toArray(activityHashmap.vals()))
     };
 
+    //metrics section
+
+    public shared query func getTotalStudents() : async Text {
+        return Nat.toText(principalIdHashMap.size())
+    };
+
+    public shared query func getTotalTeams() : async Text {
+        return Nat.toText(teamNameHashMap.size())
+    };
+
+    public shared query func getTotalProjectsCompleted() : async Text {
+        //todo return the data per student for a heat map
+        var days = 0;
+
+        for (studentId in studentCompletedDaysHashMap.keys()) {
+            let completedDays = U.safeGet(studentCompletedDaysHashMap, studentId, []);
+            if (Array.size(completedDays) > 0) {
+                days := days + Array.size(completedDays)
+            }
+        };
+        return Nat.toText(days)
+    };
+
     //#Upgrade hooks
     system func preupgrade() {
 
