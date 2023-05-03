@@ -2,10 +2,10 @@ import { GetState, SetState, StateCreator, StoreApi, create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
 import { getVerifierActor } from '../services/actorService';
-import { VerifyProject } from 'src/declarations/Verifier/Verifier.did';
+import {  Result_1, VerifyProject } from 'src/declarations/Verifier/Verifier.did';
 import { toastError, toast, ToastType } from '../services/toastService';
-import { DailyProject, DailyProjectText } from '../../src/declarations/Verifier/Verifier.did';
-import { useAuthStore } from './authstore';
+import {  DailyProjectText } from '../../src/declarations/Verifier/Verifier.did';
+
 
 export interface UserStore {
   readonly user: Student | undefined;
@@ -19,6 +19,7 @@ export interface UserStore {
     CLIPrincipal: string
   ) => Promise<void>;
   
+  studentCreateHelpTicket: (description : string, githubUrl : string, canisterId : string, day : string) => Promise<Result_1>;
   getUser: (principalId: string) => Promise<Student | undefined>;
   clearUser: () => Promise<void>;
   clearAll: () => void;
@@ -68,6 +69,25 @@ const createUserStore = (
   user: undefined,
   registered: true,
   result: undefined,
+
+  studentCreateHelpTicket: async (
+    description: string,
+    githubUrl: string,
+    canisterId: string,
+    day: string
+  ): Promise<Result_1> => {
+    const result = await (
+      await getVerifierActor()
+    ).studentCreateHelpTicket(description, githubUrl, canisterId, day);
+    if ('err' in result) {
+      console.error(result.err);
+      toastError(result.err);
+    } else {
+      toast(`Your ticket has been created, please wait for admins to review!`, ToastType.Success);
+      set({ result: result.ok });
+    }
+    return result;
+  },
  
   registerUser: async (
     handle: string,

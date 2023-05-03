@@ -7,7 +7,7 @@ const Schedule = () => {
       <h2>Our Schedule</h2>
       <iframe
         className="calendar-iframe"
-        src="https://calendar.google.com/calendar/embed?src=e0a9c944a17afc070ed77f9f10688eaac557ebd0251c5e6d0b724253506d43b3%40group.calendar.google.com&ctz=America%2FNew_York"
+        src="https://calendar.google.com/calendar/u/0/embed?src=c_6aa8747b96696ec2475587b7d256d56eec735ddca3f2c5cebb32093e0f4667bc@group.calendar.google.com"
         width="800"
         height="600"
         scrolling="no"

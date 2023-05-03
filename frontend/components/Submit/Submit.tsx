@@ -7,6 +7,7 @@ import {
   DailyProject,
   DailyProjectText,
 } from "src/declarations/Verifier/Verifier.did"
+import HelpTicket from "./HelpTicket"
 
 const Submit: React.FC = () => {
   const [canisterId, setCanisterId] = useState<string>("")
@@ -102,6 +103,7 @@ const Submit: React.FC = () => {
           </div>
         </div>
       )}
+      <HelpTicket />
     </div>
   )
 }

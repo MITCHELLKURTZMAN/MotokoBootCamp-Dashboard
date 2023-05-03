@@ -55,8 +55,28 @@ actor verifier {
     //activity feed
 
     var activityHashmap = HashMap.fromIter<Text, Activity>(activityEntries.vals(), maxHashmapSize, isEq, Text.hash); //the activity feed stored by activity id
-
     stable var activityIdCounter : Nat = 0;
+
+    //Help Tickets
+    stable var helpTicketIdCounter : Nat = 0;
+
+    public type HelpTicket = {
+        helpTicketId : Text;
+        principalId : Text;
+        description : Text;
+        gitHubUrl : Text;
+        day : Text;
+        canisterId : Text;
+        resolved : Bool
+    };
+
+    stable var helpTicketEntries : [(Text, HelpTicket)] = [];
+    var helpTicketHashMap = HashMap.fromIter<Text, HelpTicket>(helpTicketEntries.vals(), maxHashmapSize, isEq, Text.hash); //the help ticket stored by help ticket id
+
+    func incHelpTicketIdCounter() : () {
+        helpTicketIdCounter := helpTicketIdCounter + 1;
+
+    };
 
     //types
     public type Student = {
@@ -254,6 +274,21 @@ actor verifier {
         };
         #ok(Buffer.toArray(studentCompletedDaysString))
 
+    };
+
+    public shared ({ caller }) func adminManuallyVerifyStudentDay(day : Text, student : Text) : async Result.Result<(), Text> {
+        if (not isAdmin(caller)) {
+            return #err("Unauthorized to verify student day")
+        };
+
+        _validated(
+            U.textToNat(day),
+
+            Principal.fromActor(verifier),
+            Principal.fromText(student),
+        );
+
+        return #ok()
     };
 
     public shared ({ caller }) func registerStudent(name : Text, team : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
@@ -761,6 +796,8 @@ actor verifier {
             completed = true;
             timeStamp = Nat64.fromIntWrap(Time.now())
         };
+
+        let studentName = U.safeGet(principalIdHashMap, studentId, "");
         studentCompletedDaysHashMap.put(Principal.toText(student), Array.append<DailyProject>(completedDays, [projectCompleted]));
         // Step 2: Generate the new student's score
         ignore generateStudentScore(Principal.toText(student));
@@ -769,7 +806,7 @@ actor verifier {
             Nat.toText(activityIdCounter),
             {
                 activityId = Nat.toText(activityIdCounter);
-                activity = "A challenger has completed day " # Nat.toText(day) # " of the competition!"; //todo add team name and name of student
+                activity = studentName # " has completed day " # Nat.toText(day) # " of the competition!";
                 specialAnnouncement = "ProjectCompleted"
             },
         );
@@ -811,6 +848,81 @@ actor verifier {
         return Nat.toText(days)
     };
 
+    //help ticket section
+    public shared ({ caller }) func studentCreateHelpTicket(description : Text, githubUrl : Text, canisterId : Text, day : Text) : async Result.Result<HelpTicket, Text> {
+
+        if (not (_isStudent(caller))) {
+            return #err("Please login or register")
+        };
+
+        var helpTicket = {
+            helpTicketId = Nat.toText(helpTicketIdCounter);
+            principalId = Principal.toText(caller);
+            description = description;
+            gitHubUrl = githubUrl;
+            canisterId = canisterId;
+            day = day;
+            resolved = false
+        };
+
+        helpTicketHashMap.put(Nat.toText(helpTicketIdCounter), helpTicket);
+        incHelpTicketIdCounter();
+
+        return #ok(helpTicket)
+    };
+
+    public shared query func getHelpTickets() : async [HelpTicket] {
+        var helpTicketbuffer = Buffer.Buffer<HelpTicket>(1);
+        for (ticket in helpTicketHashMap.vals()) {
+            if (ticket.resolved == false) {
+                helpTicketbuffer.add(ticket)
+            }
+        };
+        return Buffer.toArray(helpTicketbuffer)
+    };
+
+    public shared ({ caller }) func resolveHelpTicket(helpTicketId : Text, manuallyVerifyDay : Bool) : async Result.Result<HelpTicket, Text> {
+
+        if (not (_isStudent(caller))) {
+            return #err("Please login or register")
+        };
+
+        let helpTicket = U.safeGet(
+            helpTicketHashMap,
+            helpTicketId,
+            {
+                helpTicketId = "";
+                principalId = "";
+                description = "";
+                gitHubUrl = "";
+                canisterId = "";
+                day = "";
+                resolved = false
+            },
+        );
+
+        if (helpTicket.resolved) {
+            return #err("Help ticket already resolved")
+        };
+
+        if (manuallyVerifyDay) {
+            _validated(U.textToNat(helpTicket.day), Principal.fromText(helpTicket.canisterId), Principal.fromText(helpTicket.principalId))
+        };
+
+        var helpTicketResolved = {
+            helpTicketId = helpTicketId;
+            principalId = helpTicket.principalId;
+            description = helpTicket.description;
+            gitHubUrl = helpTicket.gitHubUrl;
+            canisterId = helpTicket.canisterId;
+            day = helpTicket.day;
+            resolved = true
+        };
+        helpTicketHashMap.put(helpTicketId, helpTicketResolved);
+
+        return #ok(helpTicket)
+    };
+
     //#Upgrade hooks
     system func preupgrade() {
 
@@ -826,7 +938,8 @@ actor verifier {
         studentRankEntries := Iter.toArray(studentRankHashMap.entries());
         studentCanisterIdEntries := Iter.toArray(studentCanisterIdHashMap.entries());
         canisterIdEntries := Iter.toArray(canisterIdHashMap.entries());
-        studentCliPrincipalIdEntries := Iter.toArray(studentCliPrincipalIdHashMap.entries())
+        studentCliPrincipalIdEntries := Iter.toArray(studentCliPrincipalIdHashMap.entries());
+        helpTicketEntries := Iter.toArray(helpTicketHashMap.entries())
     };
 
     system func postupgrade() {
@@ -842,7 +955,8 @@ actor verifier {
         studentRankEntries := [];
         studentCanisterIdEntries := [];
         canisterIdEntries := [];
-        studentCliPrincipalIdEntries := []
+        studentCliPrincipalIdEntries := [];
+        helpTicketEntries := []
     };
 
 }
