@@ -61,7 +61,11 @@ const getRandomSaying = () => {
   return funnySayings[index]
 }
 
-const LoadingScreen: React.FC = () => {
+interface LoadingScreenProps {
+  loaderSize?: string
+}
+
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ loaderSize }) => {
   const [loadingText, setLoadingText] = useState(getRandomSaying())
   const [isImageVisible, setImageVisible] = useState(false)
   const imageRef = useRef<HTMLImageElement>(null)
@@ -86,7 +90,11 @@ const LoadingScreen: React.FC = () => {
   }, [])
 
   return (
-    <div className="loading-screen">
+    <div
+      className={
+        loaderSize === "sm" ? "loading-screen-small" : "loading-screen"
+      }
+    >
       {isImageVisible ? (
         <img
           ref={imageRef}

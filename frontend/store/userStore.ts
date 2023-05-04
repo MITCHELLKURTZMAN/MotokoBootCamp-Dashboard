@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
 import { getVerifierActor } from '../services/actorService';
 import {  Result_1, VerifyProject } from 'src/declarations/Verifier/Verifier.did';
-import { toastError, toast, ToastType } from '../services/toastService';
+import { toastError, toast, ToastType, toastPromise } from '../services/toastService';
 import {  DailyProjectText } from '../../src/declarations/Verifier/Verifier.did';
 
 
@@ -76,33 +76,48 @@ const createUserStore = (
     canisterId: string,
     day: string
   ): Promise<Result_1> => {
-    const result = await (
+    const resultPromise = (
       await getVerifierActor()
     ).studentCreateHelpTicket(description, githubUrl, canisterId, day);
+  
+    toastPromise(resultPromise, {
+      loading: 'Creating help ticket...',
+      success: 'Your ticket has been created, please wait for admins to review!',
+      error: 'Error creating help ticket.',
+    }, ToastType.Success);
+  
+    const result = await resultPromise;
+  
     if ('err' in result) {
       console.error(result.err);
       toastError(result.err);
     } else {
-      toast(`Your ticket has been created, please wait for admins to review!`, ToastType.Success);
       set({ result: result.ok });
     }
+  
     return result;
   },
+  
  
-  registerUser: async (
+   registerUser: async (
     handle: string,
     teamName: string,
     CLIPrincipal: string
-   
   ): Promise<void> => {
-    const result = await (
-      await getVerifierActor()
-    ).registerStudent(handle, teamName, CLIPrincipal);
+    const resultPromise = (await getVerifierActor()).registerStudent(handle, teamName, CLIPrincipal);
+    
+    toastPromise(resultPromise, {
+      loading: 'Registering student...',
+      success: `${handle}, welcome to Motoko Bootcamp!`,
+      error: 'Error registering student.',
+    }, ToastType.Success);
+
+    const result = await resultPromise;
+
     if ('err' in result) {
       console.error(result.err);
       toastError(result.err);
     } else {
-      toast(`${handle}, welcome to Motoko Bootcamp!`, ToastType.Success);
       set({ user: toUserModel(result.ok) });
     }
   },
@@ -159,26 +174,37 @@ const createUserStore = (
       }
       return null;
     }
-  const result = await (
-    await getVerifierActor()
-  ).verifyProject(canisterId, BigInt(day));
-  if ('err' in result) {
-    const errorMessage = getErrorMessage(result.err);
-    if (errorMessage) {
-      toastError(errorMessage);
-      console.error(errorMessage);
-    } else {
-      console.error("Unknown error:", result.err as any);
+  
+    // Show a loading toast before starting the verification
+    toast('🫡 Verifying project...', ToastType.Loading);
+    
+    try {
+      const result = await (await getVerifierActor()).verifyProject(canisterId, BigInt(day));
+  
+      if ('err' in result) {
+        const errorMessage = getErrorMessage(result.err);
+        if (errorMessage) {
+          // Display error message
+          toastError(errorMessage);
+          console.error(errorMessage);
+        } else {
+          console.error("Unknown error:", result.err as any);
+        }
+      } else {
+        set({ result: { result } });
+        // Display success message
+        toast("Project verified!", ToastType.Success);
+        console.log("Result from verifyProject:", result);
+        return result;
+      }
+    } catch (error) {
+      // Display error message
+      toastError('Error verifying project.', error);
+      console.error(error);
     }
-  } else {
-    set({ result: { result } });
-    toast("Project verified!", ToastType.Success);
-    console.log("Result from verifyProject:", result);
-    return result;
-  }
-
   },
 });
+
 
 
 

@@ -829,6 +829,34 @@ actor verifier {
 
     //activity section
 
+    public shared ({ caller }) func adminSpecialAnnouncement(announcement : Text) : async () {
+        if (isAdmin(caller)) {
+            activityHashmap.put(
+                Nat.toText(activityIdCounter),
+                {
+                    activityId = Nat.toText(activityIdCounter);
+                    activity = announcement;
+                    specialAnnouncement = "Admin"
+                },
+            );
+            activityIdCounter := activityIdCounter + 1
+        }
+    };
+
+    public shared ({ caller }) func adminAnnounceTimedEvent(announcement : Text) : async () {
+        if (isAdmin(caller)) {
+            activityHashmap.put(
+                Nat.toText(activityIdCounter),
+                {
+                    activityId = Nat.toText(activityIdCounter);
+                    activity = announcement;
+                    specialAnnouncement = "AdminTimeEvent"
+                },
+            );
+            activityIdCounter := activityIdCounter + 1
+        }
+    };
+
     public shared query func getActivityFeed() : async [Activity] {
         return Array.reverse(Iter.toArray(activityHashmap.vals()))
     };

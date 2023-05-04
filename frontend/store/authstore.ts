@@ -1,7 +1,7 @@
 import { StoreApi, create } from "zustand";
 import { AuthClient } from "@dfinity/auth-client";
 import { Principal } from "@dfinity/principal";
-import { toastError } from "../services/toastService";
+import { toastError, toast, ToastType } from "../services/toastService";
 import { Identity } from "@dfinity/agent";
 import { useUserStore } from "./userStore";
 
@@ -39,11 +39,13 @@ const loginOptions = {
     "toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100",
   onSuccess: async () => {
     console.log("Login Successful!");
+    toast("Login Successful!", ToastType.Success);
     let registered = await useUserStore.getState().isStudent(useAuthStore.getState().principalString);
     if (registered === false) {
      window.location.href = '/register';
     }
     useUserStore.setState({ registered: registered });
+    
   },
   onError: (error) => {
     console.error("Login Failed: ", error);

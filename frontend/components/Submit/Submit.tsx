@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react"
 import "./_submit.scss"
 import { useUserStore } from "../../store/userStore"
-import { useAuthStore } from "../../store/authstore"
-import { toastError } from "../../services/toastService"
-import {
-  DailyProject,
-  DailyProjectText,
-} from "src/declarations/Verifier/Verifier.did"
+import { DailyProjectText } from "src/declarations/Verifier/Verifier.did"
 import HelpTicket from "./HelpTicket"
 
 const Submit: React.FC = () => {

@@ -11,8 +11,7 @@ import {
 
 import { Student, Team, TeamString } from '../types/types';
 import { useAuthStore } from '../store/authstore';
-import { toast } from 'react-hot-toast';
-import { toastError } from './toastService';
+
 
 const isLocal: boolean =
   window.location.origin.includes('localhost') ||

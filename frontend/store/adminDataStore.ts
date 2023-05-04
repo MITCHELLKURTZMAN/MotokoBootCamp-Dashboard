@@ -2,7 +2,7 @@ import { DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2 } from 'src/d
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getVerifierActor } from '../services/actorService';
-import { toastError, toast, ToastType } from '../services/toastService';
+import { toastError, toast, ToastType, toastPromise } from '../services/toastService';
 
 
 
@@ -38,7 +38,6 @@ const createAdminDataStore = (
         console.log("getTotalCompletedPerDay", result)
         if ('err' in result) {
             console.error(result.err);
-            toastError(result.err);
             } else {
                 set({ totalCompletedPerDay: result });
             }
@@ -47,16 +46,16 @@ const createAdminDataStore = (
 
 
     adminManuallyVerifyStudentDay: async (day: string, principalId: string): Promise<Result_1> => {
-        const result = await (await getVerifierActor()).adminManuallyVerifyStudentDay(day, principalId);
-        console.log("adminManuallyVerifyStudentDay", result)
-        if ('err' in result) {
-            console.error(result.err);
-            toastError(result.err);
-            } else {
-            toast(`Day Verified!`, ToastType.Success);
-            }
-            return result;
-    },
+        const resultPromise = (await getVerifierActor()).adminManuallyVerifyStudentDay(day, principalId);
+        await toastPromise(resultPromise, {
+          loading: 'Verifying day...',
+          success: 'Day Verified!',
+          error: 'Error verifying day.',
+        }, ToastType.Success);
+        const result = await resultPromise;
+        console.log("adminManuallyVerifyStudentDay", result);
+        return result;
+      },
     
     getHelpTickets: async (): Promise<HelpTicket[]> => {
         const result = await (await getVerifierActor()).getHelpTickets();
@@ -72,39 +71,39 @@ const createAdminDataStore = (
     },
 
     resolveHelpTicket: async (helpTicketId: string, resolved: boolean): Promise<Result_1> => {
-        const result = await (await getVerifierActor()).resolveHelpTicket(helpTicketId, resolved);
-        console.log("reolveHelpTicket", result)
-        if ('err' in result) {
-            console.error(result.err);
-            toastError(result.err);
-            } else {
-            toast(`Help Ticket Resolved!`, ToastType.Success);
-            }
-            return result;
-    },
+        const resultPromise = (await getVerifierActor()).resolveHelpTicket(helpTicketId, resolved);
+        await toastPromise(resultPromise, {
+          loading: 'Resolving Help Ticket...',
+          success: 'Help Ticket Resolved!',
+          error: 'Error resolving Help Ticket.',
+        }, ToastType.Success);
+        const result = await resultPromise;
+        console.log("resolveHelpTicket", result);
+        return result;
+      },
    
-    registerAdmin: async (principalId: string): Promise<Result> => {
-        const result = await (await getVerifierActor()).registerAdmin(principalId);
-        console.log("registerAdmin", result)
-        if ('err' in result) {
-            console.error(result.err);
-            toastError(result.err);
-            } else {
-            toast(`Help is on the way! Admin Registered.`, ToastType.Success);
-            }
-            return result;
-    },
-    adminCreateTeam: async (teamName: string): Promise<Result_2> => {
-        const result = await (await getVerifierActor()).adminCreateTeam(teamName);
-        console.log("adminCreateTeam", result)
-        if ('err' in result) {
-            console.error(result.err);
-            toastError(result.err);
-            } else {
-            toast(`Team Created!`, ToastType.Success);
-            }
-            return result;
-    },
+      registerAdmin: async (principalId: string): Promise<Result> => {
+        const resultPromise = (await getVerifierActor()).registerAdmin(principalId);
+        await toastPromise(resultPromise, {
+          loading: 'Registering admin...',
+          success: 'Help is on the way! Admin Registered.',
+          error: 'Error registering admin.',
+        }, ToastType.Success);
+        const result = await resultPromise;
+        console.log("registerAdmin", result);
+        return result;
+      },
+      adminCreateTeam: async (teamName: string): Promise<Result_2> => {
+        const resultPromise = (await getVerifierActor()).adminCreateTeam(teamName);
+        await toastPromise(resultPromise, {
+          loading: 'Creating team...',
+          success: 'Team Created!',
+          error: 'Error creating team.',
+        }, ToastType.Success);
+        const result = await resultPromise;
+        console.log("adminCreateTeam", result);
+        return result;
+      },
 
 
     getTotalStudents: async (): Promise<string> => {
