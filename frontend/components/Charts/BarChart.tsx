@@ -16,7 +16,7 @@ const BarChart: React.FC<BarChartProps> = ({
   const data = [
     { label: "Total Users", value: totalUsers },
     // { label: "Total Teams", value: totalTeams },
-    { label: "Total Projects Completed", value: totalProjectsCompleted / 5 },
+    { label: "Total Days Completed", value: totalProjectsCompleted },
   ]
 
   const width = 500

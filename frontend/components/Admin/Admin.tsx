@@ -74,7 +74,7 @@ const Admin: React.FC = () => {
             totalProjectsCompleted={parseInt(totalProjectsCompleted)}
           />
         </div>
-        <div className="card double-width">{/* <Heatmap /> */}</div>
+        {/* <div className="card double-width"><Heatmap /></div> */}
         <div className="card stats">
           <h2>App Statistics</h2>
           <p>Total Users: {totalStudents}</p>
