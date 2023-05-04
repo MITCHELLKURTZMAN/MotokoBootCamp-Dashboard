@@ -15,6 +15,12 @@ const Admin: React.FC = () => {
   const adminManuallyVerifyStudentDay = useAdminDataStore(
     (state) => state.adminManuallyVerifyStudentDay,
   )
+  const getTotalCompletedPerDay = useAdminDataStore(
+    (state) => state.getTotalCompletedPerDay,
+  )
+  const totalCompletedPerDay = useAdminDataStore(
+    (state) => state.totalCompletedPerDay,
+  )
 
   const handleTeamCreation = (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,6 +59,10 @@ const Admin: React.FC = () => {
     useAdminDataStore.getState().getTotalProjectsCompleted()
   }, [])
 
+  useEffect(() => {
+    getTotalCompletedPerDay()
+  }, [])
+
   return (
     <>
       <div className="admin-container">
@@ -64,15 +74,24 @@ const Admin: React.FC = () => {
             totalProjectsCompleted={parseInt(totalProjectsCompleted)}
           />
         </div>
-        <div className="card double-width">
-          <Heatmap />
-        </div>
+        <div className="card double-width">{/* <Heatmap /> */}</div>
         <div className="card stats">
           <h2>App Statistics</h2>
           <p>Total Users: {totalStudents}</p>
           <p>Total Teams: {totalTeams}</p>
           <p>Total Projects Completed: {totalProjectsCompleted}</p>
+
+          <p style={{ borderBottom: "1px solid grey" }}>
+            Total Students Completed Per Day
+          </p>
+
+          {Object.entries(totalCompletedPerDay).map(([day, count]) => (
+            <p key={day}>
+              Day {day.substring(3)}: {count}
+            </p>
+          ))}
         </div>
+
         <div className="card team-creation">
           <h2>Create Team</h2>
           <form onSubmit={handleTeamCreation}>

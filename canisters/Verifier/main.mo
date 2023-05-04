@@ -105,6 +105,14 @@ actor verifier {
         timeStamp : Text
     };
 
+    public type DailyTotalMetrics = {
+        day1 : Text;
+        day2 : Text;
+        day3 : Text;
+        day4 : Text;
+        day5 : Text
+    };
+
     public type Team = {
         name : Text;
         teamMembers : [Text];
@@ -826,6 +834,7 @@ actor verifier {
     };
 
     //metrics section
+    // TODO in the metrics section, these are computed on the fly. we can definitely add caching later.
 
     public shared query func getTotalStudents() : async Text {
         return Nat.toText(principalIdHashMap.size())
@@ -846,6 +855,35 @@ actor verifier {
             }
         };
         return Nat.toText(days)
+    };
+
+    public shared query func getTotalCompletedPerDay() : async DailyTotalMetrics {
+        var day1 = 0;
+        var day2 = 0;
+        var day3 = 0;
+        var day4 = 0;
+        var day5 = 0;
+
+        for (studentId in studentCompletedDaysHashMap.keys()) {
+            let completedDays = U.safeGet(studentCompletedDaysHashMap, studentId, []);
+            for (day in completedDays.vals()) {
+                switch (day.day) {
+                    case (1) { day1 := day1 + 1 };
+                    case (2) { day2 := day2 + 1 };
+                    case (3) { day3 := day3 + 1 };
+                    case (4) { day4 := day4 + 1 };
+                    case (5) { day5 := day5 + 1 };
+                    case (_) {}
+                }
+            }
+        };
+        return {
+            day1 = Nat.toText(day1);
+            day2 = Nat.toText(day2);
+            day3 = Nat.toText(day3);
+            day4 = Nat.toText(day4);
+            day5 = Nat.toText(day5)
+        }
     };
 
     //help ticket section

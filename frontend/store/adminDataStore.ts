@@ -1,4 +1,4 @@
-import { HelpTicket, Result, Result_1, Result_2 } from 'src/declarations/Verifier/Verifier.did';
+import { DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2 } from 'src/declarations/Verifier/Verifier.did';
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getVerifierActor } from '../services/actorService';
@@ -15,10 +15,12 @@ export interface AdminDataStore {
     getHelpTickets: () => Promise<HelpTicket[]>;
     resolveHelpTicket: (helpTicketId: string, resolved: boolean) => Promise<Result_1>;
     adminManuallyVerifyStudentDay:(day: string, principalId: string) => Promise<Result_1>;
+    getTotalCompletedPerDay: () => Promise<DailyTotalMetrics>;
     totalTeams: string;
     totalStudents: string;
     totalProjectsCompleted: string;
     helpTickets: [HelpTicket];
+    totalCompletedPerDay: DailyTotalMetrics;
 }
 
 const createAdminDataStore = (
@@ -29,6 +31,20 @@ const createAdminDataStore = (
     totalTeams: "0",
     totalProjectsCompleted: "0",
     helpTickets: [{day: "0", resolved: false, helpTicketId: "0", description: "0", gitHubUrl: "0", principalId: "0", canisterId: "0"}],
+    totalCompletedPerDay: {day1: "0", day2: "0", day3: "0", day4: "0", day5: "0"},
+
+    getTotalCompletedPerDay: async (): Promise<DailyTotalMetrics> => {
+        const result = await (await getVerifierActor()).getTotalCompletedPerDay();
+        console.log("getTotalCompletedPerDay", result)
+        if ('err' in result) {
+            console.error(result.err);
+            toastError(result.err);
+            } else {
+                set({ totalCompletedPerDay: result });
+            }
+            return result;
+    },
+
 
     adminManuallyVerifyStudentDay: async (day: string, principalId: string): Promise<Result_1> => {
         const result = await (await getVerifierActor()).adminManuallyVerifyStudentDay(day, principalId);

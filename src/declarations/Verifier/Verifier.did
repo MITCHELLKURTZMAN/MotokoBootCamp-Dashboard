@@ -94,6 +94,14 @@ type HelpTicket =
    principalId: text;
    resolved: bool;
  };
+type DailyTotalMetrics = 
+ record {
+   day1: text;
+   day2: text;
+   day3: text;
+   day4: text;
+   day5: text;
+ };
 type DailyProjectText = 
  record {
    canisterId: text;
@@ -133,6 +141,7 @@ service : {
   getStudentCompletedDays: () -> (Result_5);
   getStudentsFromTeam: (text) -> (Result_4);
   getTeam: (text) -> (Team);
+  getTotalCompletedPerDay: () -> (DailyTotalMetrics) query;
   getTotalProjectsCompleted: () -> (text) query;
   getTotalStudents: () -> (text) query;
   getTotalTeams: () -> (text) query;

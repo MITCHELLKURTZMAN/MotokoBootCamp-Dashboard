@@ -18,6 +18,13 @@ export interface DailyProjectText {
   'completed' : string,
   'canisterId' : string,
 }
+export interface DailyTotalMetrics {
+  'day1' : string,
+  'day2' : string,
+  'day3' : string,
+  'day4' : string,
+  'day5' : string,
+}
 export interface HelpTicket {
   'day' : string,
   'resolved' : boolean,
@@ -95,6 +102,7 @@ export interface _SERVICE {
   'getStudentCompletedDays' : ActorMethod<[], Result_5>,
   'getStudentsFromTeam' : ActorMethod<[string], Result_4>,
   'getTeam' : ActorMethod<[string], Team>,
+  'getTotalCompletedPerDay' : ActorMethod<[], DailyTotalMetrics>,
   'getTotalProjectsCompleted' : ActorMethod<[], string>,
   'getTotalStudents' : ActorMethod<[], string>,
   'getTotalTeams' : ActorMethod<[], string>,

@@ -60,6 +60,13 @@ export const idlFactory = ({ IDL }) => {
     'err' : IDL.Text,
   });
   const Result_4 = IDL.Variant({ 'ok' : IDL.Vec(Student), 'err' : IDL.Text });
+  const DailyTotalMetrics = IDL.Record({
+    'day1' : IDL.Text,
+    'day2' : IDL.Text,
+    'day3' : IDL.Text,
+    'day4' : IDL.Text,
+    'day5' : IDL.Text,
+  });
   const Result_1 = IDL.Variant({ 'ok' : HelpTicket, 'err' : IDL.Text });
   const VerifyProject = IDL.Variant({
     'ok' : IDL.Null,
@@ -100,6 +107,7 @@ export const idlFactory = ({ IDL }) => {
     'getStudentCompletedDays' : IDL.Func([], [Result_5], []),
     'getStudentsFromTeam' : IDL.Func([IDL.Text], [Result_4], []),
     'getTeam' : IDL.Func([IDL.Text], [Team], []),
+    'getTotalCompletedPerDay' : IDL.Func([], [DailyTotalMetrics], ['query']),
     'getTotalProjectsCompleted' : IDL.Func([], [IDL.Text], ['query']),
     'getTotalStudents' : IDL.Func([], [IDL.Text], ['query']),
     'getTotalTeams' : IDL.Func([], [IDL.Text], ['query']),
