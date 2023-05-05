@@ -26,13 +26,16 @@ const HelpTicket: React.FC<HelpTicketProps> = ({}) => {
   return (
     <div className="help-ticket">
       <h2 className="help-ticket__header">Submit Help Ticket</h2>
-      <label className="switch">
-        <input
-          type="checkbox"
-          onChange={() => setFormVisible(!isFormVisible)}
-        />
-        <span className="slider round"></span>
-      </label>
+      <div className="help-toggle">
+        <span className="help-toggle__label">Need Help? Toggle On</span>
+        <label className="switch">
+          <input
+            type="checkbox"
+            onChange={() => setFormVisible(!isFormVisible)}
+          />
+          <span className="slider round"></span>
+        </label>
+      </div>
       {isFormVisible && (
         <form className="help-ticket__form" onSubmit={handleHelpTicketSubmit}>
           <label htmlFor="issueDescription">Issue Description:</label>

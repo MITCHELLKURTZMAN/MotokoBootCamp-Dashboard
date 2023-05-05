@@ -54,6 +54,19 @@
   }
 }
 
+.help-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  &__label {
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+    color: $primary-color;
+  }
+}
+
+
 .switch {
   position: relative;
   display: inline-block;
