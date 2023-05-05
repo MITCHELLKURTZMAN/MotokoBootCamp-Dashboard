@@ -33,16 +33,16 @@ const commands = [
     description: 'Deploying the canisters...',
     emoji: emoji.get('airplane_departure'),
   },
-  {
-    command: 'dfx canister call Verifier adminCreateTeam "team 1"',
-    description: 'Creating Team 1...',
-    emoji: emoji.get('one'),
-  },
-  {
-    command: 'dfx canister call Verifier adminCreateTeam "team 2"',
-    description: 'Creating Team 2...',
-    emoji: emoji.get('two'),
-  },
+  // {
+  //   command: 'dfx canister call Verifier adminCreateTeam "team 1"',
+  //   description: 'Creating Team 1...',
+  //   emoji: emoji.get('one'),
+  // },
+  // {
+  //   command: 'dfx canister call Verifier adminCreateTeam "team 2"',
+  //   description: 'Creating Team 2...',
+  //   emoji: emoji.get('two'),
+  // },
 ];
 
 function executeCommands(index = 0) {

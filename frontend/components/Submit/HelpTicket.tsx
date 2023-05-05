@@ -25,9 +25,11 @@ const HelpTicket: React.FC<HelpTicketProps> = ({}) => {
 
   return (
     <div className="help-ticket">
-      <h2 className="help-ticket__header">Submit Help Ticket</h2>
+      <h2 className="help-ticket__header">Manual Submission</h2>
       <div className="help-toggle">
-        <span className="help-toggle__label">Need Help? Toggle On</span>
+        <span className="help-toggle__label">
+          Canister submission not working? Toggle On
+        </span>
         <label className="switch">
           <input
             type="checkbox"

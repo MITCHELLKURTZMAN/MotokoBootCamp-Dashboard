@@ -1,9 +1,9 @@
 import React from "react"
-import { Student } from "../../types/types"
+import { StudentList } from "../../types/types"
 import "./_student.scss"
 
 interface StudentItemProps {
-  student: Student
+  student: StudentList
 }
 
 const StudentItem: React.FC<StudentItemProps> = ({ student }) => {

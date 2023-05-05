@@ -6,6 +6,12 @@ export interface Activity {
   'specialAnnouncement' : string,
   'activity' : string,
 }
+export interface BulkStudent {
+  'teamName' : string,
+  'name' : string,
+  'cliPrincipalId' : string,
+  'principalId' : string,
+}
 export interface DailyProject {
   'day' : bigint,
   'timeStamp' : bigint,
@@ -44,13 +50,15 @@ export type Result_3 = { 'ok' : Student } |
   { 'err' : string };
 export type Result_4 = { 'ok' : Array<Student> } |
   { 'err' : string };
-export type Result_5 = { 'ok' : Array<DailyProjectText> } |
+export type Result_5 = { 'ok' : Array<StudentList> } |
   { 'err' : string };
-export type Result_6 = { 'ok' : Array<string> } |
+export type Result_6 = { 'ok' : Array<DailyProjectText> } |
   { 'err' : string };
-export type Result_7 = { 'ok' : string } |
+export type Result_7 = { 'ok' : Array<string> } |
   { 'err' : string };
-export type Result_8 = { 'ok' : Array<[string, string]> } |
+export type Result_8 = { 'ok' : string } |
+  { 'err' : string };
+export type Result_9 = { 'ok' : Array<[string, string]> } |
   { 'err' : string };
 export interface Student {
   'completedDays' : Array<DailyProject>,
@@ -62,6 +70,11 @@ export interface Student {
   'cliPrincipalId' : string,
   'principalId' : string,
   'strikes' : bigint,
+}
+export interface StudentList {
+  'name' : string,
+  'rank' : string,
+  'score' : string,
 }
 export interface Team {
   'name' : string,
@@ -84,22 +97,26 @@ export type VerifyProject = { 'ok' : null } |
       { 'NotImplemented' : string }
   };
 export interface _SERVICE {
+  'adminAnnounceTimedEvent' : ActorMethod<[string], undefined>,
   'adminCreateTeam' : ActorMethod<[string], Result_2>,
-  'adminDeleteTeam' : ActorMethod<[string], Result_7>,
-  'adminGetAllTeamsWithTeamId' : ActorMethod<[], Result_8>,
+  'adminDeleteTeam' : ActorMethod<[string], Result_8>,
+  'adminGetAllTeamsWithTeamId' : ActorMethod<[], Result_9>,
   'adminManuallyVerifyStudentDay' : ActorMethod<[string, string], Result>,
-  'adminSyncTeamScores' : ActorMethod<[], Result_7>,
+  'adminSpecialAnnouncement' : ActorMethod<[string], undefined>,
+  'adminSyncTeamScores' : ActorMethod<[], Result_8>,
   'buildStudent' : ActorMethod<[string], Result_3>,
   'buildTeam' : ActorMethod<[string], Team>,
+  'bulkRegisterStudents' : ActorMethod<[Array<BulkStudent>], Result>,
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
   'getActivityFeed' : ActorMethod<[], Array<Activity>>,
-  'getAdmins' : ActorMethod<[], Result_6>,
-  'getAllStudents' : ActorMethod<[], Result_6>,
+  'getAdmins' : ActorMethod<[], Result_7>,
+  'getAllStudents' : ActorMethod<[], Result_7>,
   'getAllStudentsPrincipal' : ActorMethod<[], Array<Principal>>,
   'getAllTeams' : ActorMethod<[], Array<TeamString>>,
   'getHelpTickets' : ActorMethod<[], Array<HelpTicket>>,
   'getStudent' : ActorMethod<[string], Result_3>,
-  'getStudentCompletedDays' : ActorMethod<[], Result_5>,
+  'getStudentCompletedDays' : ActorMethod<[], Result_6>,
+  'getStudentsForTeamDashboard' : ActorMethod<[string], Result_5>,
   'getStudentsFromTeam' : ActorMethod<[string], Result_4>,
   'getTeam' : ActorMethod<[string], Team>,
   'getTotalCompletedPerDay' : ActorMethod<[], DailyTotalMetrics>,

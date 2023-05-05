@@ -1,14 +1,18 @@
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Team, TeamString } from '../types/types';
+import { Student, Team, TeamString, StudentList } from '../types/types';
 import { getTeam, getAllTeams } from '../services/actorService';
+import { getVerifierActor } from '../services/actorService';
+import { Result_5 } from 'src/declarations/Verifier/Verifier.did';
 
 export interface TeamStore {
     team: Team | undefined;
     teams: TeamString[] | undefined;
     getTeamError: string | undefined;
+    TeamsStudents: StudentList[] | undefined;
     getTeam: (teamId: string) => Promise<Team | undefined>;
     getAllTeams: () => Promise<TeamString[] | undefined>;
+    getStudentsForTeamDashboard: (teamId: string) => Promise<Result_5>;
 }
 
 const createTeamStore = (
@@ -18,6 +22,24 @@ const createTeamStore = (
     team: undefined,
     teams: undefined,
     getTeamError: undefined,
+    TeamsStudents: undefined,
+
+    getStudentsForTeamDashboard: async (teamId: string): Promise<Result_5> => {
+        try {
+            const fetchedStudents: Result_5 = await (await getVerifierActor()).getStudentsForTeamDashboard(teamId);
+          if ('err' in fetchedStudents) {
+            throw fetchedStudents.err;
+            }
+            set({ TeamsStudents: fetchedStudents.ok });
+            return fetchedStudents;
+        } catch (error) {
+            // Handle the error and update the state with the error message
+            const errorMessage = 'Error fetching students for team dashboard';
+            set({ getTeamError: errorMessage });
+            return undefined;
+        }
+    },
+
     getAllTeams: async (): Promise<TeamString[] | undefined> => {
         try {
             const fetchedTeams: TeamString[] = await getAllTeams();
@@ -44,6 +66,8 @@ const createTeamStore = (
         }
     },
 });
+
+
 
 
 export const useTeamStore = create<TeamStore> ()(

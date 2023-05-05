@@ -365,6 +365,86 @@ actor verifier {
         }
     };
 
+    type BulkStudent = {
+        principalId : Text;
+        name : Text;
+        teamName : Text;
+        cliPrincipalId : Text
+    };
+
+    public shared ({ caller }) func bulkRegisterStudents(students : [BulkStudent]) : async Result.Result<(), Text> {
+
+        if (not isAdmin(caller)) {
+            return #err("Unauthorized to register students")
+        };
+
+        for (s in students.vals()) {
+            let teamName = U.trim(U.lowerCase(s.teamName));
+            let principalId = Principal.toText(Principal.fromText(s.principalId));
+            let cliPrincipal = U.trim(U.lowerCase(s.cliPrincipalId));
+
+            if (cliPrincipal == "2vxsx-fae") {
+                return #err("Invalid CLI Principal ID, run: dfx identity get-principal")
+            };
+
+            //check if student already exists
+            if (_isStudent(Principal.fromText(s.principalId))) {
+                return #err("Student already registered")
+            };
+
+            if (not _isTeamNameTaken(teamName)) {
+                return #err("Team" # teamName # "does not exist")
+            };
+
+            var newStudent = {
+                principalId = principalId;
+                name = U.trim(U.lowerCase(s.name));
+                teamName = U.trim(U.lowerCase(teamName));
+                score = 0;
+                strikes = 0;
+                rank = "recruit";
+                canisterIds = [];
+                completedDays = [];
+                cliPrincipalId = cliPrincipal;
+
+            };
+
+            if (U.safeGet(principalIdHashMap, principalId, "") == "") {
+
+                // get team id to continue registering by (id, name)
+
+                let registerTeam = await registerTeamMembers([principalId], teamName);
+
+                if (Result.isOk(registerTeam)) {
+                    studentTeamHashMap.put(principalId, teamName);
+                    principalIdHashMap.put(principalId, s.name);
+                    studentScoreHashMap.put(principalId, 0);
+                    studentCliPrincipalIdHashMap.put(principalId, cliPrincipal);
+
+                    activityHashmap.put(
+                        Nat.toText(activityIdCounter),
+                        {
+                            activityId = Nat.toText(activityIdCounter);
+                            activity = s.name # " has registered for Motoko Bootcamp";
+                            specialAnnouncement = "newStudent"
+                        },
+                    );
+                    activityIdCounter := activityIdCounter + 1;
+
+                } else if (Result.isErr(registerTeam)) {
+
+                    return #err("Error registering team")
+                } else {
+                    return #err("Other?")
+                };
+
+            } else {
+                return #err("Student already registered")
+            }
+        };
+        #ok()
+    };
+
     //todo decide what a student can update without messing things up.
     // public shared ({ caller }) func updateStudentInfo(name : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
 
@@ -427,13 +507,13 @@ actor verifier {
         };
 
         studentScoreHashMap.put(principalId, score);
-        score
+        score * 20
 
     };
 
     public query func buildStudent(principalId : Text) : async Result.Result<Student, Text> {
         let getScore = generateStudentScore(principalId);
-        let score = generateStudentScore(principalId) * 20; //considering 5 days TODO double check this
+        let score = generateStudentScore(principalId); //considering 5 days TODO double check this
 
         //100% / 5 = 20
 
@@ -645,6 +725,30 @@ actor verifier {
 
     };
 
+    public type StudentList = {
+        name : Text;
+        rank : Text;
+        score : Text;
+
+    };
+
+    public shared query func getStudentsForTeamDashboard(teamId : Text) : async Result.Result<[StudentList], Text> {
+
+        var studentBuffer = Buffer.Buffer<StudentList>(1);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
+        for (member in teamMembers.vals()) {
+            let studentListItem = {
+                name = U.safeGet(principalIdHashMap, member, "");
+                score = Nat.toText(generateStudentScore(member));
+                rank = U.safeGet(studentRankHashMap, member, "")
+            };
+            studentBuffer.add(studentListItem)
+        };
+
+        #ok(Buffer.toArray(studentBuffer))
+
+    };
+
     public func registerTeamMembers(newTeamMembers : [Text], team : Text) : async Result.Result<Team, Text> {
 
         if (not _isTeamNameTaken(team)) {
@@ -713,17 +817,6 @@ actor verifier {
     //test suite
     public shared query func isEvenTest(number : Int) : async Bool {
         return number % 2 == 0
-    };
-
-    public shared query func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
-        var activityBuffer = Buffer.Buffer<Activity>(1);
-        for (activity in activityHashmap.vals()) {
-            if (U.textToNat(activity.activityId) >= lowerBound and U.textToNat(activity.activityId) <= upperBound) {
-                activityBuffer.add(activity)
-            }
-        };
-
-        return Array.reverse(Buffer.toArray(activityBuffer))
     };
 
     public type TestResult = Test.TestResult;
@@ -857,8 +950,32 @@ actor verifier {
         }
     };
 
+    public shared query func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
+        var activityBuffer = Buffer.Buffer<Activity>(1);
+        for (activity in activityHashmap.vals()) {
+            if (U.textToNat(activity.activityId) >= lowerBound and U.textToNat(activity.activityId) <= upperBound) {
+                activityBuffer.add(activity)
+            }
+        };
+
+        return Array.reverse(Buffer.toArray(activityBuffer))
+    };
+
     public shared query func getActivityFeed() : async [Activity] {
-        return Array.reverse(Iter.toArray(activityHashmap.vals()))
+        var activityBuffer = Buffer.Buffer<Activity>(1);
+        var lowerBound = Nat.sub(activityIdCounter, 50);
+        var upperBound = Nat.sub(activityIdCounter, 0);
+
+        if (lowerBound < 0) {
+            lowerBound := 0
+        };
+        for (activity in activityHashmap.vals()) {
+            if (U.textToNat(activity.activityId) >= lowerBound and U.textToNat(activity.activityId) <= upperBound) {
+                activityBuffer.add(activity)
+            }
+        };
+
+        return Array.reverse(Buffer.toArray(activityBuffer))
     };
 
     //metrics section

@@ -40,27 +40,20 @@ const dummyTeams: TeamString[] = [
 
 function App() {
   const activities = useActivityStore((state) => state.activities)
-  const getActivity = useActivityStore((state) => state.getActivity)
-  const getAllTeams = useTeamStore((state) => state.getAllTeams)
+  const getActivityFeed = useActivityStore((state) => state.getActivityFeed)
+
   const teams = useTeamStore((state) => state.teams)
-  const user = useUserStore((state) => state.user)
-  const getUser = useUserStore((state) => state.getUser)
 
   const [team, setTeam] = useState<TeamString[]>(dummyTeams)
 
-  //set teams with real data from useTeamStore
-
   useEffect(() => {
-    // Fetch activities when the component is mounted
-    getActivity()
-  }, [])
+    getActivityFeed()
+    const intervalId = setInterval(() => {
+      getActivityFeed()
+    }, 5000)
 
-  useEffect(() => {
-    // Fetch teams when the component is mounted
-    getAllTeams()
-    if (teams === undefined) {
-      getAllTeams()
-    }
+    // Clear the interval when the component is unmounted
+    return () => clearInterval(intervalId)
   }, [])
 
   return (
@@ -77,7 +70,7 @@ function App() {
                 element={
                   <>
                     <React.Suspense fallback={<div>Loading TeamList...</div>}>
-                      <TeamList teams={teams ? teams : team} />
+                      <TeamList />
                     </React.Suspense>
                     <ActivityList activities={activities} />
                   </>

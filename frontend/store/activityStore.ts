@@ -1,14 +1,14 @@
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Activity } from '../types/types';
-import { getActivity } from '../services/actorService';
+import { getActivityFeed } from '../services/actorService';
 
 
 
 export interface ActivityStore {
   activities: Activity[] | undefined;
   getActivityError: string | undefined;
-  getActivity: () => Promise<Activity[] | undefined>;
+  getActivityFeed: () => Promise<Activity[] | undefined>;
 }
 
 const createActivityStore = (
@@ -17,9 +17,9 @@ const createActivityStore = (
 ): ActivityStore => ({
   activities: undefined,
   getActivityError: undefined,
-  getActivity: async (): Promise<Activity[] | undefined> => {
+  getActivityFeed: async (): Promise<Activity[] | undefined> => {
     try {
-    const fetchedActivities: Activity[] = await getActivity();
+    const fetchedActivities: Activity[] = await getActivityFeed();
       set({ activities: fetchedActivities });
       return fetchedActivities;
     } catch (error) {

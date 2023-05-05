@@ -1,24 +1,27 @@
-import React from "react"
-import { Student } from "../../types/types"
+import React, { useEffect } from "react"
 import StudentItem from "./StudentItem"
-import "./_student.scss"
+import { useTeamStore } from "../../store/teamStore"
+import { StudentList } from "frontend/types/types"
 
-interface StudentListProps {
-  Students?: Student[]
+interface TeamProps {
+  teamName: string
 }
 
-const StudentList: React.FC<StudentListProps> = ({ Students }) => {
-  if (!Students) {
-    return null
-  }
+const Team: React.FC<TeamProps> = ({ teamName }) => {
+  useEffect(() => {
+    useTeamStore.getState().getStudentsForTeamDashboard(teamName)
+    console.log("teamName", teamName)
+  }, [])
+
+  const students = useTeamStore((state) => state.TeamsStudents) || []
 
   return (
-    <div className="Student-list">
-      {Students.map((Student) => (
-        <StudentItem key={Student.principalId} student={Student} />
+    <div>
+      {students.map((student: StudentList) => (
+        <StudentItem student={student} />
       ))}
     </div>
   )
 }
 
-export default StudentList
+export default Team

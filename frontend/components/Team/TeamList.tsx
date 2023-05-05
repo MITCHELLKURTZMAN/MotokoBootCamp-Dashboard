@@ -5,11 +5,19 @@ import "./_team.scss"
 import { useTeamStore } from "../../store/teamStore"
 import { useEffect } from "react"
 
-interface TeamListProps {
-  teams: TeamString[]
-}
+interface TeamListProps {}
 
-const TeamList: React.FC<TeamListProps> = ({ teams }) => {
+const TeamList: React.FC<TeamListProps> = () => {
+  const teams = useTeamStore((state) => state.teams)
+  const getAllTeams = useTeamStore((state) => state.getAllTeams)
+
+  useEffect(() => {
+    getAllTeams()
+    if (teams === undefined) {
+      getAllTeams()
+    }
+  }, [])
+
   return (
     <section>
       <h2>Teams</h2>

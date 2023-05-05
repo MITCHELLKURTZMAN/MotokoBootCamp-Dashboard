@@ -98,7 +98,7 @@ const Submit: React.FC = () => {
           </div>
         </div>
       )}
-      <HelpTicket />
+      {/* <HelpTicket /> */}
     </div>
   )
 }

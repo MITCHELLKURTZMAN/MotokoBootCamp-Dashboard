@@ -20,11 +20,11 @@ const Nav: React.FC = () => {
             Submit Code
           </Link>
         </li>
-        <li>
+        {/* <li>
           <Link to="/schedule" className="nav-link">
             Schedule
           </Link>
-        </li>
+        </li> */}
         {/* <li>
           <Link to="/resources" className="nav-link">
             Resources

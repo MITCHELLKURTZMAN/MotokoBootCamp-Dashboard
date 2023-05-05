@@ -31,9 +31,9 @@ export async function getVerifierActor(): Promise<ActorSubclass<VerifierService>
 }
 
 //TODO refactor out and use in activitystore
-export async function getActivity(): Promise<Activity[] | undefined> {
+export async function getActivityFeed(): Promise<Activity[] | undefined> {
   const verifier = await getVerifierActor();
-  const result = await verifier.getActivity(BigInt(0), BigInt(300));
+  const result = await verifier.getActivityFeed();
   if ('err' in result) {
     console.error(result.err);
     return undefined;

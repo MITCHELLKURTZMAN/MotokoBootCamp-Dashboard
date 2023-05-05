@@ -158,9 +158,9 @@ const Admin: React.FC = () => {
           </form>
         </div>
       </div>
-      <div className="card double width">
+      {/* <div className="card double width">
         <HelpTicketFeed />
-      </div>
+      </div> */}
     </>
   )
 }

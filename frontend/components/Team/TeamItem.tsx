@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from "react"
-import { Team, TeamString } from "../../types/types"
-import StudentItem from "../Student/StudentItem"
-import { getStudent } from "../../services/actorService"
+import { TeamString } from "../../types/types"
+
+import StudentList from "../Student/StudentList"
 import { Student } from "../../types/types"
-import { useAuthStore } from "../../store/authstore"
 import "./_team.scss"
-import { useUserStore } from "../../store/userStore"
-import LoadingScreen from "../Loading/LoadingScreen"
-import Loader from "../Loading/Loader"
 
 interface TeamItemProps {
   team: TeamString
@@ -17,32 +13,18 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
   const [isActive, setIsActive] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
-
-  const { user } = useAuthStore()
-
-  const student = useUserStore((state) => state.user)
-
-  useEffect(() => {
-    console.log("team", team)
-    const fetchStudents = async () => {
-      const fetchedStudents = await Promise.all(
-        team.teamMembers.map(async (studentId) => {
-          if (studentId.length < 4) return null
-          return await getStudent(studentId)
-        }),
-      )
-
-      setStudents(fetchedStudents.filter((student) => student !== null))
-      setLoading(false)
-    }
-
-    fetchStudents()
-  }, [team])
+  const [teams, setTeams] = useState<TeamString[]>()
 
   const handleToggle = (event) => {
     event.stopPropagation()
     setIsActive(!isActive)
   }
+
+  useEffect(() => {
+    if (team !== undefined) {
+      setLoading(false)
+    }
+  }, [teams])
 
   return (
     <div
@@ -80,9 +62,7 @@ const TeamItem: React.FC<TeamItemProps> = ({ team }) => {
           </button>
           <div className="Student-list-container">
             <div className="Student-list">
-              {students.map((student) => (
-                <StudentItem key={student.principalId} student={student} />
-              ))}
+              <StudentList teamName={team.name} />
             </div>
           </div>
         </div>
