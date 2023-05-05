@@ -101,6 +101,7 @@ body.menu-open {
   height: 10px;
   margin-top: 10px;
   overflow: hidden;
+  width: 100%;
   filter: drop-shadow(1px 2px 0px black);
 }
 
@@ -108,6 +109,7 @@ body.menu-open {
   background-color: $primary-color;
   height: 100%;
   opacity: 0.5;
+
 }
 
 .skeleton {

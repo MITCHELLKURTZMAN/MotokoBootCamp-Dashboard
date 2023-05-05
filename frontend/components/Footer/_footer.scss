@@ -24,8 +24,8 @@ footer p {
 
 .footer-hero{
   width: 100%;
-  height: auto;
-  z-index: 0;
+    max-height: 201px;
+    object-fit: contain;
 }
 @media screen and (max-width: 768px) {
   footer {

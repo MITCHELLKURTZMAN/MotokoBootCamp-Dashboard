@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import StudentItem from "./StudentItem"
 import { useTeamStore } from "../../store/teamStore"
 import { StudentList } from "frontend/types/types"
@@ -8,12 +8,23 @@ interface TeamProps {
 }
 
 const Team: React.FC<TeamProps> = ({ teamName }) => {
-  useEffect(() => {
-    useTeamStore.getState().getStudentsForTeamDashboard(teamName)
-    console.log("teamName", teamName)
-  }, [])
+  const getStudentsForTeamDashboard = useTeamStore(
+    (state) => state.getStudentsForTeamDashboard,
+  )
 
-  const students = useTeamStore((state) => state.TeamsStudents) || []
+  const [students, setStudents] = useState<StudentList[]>([])
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      const result = await getStudentsForTeamDashboard(teamName)
+      if ("ok" in result) {
+        setStudents(result.ok) // set the students to the local state
+      } else {
+        console.error(result.err) // handle the error case
+      }
+    }
+    fetchStudents()
+  }, [teamName, getStudentsForTeamDashboard])
 
   return (
     <div>

@@ -21,9 +21,14 @@ const TeamList: React.FC<TeamListProps> = () => {
   return (
     <section>
       <h2>Teams</h2>
-      {teams.map((team) => (
-        <TeamItem key={team.name} team={team} />
-      ))}
+      {teams &&
+        teams.map((team) => (
+          <TeamItem
+            key={team.name}
+            teamname={team.name}
+            teamscore={team.score}
+          />
+        ))}
     </section>
   )
 }
