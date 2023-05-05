@@ -61,7 +61,7 @@ function App() {
       <Router>
         <Suspense fallback={<LoadingScreen />}>
           <Toaster />
-          <Header />
+
           <Nav />
           <main>
             <Routes>

@@ -28,6 +28,7 @@ const Profile: React.FC<Props> = ({}) => {
 
   useEffect(() => {
     setLoading(user === undefined)
+    //TODO add case for logged out user
   }, [user])
 
   const handleCopyToClipboard = (text: string) => {
