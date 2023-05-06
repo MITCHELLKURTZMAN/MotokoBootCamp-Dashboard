@@ -29,7 +29,7 @@
       "frontend": {
         "entrypoint": "dist/index.html"
       },
-      "source": ["dist/"],
+      "source": ["dist/", "well-known/"],
       "type": "assets"
     }
   },

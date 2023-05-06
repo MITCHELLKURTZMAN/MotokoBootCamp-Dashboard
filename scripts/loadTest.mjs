@@ -4,7 +4,7 @@ import { exec } from 'child_process';
 
 let loadTestCommands = [];
 
-for (let i = 1; i <= 10; i++) {
+for (let i = 1; i <= 35; i++) {
   // Switch to the default identity for admin actions
   loadTestCommands.push({
     command: `dfx identity use default`,
@@ -22,12 +22,14 @@ for (let i = 1; i <= 10; i++) {
   for (let j = 1; j <= 30; j++) {
     const identityName = `student${j}ofTeam${i}`;
 
-    // Create a new identity
-    // loadTestCommands.push({
-    //   command: `dfx identity new ${identityName}`,
-    //   description: `Creating Identity ${identityName}...`,
-    //   emoji: emoji.get('key'),
-    // });
+    //Create a new identity
+    if (i > 10 ) {
+    loadTestCommands.push({
+      command: `dfx identity new ${identityName}`,
+      description: `Creating Identity ${identityName}...`,
+      emoji: emoji.get('key'),
+    });
+    }
 
     // Use the new identity
     loadTestCommands.push({

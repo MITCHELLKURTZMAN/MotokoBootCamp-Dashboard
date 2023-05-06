@@ -6,12 +6,6 @@ export interface Activity {
   'specialAnnouncement' : string,
   'activity' : string,
 }
-export interface BulkStudent {
-  'teamName' : string,
-  'name' : string,
-  'cliPrincipalId' : string,
-  'principalId' : string,
-}
 export interface DailyProject {
   'day' : bigint,
   'timeStamp' : bigint,
@@ -44,21 +38,19 @@ export type Result = { 'ok' : null } |
   { 'err' : string };
 export type Result_1 = { 'ok' : HelpTicket } |
   { 'err' : string };
-export type Result_2 = { 'ok' : Team } |
+export type Result_2 = { 'ok' : Student } |
   { 'err' : string };
-export type Result_3 = { 'ok' : Student } |
+export type Result_3 = { 'ok' : Array<Student> } |
   { 'err' : string };
-export type Result_4 = { 'ok' : Array<Student> } |
+export type Result_4 = { 'ok' : Array<StudentList> } |
   { 'err' : string };
-export type Result_5 = { 'ok' : Array<StudentList> } |
+export type Result_5 = { 'ok' : Array<DailyProjectText> } |
   { 'err' : string };
-export type Result_6 = { 'ok' : Array<DailyProjectText> } |
+export type Result_6 = { 'ok' : Array<string> } |
   { 'err' : string };
-export type Result_7 = { 'ok' : Array<string> } |
+export type Result_7 = { 'ok' : string } |
   { 'err' : string };
-export type Result_8 = { 'ok' : string } |
-  { 'err' : string };
-export type Result_9 = { 'ok' : Array<[string, string]> } |
+export type Result_8 = { 'ok' : Team } |
   { 'err' : string };
 export interface Student {
   'completedDays' : Array<DailyProject>,
@@ -98,39 +90,35 @@ export type VerifyProject = { 'ok' : null } |
   };
 export interface _SERVICE {
   'adminAnnounceTimedEvent' : ActorMethod<[string], undefined>,
-  'adminCreateTeam' : ActorMethod<[string], Result_2>,
-  'adminDeleteTeam' : ActorMethod<[string], Result_8>,
-  'adminGetAllTeamsWithTeamId' : ActorMethod<[], Result_9>,
+  'adminCreateTeam' : ActorMethod<[string], Result_8>,
+  'adminDeleteTeam' : ActorMethod<[string], Result_7>,
   'adminManuallyVerifyStudentDay' : ActorMethod<[string, string], Result>,
   'adminSpecialAnnouncement' : ActorMethod<[string], undefined>,
-  'adminSyncTeamScores' : ActorMethod<[], Result_8>,
-  'buildStudent' : ActorMethod<[string], Result_3>,
+  'adminSyncTeamScores' : ActorMethod<[], Result_7>,
+  'buildStudent' : ActorMethod<[string], Result_2>,
   'buildTeam' : ActorMethod<[string], Team>,
-  'bulkRegisterStudents' : ActorMethod<[Array<BulkStudent>], Result>,
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
   'getActivityFeed' : ActorMethod<[], Array<Activity>>,
-  'getAdmins' : ActorMethod<[], Result_7>,
-  'getAllStudents' : ActorMethod<[], Result_7>,
+  'getAdmins' : ActorMethod<[], Result_6>,
+  'getAllStudents' : ActorMethod<[], Result_6>,
   'getAllStudentsPrincipal' : ActorMethod<[], Array<Principal>>,
   'getAllTeams' : ActorMethod<[], Array<TeamString>>,
   'getHelpTickets' : ActorMethod<[], Array<HelpTicket>>,
-  'getStudent' : ActorMethod<[string], Result_3>,
-  'getStudentCompletedDays' : ActorMethod<[], Result_6>,
-  'getStudentsForTeamDashboard' : ActorMethod<[string], Result_5>,
-  'getStudentsFromTeam' : ActorMethod<[string], Result_4>,
+  'getStudent' : ActorMethod<[string], Result_2>,
+  'getStudentCompletedDays' : ActorMethod<[], Result_5>,
+  'getStudentsForTeamDashboard' : ActorMethod<[string], Result_4>,
+  'getStudentsFromTeam' : ActorMethod<[string], Result_3>,
   'getTeam' : ActorMethod<[string], Team>,
   'getTotalCompletedPerDay' : ActorMethod<[], DailyTotalMetrics>,
   'getTotalProjectsCompleted' : ActorMethod<[], string>,
   'getTotalStudents' : ActorMethod<[], string>,
   'getTotalTeams' : ActorMethod<[], string>,
-  'getUser' : ActorMethod<[], Result_3>,
+  'getUser' : ActorMethod<[], Result_2>,
   'isEvenTest' : ActorMethod<[bigint], boolean>,
   'isStudent' : ActorMethod<[string], boolean>,
   'registerAdmin' : ActorMethod<[string], Result>,
-  'registerStudent' : ActorMethod<[string, string, string], Result_3>,
-  'registerTeamMembers' : ActorMethod<[Array<string>, string], Result_2>,
+  'registerStudent' : ActorMethod<[string, string, string], Result_2>,
   'resolveHelpTicket' : ActorMethod<[string, boolean], Result_1>,
-  'sanityCheckGetEmptyStudent' : ActorMethod<[string], string>,
   'studentCreateHelpTicket' : ActorMethod<
     [string, string, string, string],
     Result_1

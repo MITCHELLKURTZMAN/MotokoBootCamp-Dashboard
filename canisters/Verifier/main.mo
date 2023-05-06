@@ -46,7 +46,7 @@ actor verifier {
     var studentScoreHashMap = HashMap.fromIter<Text, Nat>(studentScoreEntries.vals(), maxHashmapSize, isEq, Text.hash); //the score of the student
     var studentTeamHashMap = HashMap.fromIter<Text, Text>(studentTeamEntries.vals(), maxHashmapSize, isEq, Text.hash); //the team the student is on
     var studentStrikesHashMap = HashMap.fromIter<Text, Int>(studentStrikesEntries.vals(), maxHashmapSize, isEq, Text.hash); //a way to detect if a student is cheating
-    var studentRankHashMap = HashMap.fromIter<Text, Text>(studentRankEntries.vals(), maxHashmapSize, isEq, Text.hash); //the rank of the student (see Public Type Rank for names)
+    var studentRankHashMap = HashMap.fromIter<Text, Text>(studentRankEntries.vals(), maxHashmapSize, isEq, Text.hash); //the rank of the student (see Rank array for names)
     var studentCompletedDaysHashMap = HashMap.fromIter<Text, [DailyProject]>(studentCompletedDaysEntries.vals(), maxHashmapSize, isEq, Text.hash); //the days the student has completed
     var studentCanisterIdHashMap = HashMap.fromIter<Text, [Text]>(studentCanisterIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the canister id or [ids] the student has registered (can use one or many but cannot be someone elses)
     var canisterIdHashMap = HashMap.fromIter<Text, Text>(canisterIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the global list of canister ids to cross check against
@@ -205,6 +205,10 @@ actor verifier {
 
     public shared ({ caller }) func registerAdmin(id : Text) : async Result.Result<(), Text> {
 
+        if (id == "2vxsx-fae") {
+            return #err("Unauthorized to register anonymous admin")
+        };
+
         if (List.size<Text>(admins) > 0 and not isAdmin(caller)) {
             return #err("Unauthorized to register admin")
         };
@@ -262,6 +266,11 @@ actor verifier {
         }
     };
 
+    func isAnon(p : Principal) : Bool {
+        let id = Principal.toText(p);
+        id == "2vxsx-fae"
+    };
+
     //public method for redirecting to registration page
     public shared query func isStudent(principal : Text) : async Bool {
         Debug.print("isStudent: " # principal);
@@ -289,6 +298,10 @@ actor verifier {
             return #err("Unauthorized to verify student day")
         };
 
+        if (_hasStudentCompletedDay(U.textToNat(day), Principal.fromText(student))) {
+            return #err("Student has already completed this project")
+        };
+
         _validated(
             U.textToNat(day),
 
@@ -312,8 +325,11 @@ actor verifier {
     public shared ({ caller }) func registerStudent(userName : Text, team : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
         let name = U.trim(U.lowerCase(userName));
         let teamName = U.trim(U.lowerCase(team));
-
         let principalId = Principal.toText(caller);
+
+        if (isAnon(caller)) {
+            return #err("Anonymous user cannot register")
+        };
         if (cliPrincipal == "2vxsx-fae") {
             return #err("Invalid CLI Principal ID, run: dfx identity get-principal")
         };
@@ -378,119 +394,6 @@ actor verifier {
         } else {
             #err("Student already registered")
         }
-    };
-
-    type BulkStudent = {
-        principalId : Text;
-        name : Text;
-        teamName : Text;
-        cliPrincipalId : Text
-    };
-
-    public shared ({ caller }) func bulkRegisterStudents(students : [BulkStudent]) : async Result.Result<(), Text> {
-
-        if (not isAdmin(caller)) {
-            return #err("Unauthorized to register students")
-        };
-
-        for (s in students.vals()) {
-            let teamName = U.trim(U.lowerCase(s.teamName));
-            let principalId = Principal.toText(Principal.fromText(s.principalId));
-            let cliPrincipal = U.trim(U.lowerCase(s.cliPrincipalId));
-
-            if (cliPrincipal == "2vxsx-fae") {
-                return #err("Invalid CLI Principal ID, run: dfx identity get-principal")
-            };
-
-            //check if student already exists
-            if (_isStudent(Principal.fromText(s.principalId))) {
-                return #err("Student already registered")
-            };
-
-            if (not _isTeamNameTaken(teamName)) {
-                return #err("Team" # teamName # "does not exist")
-            };
-
-            var newStudent = {
-                principalId = principalId;
-                name = U.trim(U.lowerCase(s.name));
-                teamName = U.trim(U.lowerCase(teamName));
-                score = 0;
-                strikes = 0;
-                rank = "recruit";
-                canisterIds = [];
-                completedDays = [];
-                cliPrincipalId = cliPrincipal;
-
-            };
-
-            if (U.safeGet(principalIdHashMap, principalId, "") == "") {
-
-                // get team id to continue registering by (id, name)
-
-                let registerTeam = await registerTeamMembers([principalId], teamName);
-
-                if (Result.isOk(registerTeam)) {
-                    studentTeamHashMap.put(principalId, teamName);
-                    principalIdHashMap.put(principalId, s.name);
-                    studentScoreHashMap.put(principalId, 0);
-                    studentCliPrincipalIdHashMap.put(principalId, cliPrincipal);
-
-                    activityHashmap.put(
-                        Nat.toText(activityIdCounter),
-                        {
-                            activityId = Nat.toText(activityIdCounter);
-                            activity = s.name # " has registered for Motoko Bootcamp";
-                            specialAnnouncement = "newStudent"
-                        },
-                    );
-                    activityIdCounter := activityIdCounter + 1;
-
-                } else if (Result.isErr(registerTeam)) {
-
-                    return #err("Error registering team")
-                } else {
-                    return #err("Other?")
-                };
-
-            } else {
-                return #err("Student already registered")
-            }
-        };
-        #ok()
-    };
-
-    //todo decide what a student can update without messing things up.
-    // public shared ({ caller }) func updateStudentInfo(name : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
-
-    //     let principalId = Principal.toText(caller);
-
-    //     //getallteamNames and compare to teamName to prevent errors (should come from a UI dropdown)
-
-    //     if (U.safeGet(principalIdHashMap, principalId, "") == "") {
-
-    //         principalIdHashMap.put(principalId, name);
-    //         studentScoreHashMap.put(principalId, 0);
-
-    //         activityHashmap.put(
-    //             Nat.toText(activityIdCounter),
-    //             {
-    //                 activityId = Nat.toText(activityIdCounter);
-    //                 activity = name # " has registered for Motoko Bootcamp";
-    //                 specialAnnouncement = "newStudent"
-    //             },
-    //         );
-    //         activityIdCounter := activityIdCounter + 1;
-
-    //         #ok(student)
-    //     } else {
-    //         #err("Student already registered")
-    //     }
-    // };
-
-    public shared func sanityCheckGetEmptyStudent(principalId : Text) : async Text {
-        let principal = U.safeGet(principalIdHashMap, principalId, "");
-        return principal
     };
 
     //Function needed for the project on Day 4 - Do not delete. See: https://github.com/motoko-bootcamp/motoko-starter/tree/main/days/day-4/project
@@ -588,6 +491,10 @@ actor verifier {
     };
 
     public shared ({ caller }) func adminCreateTeam(teamName : Text) : async Result.Result<Team, Text> {
+        if (not isAdmin(caller)) {
+            return #err("You are not an admin")
+        };
+
         let name = U.trim(U.lowerCase(teamName));
         let principalId = Principal.toText(caller);
 
@@ -606,7 +513,7 @@ actor verifier {
                 Nat.toText(activityIdCounter),
                 {
                     activityId = Nat.toText(activityIdCounter);
-                    activity = "Welcome team " # teamName # " to Motoko Bootcamp!";
+                    activity = "Welcome new team," # teamName # ", to Motoko Bootcamp!";
                     specialAnnouncement = "newTeam"
                 },
 
@@ -623,15 +530,19 @@ actor verifier {
     };
 
     public shared ({ caller }) func adminDeleteTeam(teamId : Text) : async Result.Result<Text, Text> {
-        let principalId = Principal.toText(caller);
+        if (not isAdmin(caller)) {
+            return #err("You are not an admin")
+        };
+        // let principalId = Principal.toText(caller);
 
-        if (U.safeGet(teamNameHashMap, teamId, "") != "") {
+        // if (U.safeGet(teamNameHashMap, teamId, "") != "") {
 
-            teamNameHashMap.delete(teamId);
-            #ok("Team " # teamId # "deleted...")
-        } else {
-            #err("Team does not exist")
-        }
+        //     teamNameHashMap.delete(teamId);
+        //     #ok("Team " # teamId # "deleted...")
+        // } else {
+        //     #err("Team does not exist")
+        // }
+        #err("Func not fully implemented")
     };
 
     public shared ({ caller }) func adminSyncTeamScores() : async Result.Result<Text, Text> {
@@ -640,27 +551,16 @@ actor verifier {
         };
 
         for (team in teamNameHashMap.entries()) {
-            let teamId = team.0;
-            let teamScore = generateTeamScore(teamId);
-            teamScoreHashMap.put(teamId, teamScore)
+            let teamName = team.0;
+            let teamScore = generateTeamScore(teamName);
+            teamScoreHashMap.put(teamName, teamScore)
         };
 
         #ok("Team scores synced")
     };
 
-    public shared ({ caller }) func adminGetAllTeamsWithTeamId() : async Result.Result<[(Text, Text)], Text> {
-        let principalId = Principal.toText(caller);
-        var teamsBuffer = Buffer.Buffer<(Text, Text)>(teamNameHashMap.size());
-
-        for (team in teamNameHashMap.entries()) {
-            teamsBuffer.add(team)
-        };
-
-        #ok(Buffer.toArray(teamsBuffer))
-    };
-
-    func generateTeamScore(teamId : Text) : Nat {
-        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
+    func generateTeamScore(teamName : Text) : Nat {
+        var teamMembers = U.safeGet(teamMembersHashMap, teamName, []);
         var totalCompletedProjects = 0;
         var projectsRequiredPerStudent = 5;
 
@@ -671,25 +571,25 @@ actor verifier {
 
             let teamProgress = (totalCompletedProjects * 100) / (teamMembers.size() * projectsRequiredPerStudent);
 
-            teamScoreHashMap.put(teamId, teamProgress);
+            teamScoreHashMap.put(teamName, teamProgress);
             teamProgress
         } else {
             return 0
         }
     };
 
-    public shared query func buildTeam(teamId : Text) : async Team {
+    public shared query func buildTeam(teamName : Text) : async Team {
 
-        let updatedScore = generateTeamScore(teamId);
-        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
-        var teamScore = U.safeGet(teamScoreHashMap, teamId, 0);
+        let updatedScore = generateTeamScore(teamName);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamName, []);
+        var teamScore = U.safeGet(teamScoreHashMap, teamName, 0);
 
         Debug.print("team score is " # Nat.toText(teamScore));
         Debug.print("updated score is " # Nat.toText(updatedScore));
 
         var team = {
-            name = U.safeGet(teamNameHashMap, teamId, "");
-            teamId = teamId;
+            name = U.safeGet(teamNameHashMap, teamName, "");
+            teamName = teamName;
             teamMembers = teamMembers;
             score = (updatedScore)
         };
@@ -698,18 +598,18 @@ actor verifier {
     };
 
     // Synchronous version of the above.
-    func _buildTeam(teamId : Text) : Team {
+    func _buildTeam(teamName : Text) : Team {
 
-        let updatedScore = generateTeamScore(teamId);
-        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
-        var teamScore = U.safeGet(teamScoreHashMap, teamId, 0);
+        let updatedScore = generateTeamScore(teamName);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamName, []);
+        var teamScore = U.safeGet(teamScoreHashMap, teamName, 0);
 
         Debug.print("team score is " # Nat.toText(teamScore));
         Debug.print("updated score is " # Nat.toText(updatedScore));
 
         var team = {
-            name = U.safeGet(teamNameHashMap, teamId, "");
-            teamId = teamId;
+            name = U.safeGet(teamNameHashMap, teamName, "");
+            teamName = teamName;
             teamMembers = teamMembers;
             score = (updatedScore)
         };
@@ -717,15 +617,15 @@ actor verifier {
         return (team)
     };
 
-    public shared func getTeam(teamId : Text) : async Team {
+    public shared func getTeam(teamName : Text) : async Team {
 
-        await buildTeam(teamId)
+        await buildTeam(teamName)
     };
 
-    public shared func getStudentsFromTeam(teamId : Text) : async Result.Result<[Student], Text> {
+    public shared func getStudentsFromTeam(teamName : Text) : async Result.Result<[Student], Text> {
 
         var studentBuffer = Buffer.Buffer<Student>(1);
-        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamName, []);
         for (member in teamMembers.vals()) {
             let student = await buildStudent(member);
             switch (student) {
@@ -749,10 +649,10 @@ actor verifier {
 
     };
 
-    public shared query func getStudentsForTeamDashboard(teamId : Text) : async Result.Result<[StudentList], Text> {
+    public shared query func getStudentsForTeamDashboard(teamName : Text) : async Result.Result<[StudentList], Text> {
 
         var studentBuffer = Buffer.Buffer<StudentList>(1);
-        var teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
+        var teamMembers = U.safeGet(teamMembersHashMap, teamName, []);
         for (member in teamMembers.vals()) {
             let studentListItem = {
                 name = U.safeGet(principalIdHashMap, member, "");
@@ -766,7 +666,7 @@ actor verifier {
 
     };
 
-    public func registerTeamMembers(newTeamMembers : [Text], team : Text) : async Result.Result<Team, Text> {
+    func registerTeamMembers(newTeamMembers : [Text], team : Text) : async Result.Result<Team, Text> {
 
         if (not _isTeamNameTaken(team)) {
             return #err("Team not found")
@@ -819,7 +719,7 @@ actor verifier {
 
         var teamBuffer = Buffer.Buffer<TeamString>(1);
         for (teamName in teamMembersHashMap.keys()) {
-            Debug.print("team name is " # teamName);
+
             let team : TeamString = {
                 name = U.safeGet(teamNameHashMap, teamName, "");
                 teamMembers = U.safeGet(teamMembersHashMap, teamName, []);
@@ -840,7 +740,7 @@ actor verifier {
 
     public type TestResult = Test.TestResult;
     // Expand the base type with additional errors.
-    public type VerifyProject = TestResult or Result.Result<(), { #NotAStudent : Text; #InvalidDay : Text; #AlreadyCompleted : Text }>;
+    public type VerifyProject = TestResult or Result.Result<(), { #NotAController : Text; #NotAStudent : Text; #InvalidDay : Text; #AlreadyCompleted : Text }>;
 
     public shared ({ caller }) func verifyProject(canisterIdText : Text, day : Nat) : async VerifyProject {
 
@@ -853,10 +753,12 @@ actor verifier {
         if (_hasStudentCompletedDay(day, caller)) {
             return #err(#AlreadyCompleted("You have already completed this project"))
         };
-        // // Step 3: Verify that the caller is the controller of the submitted canister. will bring back once register owner is added
-        // if (not (await Test.verifyOwnership(canisterId, caller))) {
-        //     return #err(#NotAController)
-        // };
+        // // Step 3: Verify that the caller is the controller of the submitted canister.
+        let cliPrincipal = U.safeGet(studentCliPrincipalIdHashMap, Principal.toText(caller), "");
+
+        if (not (await Test.verifyOwnership(canisterId, Principal.fromText(cliPrincipal)))) {
+            return #err(#NotAController("You are not the controller of this canister"))
+        };
         // Step 4: Run the tests (see test.mo)
         switch (day) {
             case (1) {
@@ -942,6 +844,7 @@ actor verifier {
     //activity section
 
     public shared ({ caller }) func adminSpecialAnnouncement(announcement : Text) : async () {
+
         if (isAdmin(caller)) {
             activityHashmap.put(
                 Nat.toText(activityIdCounter),
@@ -1084,6 +987,9 @@ actor verifier {
     };
 
     public shared ({ caller }) func resolveHelpTicket(helpTicketId : Text, manuallyVerifyDay : Bool) : async Result.Result<HelpTicket, Text> {
+        if (not isAdmin(caller)) {
+            return #err("Please login or register as Admin")
+        };
 
         if (not (_isStudent(caller))) {
             return #err("Please login or register")
