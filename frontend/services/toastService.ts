@@ -67,19 +67,34 @@ export const toastPromise = (
     color: colors.textColor,
   };
 
-  _toast.promise(
-    promise,
-    {
-      loading: messages.loading,
-      success: messages.success,
-      error: messages.error,
-    },
-    {
-      style: toastType === ToastType.Success ? successStyle : toastType === ToastType.Error ? errorStyle : plainStyle,
-      duration: toastType === ToastType.Success || toastType === ToastType.Error ? 10000 : 8000,
-    }
-  );
+  const loadingToast = _toast.loading(messages.loading, {
+    style: plainStyle,
+  }) ;
+
+  promise
+    .then((result) => {
+      _toast.dismiss(loadingToast);
+      if (result.hasOwnProperty("ok")) { // Check if the 'ok' property exists in the result
+        _toast.success(messages.success, {
+          style: successStyle,
+          duration: toastType === ToastType.Success || toastType === ToastType.Error ? 10000 : 8000,
+        });
+      } else {
+        _toast.error(messages.error, {
+          style: errorStyle,
+          duration: toastType === ToastType.Success || toastType === ToastType.Error ? 10000 : 8000,
+        });
+      }
+    })
+    .catch((error) => {
+      _toast.dismiss(loadingToast);
+      _toast.error(messages.error, {
+        style: errorStyle,
+        duration: toastType === ToastType.Success || toastType === ToastType.Error ? 10000 : 8000,
+      });
+    });
 };
+
 
 export const toast = (message: string, toastType: ToastType): void => {
   const frostedGlassStyle = {

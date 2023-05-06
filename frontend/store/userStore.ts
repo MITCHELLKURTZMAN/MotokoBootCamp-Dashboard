@@ -2,7 +2,7 @@ import { GetState, SetState, StateCreator, StoreApi, create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
 import { getVerifierActor } from '../services/actorService';
-import {  Result_1, VerifyProject } from 'src/declarations/Verifier/Verifier.did';
+import {  Result_1, Result_3, VerifyProject } from 'src/declarations/Verifier/Verifier.did';
 import { toastError, toast, ToastType, toastPromise } from '../services/toastService';
 import {  DailyProjectText } from '../../src/declarations/Verifier/Verifier.did';
 
@@ -17,7 +17,7 @@ export interface UserStore {
     handle: string,
     teamName: string,
     CLIPrincipal: string
-  ) => Promise<void>;
+  ) => Promise<Result_3>;
   
   studentCreateHelpTicket: (description : string, githubUrl : string, canisterId : string, day : string) => Promise<Result_1>;
   getUser: (principalId: string) => Promise<Student | undefined>;
@@ -71,56 +71,59 @@ const createUserStore = (
   result: undefined,
 
   studentCreateHelpTicket: async (
-    description: string,
-    githubUrl: string,
-    canisterId: string,
-    day: string
-  ): Promise<Result_1> => {
-    const resultPromise = (
-      await getVerifierActor()
-    ).studentCreateHelpTicket(description, githubUrl, canisterId, day);
-  
-    toastPromise(resultPromise, {
-      loading: 'Creating help ticket...',
-      success: 'Your ticket has been created, please wait for admins to review!',
-      error: 'Error creating help ticket.',
-    }, ToastType.Success);
-  
-    const result = await resultPromise;
-  
-    if ('err' in result) {
-      console.error(result.err);
-      toastError(result.err);
-    } else {
-      set({ result: result.ok });
-    }
-  
-    return result;
-  },
-  
+  description: string,
+  githubUrl: string,
+  canisterId: string,
+  day: string
+): Promise<Result_1> => {
+  const resultPromise = (
+    await getVerifierActor()
+  ).studentCreateHelpTicket(description, githubUrl, canisterId, day);
+
+  toastPromise(resultPromise, {
+    loading: 'Creating help ticket...',
+    success: 'Your ticket has been created, please wait for admins to review!',
+    error: 'Error creating help ticket.',
+  }, ToastType.Success);
+
+  const result = await resultPromise;
+
+  if ('err' in result) {
+    console.error(result.err);
+    toastError(result.err);
+  } else {
+    set({ result: result.ok });
+  }
+
+  return result;
+},
+
  
-   registerUser: async (
-    handle: string,
-    teamName: string,
-    CLIPrincipal: string
-  ): Promise<void> => {
-    const resultPromise = (await getVerifierActor()).registerStudent(handle, teamName, CLIPrincipal);
-    
-    toastPromise(resultPromise, {
-      loading: 'Registering student...',
-      success: `${handle}, welcome to Motoko Bootcamp!`,
-      error: 'Error registering student.',
-    }, ToastType.Success);
+registerUser: async (
+  handle: string,
+  teamName: string,
+  CLIPrincipal: string
+): Promise<Result_3> => {
+  const resultPromise = (await getVerifierActor()).registerStudent(handle, teamName, CLIPrincipal);
 
-    const result = await resultPromise;
+  await toastPromise(resultPromise, {
+    loading: 'Registering...',
+    success: `${handle}, welcome to Motoko BootCamp`,
+    error: 'Error registering student.',
+  }, ToastType.Success);
 
-    if ('err' in result) {
-      console.error(result.err);
-      toastError(result.err);
-    } else {
-      set({ user: toUserModel(result.ok) });
-    }
-  },
+  const result = await resultPromise;
+
+  if ('err' in result) {
+    console.error(result.err);
+    toastError(result.err);
+  } else {
+    set({ user: toUserModel(result.ok) });
+  }
+  return result;
+},
+
+
 
   getStudentcompletedDays: async (): Promise<void> => {
     const result = await (
@@ -167,42 +170,27 @@ const createUserStore = (
   },
   verifyProject: async (canisterId: string, day: number): Promise<VerifyProject> => {
     console.log("USER STORE day: ", day);
-    function getErrorMessage(errorObj: object): string | null {
-      const values = Object.values(errorObj);
-      if (values.length > 0) {
-        return values[0] as string;
-      }
-      return null;
-    }
+    const resultPromise = (await getVerifierActor()).verifyProject(canisterId, BigInt(day));
   
-    // Show a loading toast before starting the verification
-    toast('🫡 Verifying project...', ToastType.Loading);
-    
-    try {
-      const result = await (await getVerifierActor()).verifyProject(canisterId, BigInt(day));
+    await toastPromise(resultPromise, {
+      loading: 'Verifying project...',
+      success: 'Project verified!',
+      error: 'Error verifying project.',
+    }, ToastType.Success);
   
-      if ('err' in result) {
-        const errorMessage = getErrorMessage(result.err);
-        if (errorMessage) {
-          // Display error message
-          toastError(errorMessage);
-          console.error(errorMessage);
-        } else {
-          console.error("Unknown error:", result.err as any);
-        }
-      } else {
-        set({ result: { result } });
-        // Display success message
-        toast("Project verified!", ToastType.Success);
-        console.log("Result from verifyProject:", result);
-        return result;
-      }
-    } catch (error) {
-      // Display error message
-      toastError('Error verifying project.', error);
-      console.error(error);
+    const result = await resultPromise;
+  
+    if ('err' in result) {
+      console.error(result.err);
+      toastError(JSON.stringify(result.err));
+    } else {
+      set({ result: { result } });
+      console.log("Result from verifyProject:", result);
     }
+    return result;
   },
+  
+  
 });
 
 

@@ -46,16 +46,26 @@ const createAdminDataStore = (
 
 
     adminManuallyVerifyStudentDay: async (day: string, principalId: string): Promise<Result_1> => {
-        const resultPromise = (await getVerifierActor()).adminManuallyVerifyStudentDay(day, principalId);
-        await toastPromise(resultPromise, {
-          loading: 'Verifying day...',
-          success: 'Day Verified!',
-          error: 'Error verifying day.',
-        }, ToastType.Success);
-        const result = await resultPromise;
+      const resultPromise = (await getVerifierActor()).adminManuallyVerifyStudentDay(day, principalId);
+    
+      await toastPromise(resultPromise, {
+        loading: 'Verifying day...',
+        success: 'Day Verified!',
+        error: 'Error verifying day.',
+      }, ToastType.Success);
+    
+      const result = await resultPromise;
+    
+      if ('err' in result) {
+        const errorString = JSON.stringify(result.err);
+        console.error(errorString);
+        toastError(errorString);
+      } else {
         console.log("adminManuallyVerifyStudentDay", result);
-        return result;
-      },
+      }
+      return result;
+    },
+    
     
     getHelpTickets: async (): Promise<HelpTicket[]> => {
         const result = await (await getVerifierActor()).getHelpTickets();

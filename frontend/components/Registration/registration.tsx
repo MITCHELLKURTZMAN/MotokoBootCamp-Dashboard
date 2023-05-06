@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 import "./_registration.scss"
 import { useAuthStore } from "../../store/authstore"
@@ -25,20 +25,19 @@ const Registration: React.FC<Props> = ({}) => {
     state.getUser,
     state.registerUser,
   ])
+  const getAllTeams = useTeamStore((state) => state.getAllTeams)
+  useEffect(() => {
+    getAllTeams()
+    if (teams === undefined) {
+      getAllTeams()
+    }
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // getUser(useAuthStore.getState().principal);
 
     registerUser(username, team, cliPrincipal)
-    console.log(
-      "username: ",
-      username,
-      "team: ",
-      team,
-      "cliPrincipal: ",
-      cliPrincipal,
-    )
   }
 
   return (

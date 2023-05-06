@@ -16,6 +16,7 @@ const Profile: React.FC<Props> = ({}) => {
   const user = useUserStore((state) => state.user)
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState<boolean>(true)
+  const [login, setLogin] = useState<string>("")
 
   useEffect(() => {
     console.log("Profile component mounted")

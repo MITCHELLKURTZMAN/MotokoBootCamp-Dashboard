@@ -299,9 +299,20 @@ actor verifier {
         return #ok()
     };
 
-    public shared ({ caller }) func registerStudent(name : Text, team : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
+    func _isStudentNameTaken(name : Text) : Bool {
+        for (student in principalIdHashMap.vals()) {
+            Debug.print("student: " # student);
+            if (student == U.trim(U.lowerCase(name))) {
+                return true
+            }
+        };
+        false
+    };
 
+    public shared ({ caller }) func registerStudent(userName : Text, team : Text, cliPrincipal : Text) : async Result.Result<Student, Text> {
+        let name = U.trim(U.lowerCase(userName));
         let teamName = U.trim(U.lowerCase(team));
+
         let principalId = Principal.toText(caller);
         if (cliPrincipal == "2vxsx-fae") {
             return #err("Invalid CLI Principal ID, run: dfx identity get-principal")
@@ -314,6 +325,10 @@ actor verifier {
 
         if (not _isTeamNameTaken(teamName)) {
             return #err("Team" # teamName # "does not exist")
+        };
+
+        if (_isStudentNameTaken(name)) {
+            return #err("Name" # name # "is already taken")
         };
 
         var student = {
@@ -333,7 +348,7 @@ actor verifier {
 
             // get team id to continue registering by (id, name)
 
-            let registerTeam = await registerTeamMembers([principalId], teamName);
+            let registerTeam = await registerTeamMembers([principalId], (teamName));
 
             if (Result.isOk(registerTeam)) {
                 studentTeamHashMap.put(principalId, teamName);
@@ -506,6 +521,7 @@ actor verifier {
             }
         };
 
+        studentRankHashMap.put(principalId, rankArray[score]);
         studentScoreHashMap.put(principalId, score);
         score * 20
 
@@ -517,7 +533,7 @@ actor verifier {
 
         //100% / 5 = 20
 
-        let rank = rankArray[getScore];
+        let rank = rankArray[getScore / 20];
 
         var name = U.safeGet(principalIdHashMap, principalId, "");
         if (name == "") {
@@ -571,14 +587,15 @@ actor verifier {
         false
     };
 
-    public shared ({ caller }) func adminCreateTeam(name : Text) : async Result.Result<Team, Text> {
+    public shared ({ caller }) func adminCreateTeam(teamName : Text) : async Result.Result<Team, Text> {
+        let name = U.trim(U.lowerCase(teamName));
         let principalId = Principal.toText(caller);
 
         if (not _isTeamNameTaken(name)) {
 
             teamNameHashMap.put(name, U.trim(U.lowerCase(name)));
             teamScoreHashMap.put(name, 0);
-            teamMembersHashMap.put(name, [""]);
+            teamMembersHashMap.put(name, []);
 
             let teamName = U.safeGet(teamNameHashMap, name, "");
             let score = U.safeGet(teamScoreHashMap, name, 0);
@@ -801,14 +818,16 @@ actor verifier {
     public shared query func getAllTeams() : async [TeamString] {
 
         var teamBuffer = Buffer.Buffer<TeamString>(1);
-        for (teamId in teamMembersHashMap.keys()) {
-            let team = {
-                name = U.safeGet(teamNameHashMap, teamId, "");
-                teamId = teamId;
-                teamMembers = U.safeGet(teamMembersHashMap, teamId, []);
-                score = Nat.toText(U.safeGet(teamScoreHashMap, teamId, 0))
+        for (teamName in teamMembersHashMap.keys()) {
+            Debug.print("team name is " # teamName);
+            let team : TeamString = {
+                name = U.safeGet(teamNameHashMap, teamName, "");
+                teamMembers = U.safeGet(teamMembersHashMap, teamName, []);
+                score = Nat.toText(U.safeGet(teamScoreHashMap, teamName, 0))
             };
-            teamBuffer.add(team)
+            if (team.name != "") {
+                teamBuffer.add(team)
+            }
 
         };
         return Buffer.toArray(teamBuffer)
@@ -963,12 +982,13 @@ actor verifier {
 
     public shared query func getActivityFeed() : async [Activity] {
         var activityBuffer = Buffer.Buffer<Activity>(1);
-        var lowerBound = Nat.sub(activityIdCounter, 50);
-        var upperBound = Nat.sub(activityIdCounter, 0);
+        var lowerBound : Int = activityIdCounter - 50;
+        var upperBound : Int = activityIdCounter;
 
-        if (lowerBound < 0) {
+        if (lowerBound < 50) {
             lowerBound := 0
         };
+
         for (activity in activityHashmap.vals()) {
             if (U.textToNat(activity.activityId) >= lowerBound and U.textToNat(activity.activityId) <= upperBound) {
                 activityBuffer.add(activity)
@@ -977,7 +997,6 @@ actor verifier {
 
         return Array.reverse(Buffer.toArray(activityBuffer))
     };
-
     //metrics section
     // TODO in the metrics section, these are computed on the fly. we can definitely add caching later.
 
