@@ -1,4 +1,4 @@
-import { DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2 } from 'src/declarations/Verifier/Verifier.did';
+import { DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2, Result_8 } from 'src/declarations/Verifier/Verifier.did';
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getVerifierActor } from '../services/actorService';
@@ -10,7 +10,7 @@ export interface AdminDataStore {
     getTotalStudents: () => Promise<string>;
     getTotalTeams: () => Promise<string>;
     getTotalProjectsCompleted: () => Promise<string>;
-    adminCreateTeam: (teamName: string) => Promise<Result_2>;
+    adminCreateTeam: (teamName: string) => Promise<Result_8>;
     registerAdmin: (principalId: string) => Promise<Result>;
     getHelpTickets: () => Promise<HelpTicket[]>;
     resolveHelpTicket: (helpTicketId: string, resolved: boolean) => Promise<Result_1>;
@@ -103,7 +103,7 @@ const createAdminDataStore = (
         console.log("registerAdmin", result);
         return result;
       },
-      adminCreateTeam: async (teamName: string): Promise<Result_2> => {
+      adminCreateTeam: async (teamName: string): Promise<Result_8> => {
         const resultPromise = (await getVerifierActor()).adminCreateTeam(teamName);
         await toastPromise(resultPromise, {
           loading: 'Creating team...',
@@ -112,6 +112,7 @@ const createAdminDataStore = (
         }, ToastType.Success);
         const result = await resultPromise;
         console.log("adminCreateTeam", result);
+        
         return result;
       },
 

@@ -17,6 +17,7 @@ const TeamItem: React.FC<TeamItemProps> = ({ teamname, teamscore }) => {
   const [students, setStudents] = useState<StudentList[]>([])
   const [isActive, setIsActive] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [studentsLoading, setStudentsLoading] = useState(true)
 
   const handleToggle = (event) => {
     event.stopPropagation()
@@ -28,10 +29,12 @@ const TeamItem: React.FC<TeamItemProps> = ({ teamname, teamscore }) => {
       const result = await getStudentsForTeamDashboard(teamname)
       if ("ok" in result) {
         setStudents(result.ok)
+        setStudentsLoading(false)
       } else {
         console.error(result.err)
       }
     }
+
     if (isActive) {
       fetchStudents()
     }
@@ -42,6 +45,17 @@ const TeamItem: React.FC<TeamItemProps> = ({ teamname, teamscore }) => {
       setLoading(false)
     }
   }, [teamscore])
+
+  const renderStudentSkeleton = () => (
+    <div className="skeleton-student">
+      <div className="skeleton skeleton-name"></div>
+      <div className="skeleton skeleton-rank"></div>
+      <div className="skeleton skeleton-progress"></div>
+      <div className="progress-bar">
+        <div className="skeleton skeleton-progress-bar"></div>
+      </div>
+    </div>
+  )
 
   return (
     <div
@@ -80,10 +94,11 @@ const TeamItem: React.FC<TeamItemProps> = ({ teamname, teamscore }) => {
           </button>
           <div className="Student-list-container">
             <div className="Student-list">
-              {isActive &&
-                students.map((student: StudentList) => (
-                  <StudentItem student={student} key={student.name} />
-                ))}
+              {isActive && studentsLoading
+                ? renderStudentSkeleton()
+                : students.map((student: StudentList) => (
+                    <StudentItem student={student} key={student.name} />
+                  ))}
             </div>
           </div>
         </div>

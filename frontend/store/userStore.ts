@@ -2,7 +2,7 @@ import { GetState, SetState, StateCreator, StoreApi, create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Student } from '../types/types';
 import { getVerifierActor } from '../services/actorService';
-import {  Result_1, Result_3, VerifyProject } from 'src/declarations/Verifier/Verifier.did';
+import {  Result_1,Result_2, Result_3, VerifyProject } from 'src/declarations/Verifier/Verifier.did';
 import { toastError, toast, ToastType, toastPromise } from '../services/toastService';
 import {  DailyProjectText } from '../../src/declarations/Verifier/Verifier.did';
 
@@ -17,7 +17,7 @@ export interface UserStore {
     handle: string,
     teamName: string,
     CLIPrincipal: string
-  ) => Promise<Result_3>;
+  ) => Promise<Result_2>;
   
   studentCreateHelpTicket: (description : string, githubUrl : string, canisterId : string, day : string) => Promise<Result_1>;
   getUser: (principalId: string) => Promise<Student | undefined>;
@@ -103,7 +103,7 @@ registerUser: async (
   handle: string,
   teamName: string,
   CLIPrincipal: string
-): Promise<Result_3> => {
+): Promise<Result_2> => {
   const resultPromise = (await getVerifierActor()).registerStudent(handle, teamName, CLIPrincipal);
 
   await toastPromise(resultPromise, {

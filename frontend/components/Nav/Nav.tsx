@@ -60,6 +60,12 @@ const Nav: React.FC = () => {
           </Link>
         </li>
         <li>
+          <Link to="/register" className="nav-link">
+            Register
+          </Link>
+        </li>
+
+        <li>
           <div
             className="auth-section"
             style={{

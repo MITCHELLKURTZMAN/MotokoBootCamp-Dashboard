@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { Student, Team, TeamString, StudentList } from '../types/types';
 import { getTeam, getAllTeams } from '../services/actorService';
 import { getVerifierActor } from '../services/actorService';
-import { Result_5 } from 'src/declarations/Verifier/Verifier.did';
+import { Result_4, Result_5 } from 'src/declarations/Verifier/Verifier.did';
 
 export interface TeamStore {
     team: Team | undefined;
@@ -12,7 +12,7 @@ export interface TeamStore {
     TeamsStudents: StudentList[] | undefined;
     getTeam: (teamId: string) => Promise<Team | undefined>;
     getAllTeams: () => Promise<TeamString[] | undefined>;
-    getStudentsForTeamDashboard: (teamId: string) => Promise<Result_5>;
+    getStudentsForTeamDashboard: (teamId: string) => Promise<Result_4>;
 }
 
 const createTeamStore = (
@@ -26,9 +26,9 @@ const createTeamStore = (
 
 
     //needs to be stored 
-    getStudentsForTeamDashboard: async (teamId: string): Promise<Result_5> => {
+    getStudentsForTeamDashboard: async (teamId: string): Promise<Result_4> => {
         try {
-            const fetchedStudents: Result_5 = await (await getVerifierActor()).getStudentsForTeamDashboard(teamId);
+            const fetchedStudents: Result_4 = await (await getVerifierActor()).getStudentsForTeamDashboard(teamId);
           if ('err' in fetchedStudents) {
             throw fetchedStudents.err;
             }
