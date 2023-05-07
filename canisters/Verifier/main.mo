@@ -363,9 +363,23 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         Buffer.toArray(studentsBuffer)
     };
 
-    // public shared ({ caller }) func getStudentCompletedDays() :  async Result.Result<[DailyProjectText], Text> {
-
-    // };
+    public shared ({ caller }) func getStudentCompletedDays() :  async Result.Result<[DailyProjectText], Text> {
+        let studentId = Principal.toText(caller);
+        switch (studentsHashMap.get(studentId)) {
+            case (null) { return #err("Student not registered") };
+            case (?student) {
+                var completedDaysBuffer = Buffer.Buffer<DailyProjectText>(student.completedDays.size());
+                for (d in student.completedDays.vals()) {
+                    completedDaysBuffer.add({
+                        day = Nat.toText(d.day);
+                        canisterId = Principal.toText(d.canisterId);
+                        timeStamp = Nat64.toText(d.timeStamp)
+                    })
+                };
+                return #ok(Buffer.toArray(completedDaysBuffer))
+            }
+        }
+    };
 
     public shared ({ caller }) func registerStudent(userName : Text, cliPrincipal : Text, spanish : Bool) : async Result.Result<Student, Text> {
         let name = U.trim(U.lowerCase(userName));
