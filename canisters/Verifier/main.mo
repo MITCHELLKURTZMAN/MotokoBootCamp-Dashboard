@@ -698,6 +698,16 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 let newCompletedDays = Array.append<DailyProject>(completedDays, [projectCompleted]);
                 // Step 2: Generate the new student's score
                 let score = student.score + 20; // 20 points per completed project
+                let newStudent : Student = {
+                    principalId = student.principalId;
+                    name;
+                    teamName = student.teamName;
+                    score;
+                    bonusPoints = student.bonusPoints;
+                    completedDays = newCompletedDays;
+                    cliPrincipalId = student.cliPrincipalId
+                };
+                studentsHashMap.put(studentId, newStudent);
                 // Step 3: Update the team score
                 _updateTeamScore(student.teamName);
                 // Step 4: Update the activity feed & the activity counter

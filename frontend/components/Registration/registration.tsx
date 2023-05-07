@@ -7,7 +7,6 @@ import Tippy from "@tippyjs/react"
 import "tippy.js/dist/tippy.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faInfoCircle } from "@fortawesome/free-solid-svg-icons"
-import { useTeamStore } from "../../store/teamStore"
 
 interface Props {
   //onRegister: (username: string) => void;
@@ -15,10 +14,8 @@ interface Props {
 
 const Registration: React.FC<Props> = ({}) => {
   const [username, setUsername] = useState("")
-  const [team, setTeam] = useState("")
   const [cliPrincipal, setCliPrincipal] = useState("")
   const [isSpanish, setIsSpanish] = useState(false)
-  const teams = useTeamStore((state) => state.teams)
 
   const login = useAuthStore((state) => state.login)
   const [unregistered, getUser, registerUser] = useUserStore((state) => [
@@ -26,19 +23,10 @@ const Registration: React.FC<Props> = ({}) => {
     state.getUser,
     state.registerUser,
   ])
-  const getAllTeams = useTeamStore((state) => state.getAllTeams)
-  useEffect(() => {
-    getAllTeams()
-    if (teams === undefined) {
-      getAllTeams()
-    }
-  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // getUser(useAuthStore.getState().principal);
-
-    registerUser(username, team, isSpanish)
+    registerUser(username, cliPrincipal, isSpanish)
   }
 
   return (
@@ -56,27 +44,6 @@ const Registration: React.FC<Props> = ({}) => {
           onChange={(e) => setUsername(e.target.value)}
           required
         />
-
-        <label htmlFor="team" className="form-label">
-          Choose your team
-        </label>
-        <select
-          id="team"
-          name="team"
-          value={team}
-          onChange={(e) => setTeam(e.target.value)}
-        >
-          <option value="">Select your team (assigned in Discord)</option>
-          {teams === undefined ? (
-            <option value="">No teams available</option>
-          ) : (
-            teams.map((team) => (
-              <option key={team.name} value={team.name}>
-                {team.name}
-              </option>
-            ))
-          )}
-        </select>
 
         <div className="principal-id-container">
           <div className="principal-id-wrapper">
@@ -119,6 +86,19 @@ const Registration: React.FC<Props> = ({}) => {
               required
             />
           </div>
+        </div>
+
+        <div className="spanish-checkbox-container">
+          <input
+            type="checkbox"
+            id="isSpanish"
+            name="isSpanish"
+            checked={isSpanish}
+            onChange={(e) => setIsSpanish(e.target.checked)}
+          />
+          <label htmlFor="isSpanish" className="form-label">
+            I am a Spanish speaker
+          </label>
         </div>
 
         <button className="btn registration-submit" type="submit">

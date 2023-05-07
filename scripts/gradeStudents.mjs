@@ -31,7 +31,7 @@ executeCommand(
 );
 
 // Get all students
-exec(`dfx canister call Verifier getAllStudents`, (error, stdout, stderr) => {
+exec(`dfx canister call Verifier getAllStudentsPrincipal`, (error, stdout, stderr) => {
   if (error) {
     console.log(`\nError: ${error.message}\n`);
     return;

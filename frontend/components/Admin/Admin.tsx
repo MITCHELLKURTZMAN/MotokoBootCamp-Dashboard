@@ -11,6 +11,7 @@ const Admin: React.FC = () => {
   const [teamName, setTeamName] = useState("")
   const [day, setDay] = useState("")
   const [studentPrincipalId, setStudentPrincipalId] = useState("")
+  const [principalLookup, setPrincipalLookup] = useState("")
   const [bonusPoints, setBonusPoints] = useState("")
   const [bonusDescription, setBonusDescription] = useState("")
   const [studentName, setStudentName] = useState("")
@@ -91,6 +92,7 @@ const Admin: React.FC = () => {
     (state) => state.totalProjectsCompleted,
   )
   const adminCreateTeam = useAdminDataStore((state) => state.adminCreateTeam)
+  const nameToPrincipal = useAdminDataStore((state) => state.nameToPrincipalId)
 
   useEffect(() => {
     useAdminDataStore.getState().getTotalStudents()
@@ -294,7 +296,7 @@ const Admin: React.FC = () => {
             onClick={async () => {
               const result = await lookupStudentPrincipal()
               if ("ok" in result) {
-                setStudentPrincipalId(result.ok)
+                setPrincipalLookup(result.ok)
               } else {
                 // Handle the error case, e.g., show an error message
                 console.error(result.err)
@@ -303,9 +305,9 @@ const Admin: React.FC = () => {
           >
             Lookup Principal ID
           </button>
-          {studentPrincipalId && (
+          {nameToPrincipal && (
             <p className="principal-id-result">
-              Student Principal ID: {studentPrincipalId}
+              Student Principal ID: {nameToPrincipal}
             </p>
           )}
         </div>
