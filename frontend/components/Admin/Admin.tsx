@@ -310,18 +310,18 @@ const Admin: React.FC = () => {
               {canisterInfo.canisterId}
             </p>
             <p>
+              <span className="canister-data-title">Cycles:</span>{" "}
+              {formatCycles(parseInt(canisterInfo.cycles))}
+            </p>
+            <p>
               <span className="canister-data-title">
                 Idle Cycles Burned Per Day:
               </span>{" "}
-              {canisterInfo.idle_cycles_burned_per_day.toString()}
+              {formatCycles(parseInt(canisterInfo.idle_cycles_burned_per_day))}
             </p>
             <p>
               <span className="canister-data-title">Status:</span>{" "}
               {JSON.stringify(canisterInfo.status)}
-            </p>
-            <p>
-              <span className="canister-data-title">Cycles:</span>{" "}
-              {formatCycles(parseInt(canisterInfo.cycles))}
             </p>
           </div>
         </div>
