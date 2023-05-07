@@ -9,7 +9,7 @@ import colors from "../../constants/colors"
 
 const Admin: React.FC = () => {
   const [teamName, setTeamName] = useState("")
-  const [day, setDay] = useState("")
+  const [day, setDay] = useState(1)
   const [studentPrincipalId, setStudentPrincipalId] = useState("")
   const [principalLookup, setPrincipalLookup] = useState("")
   const [bonusPoints, setBonusPoints] = useState("")
@@ -78,7 +78,7 @@ const Admin: React.FC = () => {
 
   const handleProjectVerification = (e: React.FormEvent) => {
     e.preventDefault()
-    adminManuallyVerifyStudentDay(day, studentPrincipalId)
+    adminManuallyVerifyStudentDay(BigInt(day), studentPrincipalId)
   }
 
   const handleAdminRegistration = (e: React.FormEvent) => {
@@ -198,13 +198,13 @@ const Admin: React.FC = () => {
                 className="admin-input"
                 id="day"
                 value={day}
-                onChange={(e) => setDay(e.target.value)}
+                onChange={(e) => setDay(parseInt(e.target.value, 10))}
               >
-                <option value="1">Day 1</option>
-                <option value="2">Day 2</option>
-                <option value="3">Day 3</option>
-                <option value="4">Day 4</option>
-                <option value="5">Day 5</option>
+                <option value={1}>Day 1</option>
+                <option value={2}>Day 2</option>
+                <option value={3}>Day 3</option>
+                <option value={4}>Day 4</option>
+                <option value={5}>Day 5</option>
               </select>
             </div>
             <div className="admin-input-container">

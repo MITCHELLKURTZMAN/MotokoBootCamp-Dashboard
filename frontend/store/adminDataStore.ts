@@ -13,7 +13,7 @@ export interface AdminDataStore {
     getTotalProjectsCompleted: () => Promise<string>;
     adminCreateTeam: (teamName: string, isSpanish: boolean) => Promise<Result_7>;
     registerAdmin: (principalId: string) => Promise<Result>;
-    adminManuallyVerifyStudentDay:(day: string, principalId: string) => Promise<Result_1>;
+    adminManuallyVerifyStudentDay:(day: bigint, principalId: string) => Promise<Result_1>;
     getTotalCompletedPerDay: () => Promise<DailyTotalMetrics>;
     adminGrantsBonusPoints: (principalId: string, description: string) => Promise<Result>;
     getStudentPrincipalByName: (name: string) => Promise<Result_4>;
@@ -125,7 +125,7 @@ const createAdminDataStore = (
     },
 
 
-    adminManuallyVerifyStudentDay: async (day: string, principalId: string): Promise<Result_1> => {
+    adminManuallyVerifyStudentDay: async (day: bigint, principalId: string): Promise<Result_1> => {
       const resultPromise = (await getVerifierActor()).adminManuallyVerifyStudentDay(day, principalId);
     
       await toastPromise(resultPromise, {

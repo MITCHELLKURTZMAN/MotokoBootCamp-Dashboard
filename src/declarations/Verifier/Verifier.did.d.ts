@@ -75,7 +75,7 @@ export interface Dashboard {
   'adminAnnounceTimedEvent' : ActorMethod<[string], undefined>,
   'adminCreateTeam' : ActorMethod<[string, boolean], Result_7>,
   'adminGrantBonusPoints' : ActorMethod<[string, string], Result>,
-  'adminManuallyVerifyStudentDay' : ActorMethod<[string, string], Result>,
+  'adminManuallyVerifyStudentDay' : ActorMethod<[bigint, string], Result>,
   'adminSpecialAnnouncement' : ActorMethod<[string], undefined>,
   'availableCycles' : ActorMethod<[], bigint>,
   'collectCanisterMetrics' : ActorMethod<[], undefined>,

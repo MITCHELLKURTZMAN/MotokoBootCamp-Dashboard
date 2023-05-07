@@ -139,7 +139,7 @@ type Dashboard =
    adminAnnounceTimedEvent: (text) -> ();
    adminCreateTeam: (text, bool) -> (Result_7);
    adminGrantBonusPoints: (text, text) -> (Result);
-   adminManuallyVerifyStudentDay: (text, text) -> (Result);
+   adminManuallyVerifyStudentDay: (nat, text) -> (Result);
    adminSpecialAnnouncement: (text) -> ();
    availableCycles: () -> (nat) query;
    collectCanisterMetrics: () -> ();

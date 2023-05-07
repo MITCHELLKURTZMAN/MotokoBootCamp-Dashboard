@@ -179,7 +179,7 @@ export const idlFactory = ({ IDL }) => {
     'adminCreateTeam' : IDL.Func([IDL.Text, IDL.Bool], [Result_7], []),
     'adminGrantBonusPoints' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
     'adminManuallyVerifyStudentDay' : IDL.Func(
-        [IDL.Text, IDL.Text],
+        [IDL.Nat, IDL.Text],
         [Result],
         [],
       ),

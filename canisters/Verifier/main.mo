@@ -107,21 +107,21 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         #ok(team)
     };
 
-    public shared ({ caller }) func adminManuallyVerifyStudentDay(day : Text, student : Text) : async Result.Result<(), Text> {
+    public shared ({ caller }) func adminManuallyVerifyStudentDay(day : Nat, student : Text) : async Result.Result<(), Text> {
         if (not _Admins.isAdmin(caller)) {
             return #err("Unauthorized to verify student day")
         };
 
-        if (_hasStudentCompletedDay(U.textToNat(day), Principal.fromText(student))) {
+        if (_hasStudentCompletedDay(day, Principal.fromText(student))) {
             return #err("Student has already completed this project")
         };
 
         _validated(
-            U.textToNat(day),
+            day,
             Principal.fromActor(this),
             Principal.fromText(student),
         );
-        _Logs.logMessage("ADMIN :: Manually verified student day " # day # " for " # student # " by " # Principal.toText(caller));
+        _Logs.logMessage("ADMIN :: Manually verified student day " # Nat.toText(day) # " for " # student # " by " # Principal.toText(caller));
         return #ok()
     };
 
