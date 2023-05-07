@@ -6,6 +6,23 @@ export interface Activity {
   'specialAnnouncement' : string,
   'activity' : string,
 }
+export interface CanisterSettings {
+  'freezing_threshold' : bigint,
+  'controllers' : Array<Principal>,
+  'memory_allocation' : bigint,
+  'compute_allocation' : bigint,
+}
+export interface CanisterStatus {
+  'status' : { 'stopped' : null } |
+    { 'stopping' : null } |
+    { 'running' : null },
+  'memory_size' : string,
+  'cycles' : string,
+  'settings' : CanisterSettings,
+  'idle_cycles_burned_per_day' : string,
+  'module_hash' : [] | [Uint8Array | number[]],
+  'canisterId' : string,
+}
 export interface DailyProject {
   'day' : bigint,
   'timeStamp' : bigint,
@@ -106,6 +123,7 @@ export interface _SERVICE {
   'getAllStudents' : ActorMethod<[], Result_7>,
   'getAllStudentsPrincipal' : ActorMethod<[], Array<Principal>>,
   'getAllTeams' : ActorMethod<[], Array<TeamString>>,
+  'getCanisterInfo' : ActorMethod<[], CanisterStatus>,
   'getHelpTickets' : ActorMethod<[], Array<HelpTicket>>,
   'getStudent' : ActorMethod<[string], Result_2>,
   'getStudentCompletedDays' : ActorMethod<[], Result_6>,

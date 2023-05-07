@@ -121,6 +121,27 @@ type DailyProject =
    day: nat;
    timeStamp: nat64;
  };
+type CanisterStatus = 
+ record {
+   canisterId: text;
+   cycles: text;
+   idle_cycles_burned_per_day: text;
+   memory_size: text;
+   module_hash: opt blob;
+   settings: CanisterSettings;
+   status: variant {
+             running;
+             stopped;
+             stopping;
+           };
+ };
+type CanisterSettings = 
+ record {
+   compute_allocation: nat;
+   controllers: vec principal;
+   freezing_threshold: nat;
+   memory_allocation: nat;
+ };
 type Activity = 
  record {
    activity: text;
@@ -143,6 +164,7 @@ service : {
   getAllStudents: () -> (Result_7);
   getAllStudentsPrincipal: () -> (vec principal);
   getAllTeams: () -> (vec TeamString) query;
+  getCanisterInfo: () -> (CanisterStatus);
   getHelpTickets: () -> (vec HelpTicket) query;
   getStudent: (text) -> (Result_2);
   getStudentCompletedDays: () -> (Result_6);

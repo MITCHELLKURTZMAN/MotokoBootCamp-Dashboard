@@ -79,6 +79,7 @@ function App() {
               <Route path="Submit" element={<Submit />} />
               <Route path="Schedule" element={<Schedule />} />
               <Route path="Resources" element={<Resources />} />
+
               <Route
                 path="Profile"
                 element={<Profile user={useUserStore.getState().user} />}

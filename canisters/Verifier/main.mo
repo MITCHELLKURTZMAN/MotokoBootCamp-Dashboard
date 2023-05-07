@@ -13,12 +13,13 @@ import Prelude "mo:base/Prelude";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Text "mo:base/Text";
-import IC "mo:base/ExperimentalInternetComputer";
+//import IC "mo:base/ExperimentalInternetComputer";
 import Nat64 "mo:base/Nat64";
 import Time "mo:base/Time";
 import Test "test";
 import U "utils";
 import Bool "mo:base/Bool";
+import IC "ic";
 
 actor verifier {
 
@@ -957,6 +958,42 @@ actor verifier {
     };
     //metrics section
     // TODO in the metrics section, these are computed on the fly. we can definitely add caching later.
+    public type CanisterId = Principal;
+    public type CanisterSettings = {
+        controllers : [Principal];
+        compute_allocation : Nat;
+        memory_allocation : Nat;
+        freezing_threshold : Nat
+    };
+
+    public type CanisterStatus = {
+        status : { #running; #stopping; #stopped };
+        settings : CanisterSettings;
+        module_hash : ?Blob;
+        memory_size : Text;
+        cycles : Text;
+        idle_cycles_burned_per_day : Text;
+        canisterId : Text
+
+    };
+    public shared func getCanisterInfo() : async CanisterStatus {
+
+        let managementCanister : IC.ManagementCanister = actor ("aaaaa-aa");
+        let canisterId : CanisterId = Principal.fromActor(verifier);
+        let canisterStatus = await managementCanister.canister_status({
+            canister_id = canisterId
+        });
+        return {
+            status = canisterStatus.status;
+            settings = canisterStatus.settings;
+            module_hash = canisterStatus.module_hash;
+            memory_size = Nat.toText(canisterStatus.memory_size);
+            cycles = Nat.toText(canisterStatus.cycles);
+            idle_cycles_burned_per_day = Nat.toText(canisterStatus.idle_cycles_burned_per_day);
+            canisterId = Principal.toText(canisterId)
+        }
+
+    };
 
     public shared query func getTotalStudents() : async Text {
         return Nat.toText(principalIdHashMap.size())

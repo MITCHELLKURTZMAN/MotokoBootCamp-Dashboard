@@ -1,8 +1,9 @@
-import { DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2, Result_5, Result_8 } from 'src/declarations/Verifier/Verifier.did';
+import { CanisterStatus, DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2, Result_5, Result_8 } from 'src/declarations/Verifier/Verifier.did';
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getVerifierActor } from '../services/actorService';
 import { toastError, toast, ToastType, toastPromise } from '../services/toastService';
+
 
 
 
@@ -19,12 +20,14 @@ export interface AdminDataStore {
     adminGrantsBonusPoints: (principalId: string, description: string) => Promise<Result>;
     getStudentPrincipalByName: (name: string) => Promise<Result_5>;
     adminAnnounceTimedEvent: (message: string) => Promise<void>;
+    getCanisterInfo: () => Promise<CanisterStatus>;
     totalTeams: string;
     totalStudents: string;
     totalProjectsCompleted: string;
     helpTickets: [HelpTicket];
     totalCompletedPerDay: DailyTotalMetrics;
     nameToPrincipalId : string;
+    canisterInfo: CanisterStatus;
 }
 
 const createAdminDataStore = (
@@ -37,13 +40,24 @@ const createAdminDataStore = (
     helpTickets: [{day: "0", resolved: false, helpTicketId: "0", description: "0", gitHubUrl: "0", principalId: "0", canisterId: "0"}],
     totalCompletedPerDay: {day1: "0", day2: "0", day3: "0", day4: "0", day5: "0"},
     nameToPrincipalId: "0",
+    canisterInfo : {status : null, memory_size: "0", cycles: "0", settings: null, idle_cycles_burned_per_day: "0", module_hash: [], canisterId: ""}, 
+
+    
+
+    getCanisterInfo: async (): Promise<CanisterStatus> => {
+      
+      const canisterInfo = await (await getVerifierActor()).getCanisterInfo();
+      set({canisterInfo});
+      return canisterInfo;
+    },
+
 
     adminAnnounceTimedEvent: async (message: string): Promise<void> => {
         const resultPromise = (await getVerifierActor()).adminAnnounceTimedEvent(message);
 
         await toastPromise(resultPromise, {
 
-            loading: 'Announcing timed event 📣...',
+            loading: 'Announcing timed event...',
             success: 'Timed event announced!',
             error: 'Error announcing timed event.',
         }, ToastType.Success);
