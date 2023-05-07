@@ -26,12 +26,14 @@ type Team =
  };
 type StudentList = 
  record {
+   bonusPoints: text;
    name: text;
    rank: text;
    score: text;
  };
 type Student = 
  record {
+   bonusPoints: nat;
    canisterIds: vec text;
    cliPrincipalId: text;
    completedDays: vec DailyProject;
@@ -50,17 +52,17 @@ type Result_8 =
 type Result_7 = 
  variant {
    err: text;
-   ok: text;
+   ok: vec text;
  };
 type Result_6 = 
  variant {
    err: text;
-   ok: vec text;
+   ok: vec DailyProjectText;
  };
 type Result_5 = 
  variant {
    err: text;
-   ok: vec DailyProjectText;
+   ok: text;
  };
 type Result_4 = 
  variant {
@@ -128,21 +130,23 @@ type Activity =
 service : {
   adminAnnounceTimedEvent: (text) -> ();
   adminCreateTeam: (text) -> (Result_8);
-  adminDeleteTeam: (text) -> (Result_7);
+  adminDeleteTeam: (text) -> (Result_5);
+  adminGrantBonusPoints: (text, text) -> (Result);
   adminManuallyVerifyStudentDay: (text, text) -> (Result);
   adminSpecialAnnouncement: (text) -> ();
-  adminSyncTeamScores: () -> (Result_7);
+  adminSyncTeamScores: () -> (Result_5);
   buildStudent: (text) -> (Result_2) query;
   buildTeam: (text) -> (Team) query;
   getActivity: (nat, nat) -> (vec Activity) query;
   getActivityFeed: () -> (vec Activity) query;
-  getAdmins: () -> (Result_6) query;
-  getAllStudents: () -> (Result_6);
+  getAdmins: () -> (Result_7) query;
+  getAllStudents: () -> (Result_7);
   getAllStudentsPrincipal: () -> (vec principal);
   getAllTeams: () -> (vec TeamString) query;
   getHelpTickets: () -> (vec HelpTicket) query;
   getStudent: (text) -> (Result_2);
-  getStudentCompletedDays: () -> (Result_5);
+  getStudentCompletedDays: () -> (Result_6);
+  getStudentPrincipalByName: (text) -> (Result_5);
   getStudentsForTeamDashboard: (text) -> (Result_4) query;
   getStudentsFromTeam: (text) -> (Result_3);
   getTeam: (text) -> (Team);
@@ -153,6 +157,7 @@ service : {
   getUser: () -> (Result_2);
   isEvenTest: (int) -> (bool) query;
   isStudent: (text) -> (bool) query;
+  principalReverseMigration: () -> ();
   registerAdmin: (text) -> (Result);
   registerStudent: (text, text, text) -> (Result_2);
   resolveHelpTicket: (text, bool) -> (Result_1);

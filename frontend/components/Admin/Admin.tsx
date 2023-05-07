@@ -6,11 +6,36 @@ import { useAdminDataStore } from "../../store/adminDataStore"
 import { getVerifierActor } from "../../services/actorService"
 
 import HelpTicketFeed from "./HelpTicketFeed"
+import { useAuthStore } from "../../store/authstore"
+import colors from "../../constants/colors"
 
 const Admin: React.FC = () => {
   const [teamName, setTeamName] = useState("")
   const [day, setDay] = useState("")
   const [studentPrincipalId, setStudentPrincipalId] = useState("")
+  const [bonusPoints, setBonusPoints] = useState("")
+  const [bonusDescription, setBonusDescription] = useState("")
+  const [studentName, setStudentName] = useState("")
+  const [eventTitle, setEventTitle] = useState("")
+  const [eventDescription, setEventDescription] = useState("")
+
+  const handleTimeEventAnnouncement = (e: React.FormEvent) => {
+    e.preventDefault()
+    adminAnnounceTimedEvent(eventTitle)
+    setEventTitle("")
+    setEventDescription("")
+  }
+
+  const handleBonusPointsGrant = (e: React.FormEvent) => {
+    e.preventDefault()
+    adminGrantsBonusPoints(studentPrincipalId, bonusDescription)
+  }
+  const generatePreviewMessage = () => {
+    if (studentPrincipalId && bonusDescription) {
+      return `Preview: (Student Name) has been granted bonus points for ${bonusDescription}`
+    }
+    return ""
+  }
 
   const adminManuallyVerifyStudentDay = useAdminDataStore(
     (state) => state.adminManuallyVerifyStudentDay,
@@ -22,12 +47,30 @@ const Admin: React.FC = () => {
     (state) => state.totalCompletedPerDay,
   )
 
+  const adminGrantsBonusPoints = useAdminDataStore(
+    (state) => state.adminGrantsBonusPoints,
+  )
+
+  const getStudentPrincipalFromName = useAdminDataStore(
+    (state) => state.getStudentPrincipalByName,
+  )
+
+  const adminAnnounceTimedEvent = useAdminDataStore(
+    (state) => state.adminAnnounceTimedEvent,
+  )
+
+  const principalString = useAuthStore((state) => state.principalString)
+
   const handleTeamCreation = (e: React.FormEvent) => {
     e.preventDefault()
     // Handle team creation logic
     console.log("Team created:", teamName)
     setTeamName("")
     adminCreateTeam(teamName)
+  }
+  const lookupStudentPrincipal = async () => {
+    const studentPrincipal = await getStudentPrincipalFromName(studentName)
+    return studentPrincipal
   }
 
   const handleProjectVerification = (e: React.FormEvent) => {
@@ -66,8 +109,24 @@ const Admin: React.FC = () => {
   return (
     <>
       <div className="admin-container">
-        <h1>Admin Gateway</h1>
-        <div className="card double-width">
+        <div className="card ">
+          <h2>Welcome to the Admin Gateway</h2>
+          <p>
+            As an admin, you have the ability to manage various aspects of the
+            platform, such as creating teams, manually verifying projects, and
+            granting bonus points to students.
+          </p>
+          <p>
+            If you're not yet registered as an admin, there's no need to
+            register for the course. Instead, contact another admin to get
+            registered with your principal ID:{" "}
+            <span style={{ color: colors.primaryColor }}>
+              {principalString}
+            </span>
+          </p>
+        </div>
+
+        <div className="card ">
           <BarChart
             totalUsers={parseInt(totalStudents)}
             totalTeams={parseInt(totalTeams)}
@@ -156,6 +215,78 @@ const Admin: React.FC = () => {
               Register Admin
             </button>
           </form>
+        </div>
+        <div className="card grant-bonus-points">
+          <h2>Grant Bonus Points</h2>
+          <form onSubmit={handleBonusPointsGrant}>
+            <div className="admin-input-container">
+              <label
+                htmlFor="student-principal-id-bonus"
+                className="admin-input-label"
+              ></label>
+              <input
+                className="admin-input"
+                id="student-principal-id-bonus"
+                type="text"
+                placeholder="Student Principal ID"
+                value={studentPrincipalId}
+                onChange={(e) => setStudentPrincipalId(e.target.value)}
+              />
+            </div>
+            <div className="admin-input-container">
+              <label
+                htmlFor="bonus-description"
+                className="admin-input-label"
+              ></label>
+              <input
+                className="admin-input"
+                id="bonus-description"
+                type="text"
+                placeholder="Bonus Description"
+                value={bonusDescription}
+                onChange={(e) => setBonusDescription(e.target.value)}
+              />
+            </div>
+            <p className="preview-message">{generatePreviewMessage()}</p>
+
+            <button className="admin-submit" type="submit">
+              Grant Bonus Point
+            </button>
+          </form>
+        </div>
+        <div className="card principal-id-lookup">
+          <h2>Lookup Student Principal ID</h2>
+          <div className="admin-input-container">
+            <label htmlFor="student-name" className="admin-input-label"></label>
+            <input
+              className="admin-input"
+              id="student-name"
+              type="text"
+              placeholder="Student Name"
+              value={studentName}
+              onChange={(e) => setStudentName(e.target.value)}
+            />
+          </div>
+          <button
+            className="admin-submit"
+            type="button"
+            onClick={async () => {
+              const result = await lookupStudentPrincipal()
+              if ("ok" in result) {
+                setStudentPrincipalId(result.ok)
+              } else {
+                // Handle the error case, e.g., show an error message
+                console.error(result.err)
+              }
+            }}
+          >
+            Lookup Principal ID
+          </button>
+          {studentPrincipalId && (
+            <p className="principal-id-result">
+              Student Principal ID: {studentPrincipalId}
+            </p>
+          )}
         </div>
       </div>
       {/* <div className="card double width">

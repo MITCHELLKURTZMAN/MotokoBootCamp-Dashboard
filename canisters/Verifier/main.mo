@@ -38,8 +38,11 @@ actor verifier {
     stable var studentCliPrincipalIdEntries : [(Text, Text)] = [];
     stable var activityEntries : [(Text, Activity)] = [];
     stable var teamNameEntries : [(Text, Text)] = [];
+    stable var bonusPointsEntries : [(Text, Nat)] = [];
+    stable var principalIdReverseEntries : [(Text, Text)] = [];
 
     var principalIdHashMap = HashMap.fromIter<Text, Text>(principalIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the name of the student stored by principal id
+    var principalIdReverseHashMap = HashMap.fromIter<Text, Text>(principalIdReverseEntries.vals(), maxHashmapSize, isEq, Text.hash); //the principal id of the student stored by name
     var teamMembersHashMap = HashMap.fromIter<Text, [Text]>(teamMembersEntries.vals(), maxHashmapSize, isEq, Text.hash); //the students on the team stored by team id in an array
     var teamScoreHashMap = HashMap.fromIter<Text, Nat>(teamScoreEntries.vals(), maxHashmapSize, isEq, Text.hash); //the score of the team stored by team id
     var teamNameHashMap = HashMap.fromIter<Text, Text>(teamNameEntries.vals(), maxHashmapSize, isEq, Text.hash); //the name of the team stored by team id
@@ -51,6 +54,7 @@ actor verifier {
     var studentCanisterIdHashMap = HashMap.fromIter<Text, [Text]>(studentCanisterIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the canister id or [ids] the student has registered (can use one or many but cannot be someone elses)
     var canisterIdHashMap = HashMap.fromIter<Text, Text>(canisterIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the global list of canister ids to cross check against
     var studentCliPrincipalIdHashMap = HashMap.fromIter<Text, Text>(studentCliPrincipalIdEntries.vals(), maxHashmapSize, isEq, Text.hash); //the CLI principal id of the students dev env stored by principal id
+    var bonusPointsHashMap = HashMap.fromIter<Text, Nat>(bonusPointsEntries.vals(), maxHashmapSize, isEq, Text.hash); //the bonus points of the student
 
     //activity feed
 
@@ -88,7 +92,8 @@ actor verifier {
         rank : Text;
         canisterIds : [Text]; //can be one or multiple, but cannot be someone elses
         completedDays : [DailyProject];
-        cliPrincipalId : Text
+        cliPrincipalId : Text;
+        bonusPoints : Nat
     };
 
     public type DailyProject = {
@@ -357,6 +362,7 @@ actor verifier {
             canisterIds = [];
             completedDays = [];
             cliPrincipalId = cliPrincipal;
+            bonusPoints = 0;
 
         };
 
@@ -369,8 +375,10 @@ actor verifier {
             if (Result.isOk(registerTeam)) {
                 studentTeamHashMap.put(principalId, teamName);
                 principalIdHashMap.put(principalId, name);
+                principalIdReverseHashMap.put(name, principalId);
                 studentScoreHashMap.put(principalId, 0);
                 studentCliPrincipalIdHashMap.put(principalId, cliPrincipal);
+                bonusPointsHashMap.put(principalId, 0);
 
                 activityHashmap.put(
                     Nat.toText(activityIdCounter),
@@ -450,6 +458,7 @@ actor verifier {
         var canisterIds = U.safeGet(studentCanisterIdHashMap, principalId, [""]);
         var completedDays = U.safeGet(studentCompletedDaysHashMap, principalId, [{ canisterId = ""; day = 0; completed = false; timeStamp : Nat64 = 0 }]);
         var cliPrincipalId = U.safeGet(studentCliPrincipalIdHashMap, principalId, "");
+        var bonusPoints = U.safeGet(bonusPointsHashMap, principalId, 0);
 
         var student = {
             principalId = principalId;
@@ -460,7 +469,9 @@ actor verifier {
             rank = rank;
             canisterIds = canisterIds;
             completedDays = completedDays;
-            cliPrincipalId = cliPrincipalId
+            cliPrincipalId = cliPrincipalId;
+            bonusPoints = bonusPoints;
+
         };
 
         #ok(student)
@@ -513,7 +524,7 @@ actor verifier {
                 Nat.toText(activityIdCounter),
                 {
                     activityId = Nat.toText(activityIdCounter);
-                    activity = "Welcome new team," # teamName # ", to Motoko Bootcamp!";
+                    activity = "Welcome new team, " # teamName # ", to Motoko Bootcamp!";
                     specialAnnouncement = "newTeam"
                 },
 
@@ -646,6 +657,7 @@ actor verifier {
         name : Text;
         rank : Text;
         score : Text;
+        bonusPoints : Text
 
     };
 
@@ -657,7 +669,8 @@ actor verifier {
             let studentListItem = {
                 name = U.safeGet(principalIdHashMap, member, "");
                 score = Nat.toText(generateStudentScore(member));
-                rank = U.safeGet(studentRankHashMap, member, "")
+                rank = U.safeGet(studentRankHashMap, member, "");
+                bonusPoints = Nat.toText(U.safeGet(bonusPointsHashMap, member, 0))
             };
             studentBuffer.add(studentListItem)
         };
@@ -872,6 +885,48 @@ actor verifier {
         }
     };
 
+    public shared ({ caller }) func adminGrantBonusPoints(studentPrincipal : Text, reason : Text) : async Result.Result<(), Text> {
+        if (isAdmin(caller)) {
+            if (not (_isStudent(Principal.fromText(studentPrincipal)))) {
+                return #err("The student does not exist")
+            };
+            let studentName = U.safeGet(principalIdHashMap, studentPrincipal, "");
+            let bonusPoints = U.safeGet(bonusPointsHashMap, studentPrincipal, 0) + 1;
+            bonusPointsHashMap.put(studentPrincipal, bonusPoints);
+            activityHashmap.put(
+                Nat.toText(activityIdCounter),
+                {
+                    activityId = Nat.toText(activityIdCounter);
+                    activity = studentName # " has been granted bonus points for " # reason;
+                    specialAnnouncement = "BonusPoints"
+                },
+            );
+            activityIdCounter := activityIdCounter + 1;
+            return #ok(())
+        } else {
+            return #err("You are not the admin")
+        };
+
+    };
+
+    public shared func getStudentPrincipalByName(studentName : Text) : async Result.Result<Text, Text> {
+        let nameTrimmed = U.trim(U.lowerCase(studentName));
+        let studentPrincipal = U.safeGet(principalIdReverseHashMap, nameTrimmed, "");
+
+        if (studentPrincipal == "") {
+            return #err("The student does not exist")
+        } else {
+            return #ok(studentPrincipal)
+        }
+
+    };
+
+    public shared func principalReverseMigration() : async () {
+        for (student in principalIdHashMap.keys()) {
+            principalIdReverseHashMap.put(U.safeGet(principalIdHashMap, student, ""), student)
+        }
+    };
+
     public shared query func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
         var activityBuffer = Buffer.Buffer<Activity>(1);
         for (activity in activityHashmap.vals()) {
@@ -1035,6 +1090,7 @@ actor verifier {
     system func preupgrade() {
 
         principalIdEntries := Iter.toArray(principalIdHashMap.entries());
+        principalIdReverseEntries := Iter.toArray(principalIdReverseHashMap.entries());
         teamMembersEntries := Iter.toArray(teamMembersHashMap.entries());
         teamScoreEntries := Iter.toArray(teamScoreHashMap.entries());
         teamNameEntries := Iter.toArray(teamNameHashMap.entries());
@@ -1047,11 +1103,14 @@ actor verifier {
         studentCanisterIdEntries := Iter.toArray(studentCanisterIdHashMap.entries());
         canisterIdEntries := Iter.toArray(canisterIdHashMap.entries());
         studentCliPrincipalIdEntries := Iter.toArray(studentCliPrincipalIdHashMap.entries());
-        helpTicketEntries := Iter.toArray(helpTicketHashMap.entries())
+        helpTicketEntries := Iter.toArray(helpTicketHashMap.entries());
+        bonusPointsEntries := Iter.toArray(bonusPointsHashMap.entries())
+
     };
 
     system func postupgrade() {
         principalIdEntries := [];
+        principalIdReverseEntries := [];
         teamMembersEntries := [];
         teamScoreEntries := [];
         teamNameEntries := [];
@@ -1064,7 +1123,8 @@ actor verifier {
         studentCanisterIdEntries := [];
         canisterIdEntries := [];
         studentCliPrincipalIdEntries := [];
-        helpTicketEntries := []
+        helpTicketEntries := [];
+        bonusPointsEntries := []
     };
 
 }

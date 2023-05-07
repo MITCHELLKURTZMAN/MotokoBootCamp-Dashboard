@@ -1,45 +1,43 @@
 @import "../../_variables";
 
-.individual-list {
-  display: none;
-  position: absolute;
-  left: 0;
-  top: 100%;
-  min-width: 100%;
-  background-color: lighten($secondary-color, 5%);
-  border-radius: 0 0 5px 5px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  transition: opacity 0.3s, transform 0.3s;
-  opacity: 10%;
-  transform: translateY(-10px);
-  pointer-events: none;
-  z-index: 10;
+.Student-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border-bottom: 1px solid lighten($primary-color, 10%);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
 }
 
-.individual-list-container {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.3s ease-in-out;
-}
-
-.individual-item {
-  padding: 25px;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid lighten($primary-color, 10%);
+.BonusIcons{
+  margin-left: 0px;
+  span {
+    margin-left: 0px;
   }
 }
 
-.toggle-arrow {
-  display: inline-block;
-  transition: transform 0.3s ease;
-  color: $primary-color;
+h4 {
+  margin-bottom: 4px;
 }
 
-.individual-list-container {
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.3s ease-in-out;
+p {
+  margin: 0;
+}
+
+.progress-bar {
+  height: 12px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.progress {
+  height: 100%;
+  background-color: $primary-color;
+  border-radius: 4px;
 }
 
 .visible {
@@ -82,4 +80,37 @@
 .skeleton-progress-bar {
   height: 12px;
   width: 100%;
+}
+
+.BonusIconsContainer {
+  display: flex;
+  gap: 4px;
+}
+
+.BonusIcons {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5em;
+}
+
+.Emoji {
+  font-size: 1.5em;
+}
+
+.Multiplier {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 0.6em;
+}
+
+.StarWithMultiplier {
+  .Emoji {
+    z-index: 1;
+  }
+  .Multiplier {
+    z-index: 2;
+  }
 }

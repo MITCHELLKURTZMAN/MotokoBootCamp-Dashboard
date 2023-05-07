@@ -41,9 +41,9 @@ const loginOptions = {
     console.log("Login Successful!");
     toast("Login Successful!", ToastType.Success);
     let registered = await useUserStore.getState().isStudent(useAuthStore.getState().principalString);
-    if (registered === false) {
-     window.location.href = '/register';
-    }
+    // if (registered === false) {
+    //  window.location.href = '/register';
+    // }
     useUserStore.setState({ registered: registered });
     
   },

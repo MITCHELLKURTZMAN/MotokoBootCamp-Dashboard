@@ -1,4 +1,4 @@
-import { DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2, Result_8 } from 'src/declarations/Verifier/Verifier.did';
+import { DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2, Result_5, Result_8 } from 'src/declarations/Verifier/Verifier.did';
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getVerifierActor } from '../services/actorService';
@@ -16,11 +16,15 @@ export interface AdminDataStore {
     resolveHelpTicket: (helpTicketId: string, resolved: boolean) => Promise<Result_1>;
     adminManuallyVerifyStudentDay:(day: string, principalId: string) => Promise<Result_1>;
     getTotalCompletedPerDay: () => Promise<DailyTotalMetrics>;
+    adminGrantsBonusPoints: (principalId: string, description: string) => Promise<Result>;
+    getStudentPrincipalByName: (name: string) => Promise<Result_5>;
+    adminAnnounceTimedEvent: (message: string) => Promise<void>;
     totalTeams: string;
     totalStudents: string;
     totalProjectsCompleted: string;
     helpTickets: [HelpTicket];
     totalCompletedPerDay: DailyTotalMetrics;
+    nameToPrincipalId : string;
 }
 
 const createAdminDataStore = (
@@ -32,6 +36,71 @@ const createAdminDataStore = (
     totalProjectsCompleted: "0",
     helpTickets: [{day: "0", resolved: false, helpTicketId: "0", description: "0", gitHubUrl: "0", principalId: "0", canisterId: "0"}],
     totalCompletedPerDay: {day1: "0", day2: "0", day3: "0", day4: "0", day5: "0"},
+    nameToPrincipalId: "0",
+
+    adminAnnounceTimedEvent: async (message: string): Promise<void> => {
+        const resultPromise = (await getVerifierActor()).adminAnnounceTimedEvent(message);
+
+        await toastPromise(resultPromise, {
+
+            loading: 'Announcing timed event 📣...',
+            success: 'Timed event announced!',
+            error: 'Error announcing timed event.',
+        }, ToastType.Success);
+    },
+    
+    
+    adminGrantsBonusPoints: async (principalId: string, description: string): Promise<Result> => {
+        const resultPromise = (await getVerifierActor()).adminGrantBonusPoints(principalId, description);
+
+        await toastPromise(resultPromise, {
+
+            loading: 'Granting bonus points...',
+            success: 'Bonus points granted!',
+            error: 'Error granting bonus points.',
+        }, ToastType.Success);
+
+        const result = await resultPromise;
+
+        if ('err' in result) {
+
+            const errorString = JSON.stringify(result.err);
+            console.error(errorString);
+            toastError(errorString);
+        } else {
+
+            console.log("adminGrantBonusPoints", result);
+        }
+
+        return result;
+    },
+
+    getStudentPrincipalByName : async (name: string): Promise<Result_5> => {
+   
+        const resultPromise = (await getVerifierActor()).getStudentPrincipalByName(name);
+
+       
+        await toastPromise(resultPromise, {
+            loading: 'Getting student principal...',
+            success: 'Student principal found!',
+            error: 'Error getting student principal.',
+        }, ToastType.Success);
+
+     
+        const result = await resultPromise;
+
+        if ('err' in result) {
+            const errorString = JSON.stringify(result.err);
+            console.error(errorString);
+            toastError(errorString);
+        } else {
+            
+            set({ nameToPrincipalId: result.ok });
+            return result;
+        }
+
+        return result;
+    },
 
     getTotalCompletedPerDay: async (): Promise<DailyTotalMetrics> => {
         const result = await (await getVerifierActor()).getTotalCompletedPerDay();

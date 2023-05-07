@@ -44,11 +44,11 @@ export type Result_3 = { 'ok' : Array<Student> } |
   { 'err' : string };
 export type Result_4 = { 'ok' : Array<StudentList> } |
   { 'err' : string };
-export type Result_5 = { 'ok' : Array<DailyProjectText> } |
+export type Result_5 = { 'ok' : string } |
   { 'err' : string };
-export type Result_6 = { 'ok' : Array<string> } |
+export type Result_6 = { 'ok' : Array<DailyProjectText> } |
   { 'err' : string };
-export type Result_7 = { 'ok' : string } |
+export type Result_7 = { 'ok' : Array<string> } |
   { 'err' : string };
 export type Result_8 = { 'ok' : Team } |
   { 'err' : string };
@@ -58,6 +58,7 @@ export interface Student {
   'name' : string,
   'rank' : string,
   'canisterIds' : Array<string>,
+  'bonusPoints' : bigint,
   'score' : bigint,
   'cliPrincipalId' : string,
   'principalId' : string,
@@ -66,6 +67,7 @@ export interface Student {
 export interface StudentList {
   'name' : string,
   'rank' : string,
+  'bonusPoints' : string,
   'score' : string,
 }
 export interface Team {
@@ -91,21 +93,23 @@ export type VerifyProject = { 'ok' : null } |
 export interface _SERVICE {
   'adminAnnounceTimedEvent' : ActorMethod<[string], undefined>,
   'adminCreateTeam' : ActorMethod<[string], Result_8>,
-  'adminDeleteTeam' : ActorMethod<[string], Result_7>,
+  'adminDeleteTeam' : ActorMethod<[string], Result_5>,
+  'adminGrantBonusPoints' : ActorMethod<[string, string], Result>,
   'adminManuallyVerifyStudentDay' : ActorMethod<[string, string], Result>,
   'adminSpecialAnnouncement' : ActorMethod<[string], undefined>,
-  'adminSyncTeamScores' : ActorMethod<[], Result_7>,
+  'adminSyncTeamScores' : ActorMethod<[], Result_5>,
   'buildStudent' : ActorMethod<[string], Result_2>,
   'buildTeam' : ActorMethod<[string], Team>,
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
   'getActivityFeed' : ActorMethod<[], Array<Activity>>,
-  'getAdmins' : ActorMethod<[], Result_6>,
-  'getAllStudents' : ActorMethod<[], Result_6>,
+  'getAdmins' : ActorMethod<[], Result_7>,
+  'getAllStudents' : ActorMethod<[], Result_7>,
   'getAllStudentsPrincipal' : ActorMethod<[], Array<Principal>>,
   'getAllTeams' : ActorMethod<[], Array<TeamString>>,
   'getHelpTickets' : ActorMethod<[], Array<HelpTicket>>,
   'getStudent' : ActorMethod<[string], Result_2>,
-  'getStudentCompletedDays' : ActorMethod<[], Result_5>,
+  'getStudentCompletedDays' : ActorMethod<[], Result_6>,
+  'getStudentPrincipalByName' : ActorMethod<[string], Result_5>,
   'getStudentsForTeamDashboard' : ActorMethod<[string], Result_4>,
   'getStudentsFromTeam' : ActorMethod<[string], Result_3>,
   'getTeam' : ActorMethod<[string], Team>,
@@ -116,6 +120,7 @@ export interface _SERVICE {
   'getUser' : ActorMethod<[], Result_2>,
   'isEvenTest' : ActorMethod<[bigint], boolean>,
   'isStudent' : ActorMethod<[string], boolean>,
+  'principalReverseMigration' : ActorMethod<[], undefined>,
   'registerAdmin' : ActorMethod<[string], Result>,
   'registerStudent' : ActorMethod<[string, string, string], Result_2>,
   'resolveHelpTicket' : ActorMethod<[string, boolean], Result_1>,
