@@ -4,7 +4,7 @@ import { exec } from 'child_process';
 
 let loadTestCommands = [];
 
-for (let i = 1; i <= 35; i++) {
+for (let i = 1; i <= 30; i++) {
   // Switch to the default identity for admin actions
   loadTestCommands.push({
     command: `dfx identity use default`,
@@ -14,7 +14,7 @@ for (let i = 1; i <= 35; i++) {
 
   // Create a new team
   loadTestCommands.push({
-    command: `dfx canister call Verifier adminCreateTeam "test team ${i}"`,
+    command: `dfx canister call Verifier adminCreateTeam '( "test team ${i}", false )'`,
     description: `Creating Team ${i}...`,
     emoji: emoji.get('triangular_flag_on_post'),
   });
@@ -23,13 +23,13 @@ for (let i = 1; i <= 35; i++) {
     const identityName = `student${j}ofTeam${i}`;
 
     //Create a new identity
-    if (i > 10 ) {
-    loadTestCommands.push({
-      command: `dfx identity new ${identityName}`,
-      description: `Creating Identity ${identityName}...`,
-      emoji: emoji.get('key'),
-    });
-    }
+    // if (i > 10 ) {
+    // loadTestCommands.push({
+    //   command: `dfx identity new ${identityName}`,
+    //   description: `Creating Identity ${identityName}...`,
+    //   emoji: emoji.get('key'),
+    // });
+    // }
 
     // Use the new identity
     loadTestCommands.push({
@@ -43,14 +43,16 @@ for (let i = 1; i <= 35; i++) {
       command: `dfx identity get-principal`,
       description: `Getting Principal for Identity ${identityName}...`,
       emoji: emoji.get('id'),
+      identity: identityName,
     });
-
-    // Register the student
-    loadTestCommands.push({
-      command: `dfx canister call Verifier registerStudent '("${identityName}", "test team ${i}", "${identityName}")'`,
-      description: `Registering ${identityName} for Team ${i}...`,
-      emoji: emoji.get('student'),
-    });
+  
+  //   // Register the student
+  //   loadTestCommands.push({
+  //     command: `dfx canister call Verifier registerStudent '("${identityName}", "${identityName}", false)'`,
+  //     description: `Registering ${identityName} for Team ${i}...`,
+  //     emoji: emoji.get('student'),
+  //     identity: identityName,
+  //   });
   }
 }
 
@@ -72,8 +74,17 @@ function executeLoadTestCommands(index = 0) {
 
     console.log(`${command.emoji}  ${stdout.trim()}\n`);
 
+    if (command.description.includes("Getting Principal for Identity")) {
+      const principal = stdout.trim();
+      const identityName = command.identity;
+
+      // Replace the registerStudent command with the correct principal as the first argument
+      loadTestCommands[index + 1].command = `dfx canister call Verifier registerStudent '( "${identityName}", "${principal}", false)'`;
+    }
+
     executeLoadTestCommands(index + 1);
   });
 }
 
 executeLoadTestCommands();
+

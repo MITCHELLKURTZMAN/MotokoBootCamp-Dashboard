@@ -6,6 +6,29 @@ export interface Activity {
   'specialAnnouncement' : string,
   'activity' : string,
 }
+export type CanisterCyclesAggregatedData = BigUint64Array | bigint[];
+export type CanisterHeapMemoryAggregatedData = BigUint64Array | bigint[];
+export type CanisterLogFeature = { 'filterMessageByContains' : null } |
+  { 'filterMessageByRegex' : null };
+export interface CanisterLogMessages {
+  'data' : Array<LogMessagesData>,
+  'lastAnalyzedMessageTimeNanos' : [] | [Nanos],
+}
+export interface CanisterLogMessagesInfo {
+  'features' : Array<[] | [CanisterLogFeature]>,
+  'lastTimeNanos' : [] | [Nanos],
+  'count' : number,
+  'firstTimeNanos' : [] | [Nanos],
+}
+export type CanisterLogRequest = { 'getMessagesInfo' : null } |
+  { 'getMessages' : GetLogMessagesParameters } |
+  { 'getLatestMessages' : GetLatestLogMessagesParameters };
+export type CanisterLogResponse = { 'messagesInfo' : CanisterLogMessagesInfo } |
+  { 'messages' : CanisterLogMessages };
+export type CanisterMemoryAggregatedData = BigUint64Array | bigint[];
+export interface CanisterMetrics { 'data' : CanisterMetricsData }
+export type CanisterMetricsData = { 'hourly' : Array<HourlyMetricsData> } |
+  { 'daily' : Array<DailyMetricsData> };
 export interface CanisterSettings {
   'freezing_threshold' : bigint,
   'controllers' : Array<Principal>,
@@ -23,16 +46,21 @@ export interface CanisterStatus {
   'module_hash' : [] | [Uint8Array | number[]],
   'canisterId' : string,
 }
+export interface DailyMetricsData {
+  'updateCalls' : bigint,
+  'canisterHeapMemorySize' : NumericEntity,
+  'canisterCycles' : NumericEntity,
+  'canisterMemorySize' : NumericEntity,
+  'timeMillis' : bigint,
+}
 export interface DailyProject {
   'day' : bigint,
   'timeStamp' : bigint,
-  'completed' : boolean,
-  'canisterId' : string,
+  'canisterId' : Principal,
 }
 export interface DailyProjectText {
   'day' : string,
   'timeStamp' : string,
-  'completed' : string,
   'canisterId' : string,
 }
 export interface DailyTotalMetrics {
@@ -42,48 +70,112 @@ export interface DailyTotalMetrics {
   'day4' : string,
   'day5' : string,
 }
-export interface HelpTicket {
-  'day' : string,
-  'resolved' : boolean,
-  'helpTicketId' : string,
-  'description' : string,
-  'gitHubUrl' : string,
-  'principalId' : string,
-  'canisterId' : string,
+export interface Dashboard {
+  'acceptCycles' : ActorMethod<[], undefined>,
+  'adminAnnounceTimedEvent' : ActorMethod<[string], undefined>,
+  'adminCreateTeam' : ActorMethod<[string, boolean], Result_7>,
+  'adminGrantBonusPoints' : ActorMethod<[string, string], Result>,
+  'adminManuallyVerifyStudentDay' : ActorMethod<[string, string], Result>,
+  'adminSpecialAnnouncement' : ActorMethod<[string], undefined>,
+  'availableCycles' : ActorMethod<[], bigint>,
+  'collectCanisterMetrics' : ActorMethod<[], undefined>,
+  'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
+  'getActivityFeed' : ActorMethod<[], Array<Activity>>,
+  'getAdmins' : ActorMethod<[], Result_6>,
+  'getAllStudentsPrincipal' : ActorMethod<[], Array<Principal>>,
+  'getAllTeams' : ActorMethod<[], Array<TeamString>>,
+  'getCanisterInfo' : ActorMethod<[], CanisterStatus>,
+  'getCanisterLog' : ActorMethod<
+    [[] | [CanisterLogRequest]],
+    [] | [CanisterLogResponse]
+  >,
+  'getCanisterMetrics' : ActorMethod<
+    [GetMetricsParameters],
+    [] | [CanisterMetrics]
+  >,
+  'getStudent' : ActorMethod<[string], Result_1>,
+  'getStudentCompletedDays' : ActorMethod<[], Result_5>,
+  'getStudentPrincipalByName' : ActorMethod<[string], Result_4>,
+  'getStudentsForTeamDashboard' : ActorMethod<[string], Result_3>,
+  'getStudentsFromTeam' : ActorMethod<[string], Result_2>,
+  'getTeam' : ActorMethod<[string], Team>,
+  'getTotalCompletedPerDay' : ActorMethod<[], DailyTotalMetrics>,
+  'getTotalProjectsCompleted' : ActorMethod<[], string>,
+  'getTotalStudents' : ActorMethod<[], string>,
+  'getTotalTeams' : ActorMethod<[], string>,
+  'getUser' : ActorMethod<[], Result_1>,
+  'isStudent' : ActorMethod<[string], boolean>,
+  'registerAdmin' : ActorMethod<[string], Result>,
+  'registerStudent' : ActorMethod<[string, string, boolean], Result_1>,
+  'setMaxMessagesCount' : ActorMethod<[bigint], undefined>,
+  'unregisterAdmin' : ActorMethod<[string], Result>,
+  'verifyProject' : ActorMethod<[string, bigint], VerifyProject>,
+}
+export interface GetLatestLogMessagesParameters {
+  'upToTimeNanos' : [] | [Nanos],
+  'count' : number,
+  'filter' : [] | [GetLogMessagesFilter],
+}
+export interface GetLogMessagesFilter {
+  'analyzeCount' : number,
+  'messageRegex' : [] | [string],
+  'messageContains' : [] | [string],
+}
+export interface GetLogMessagesParameters {
+  'count' : number,
+  'filter' : [] | [GetLogMessagesFilter],
+  'fromTimeNanos' : [] | [Nanos],
+}
+export interface GetMetricsParameters {
+  'dateToMillis' : bigint,
+  'granularity' : MetricsGranularity,
+  'dateFromMillis' : bigint,
+}
+export interface HourlyMetricsData {
+  'updateCalls' : UpdateCallsAggregatedData,
+  'canisterHeapMemorySize' : CanisterHeapMemoryAggregatedData,
+  'canisterCycles' : CanisterCyclesAggregatedData,
+  'canisterMemorySize' : CanisterMemoryAggregatedData,
+  'timeMillis' : bigint,
+}
+export interface LogMessagesData { 'timeNanos' : Nanos, 'message' : string }
+export type MetricsGranularity = { 'hourly' : null } |
+  { 'daily' : null };
+export type Nanos = bigint;
+export interface NumericEntity {
+  'avg' : bigint,
+  'max' : bigint,
+  'min' : bigint,
+  'first' : bigint,
+  'last' : bigint,
 }
 export type Result = { 'ok' : null } |
   { 'err' : string };
-export type Result_1 = { 'ok' : HelpTicket } |
+export type Result_1 = { 'ok' : Student } |
   { 'err' : string };
-export type Result_2 = { 'ok' : Student } |
+export type Result_2 = { 'ok' : Array<Student> } |
   { 'err' : string };
-export type Result_3 = { 'ok' : Array<Student> } |
+export type Result_3 = { 'ok' : Array<StudentList> } |
   { 'err' : string };
-export type Result_4 = { 'ok' : Array<StudentList> } |
+export type Result_4 = { 'ok' : string } |
   { 'err' : string };
-export type Result_5 = { 'ok' : string } |
+export type Result_5 = { 'ok' : Array<DailyProjectText> } |
   { 'err' : string };
-export type Result_6 = { 'ok' : Array<DailyProjectText> } |
+export type Result_6 = { 'ok' : Array<string> } |
   { 'err' : string };
-export type Result_7 = { 'ok' : Array<string> } |
-  { 'err' : string };
-export type Result_8 = { 'ok' : Team } |
+export type Result_7 = { 'ok' : Team } |
   { 'err' : string };
 export interface Student {
   'completedDays' : Array<DailyProject>,
   'teamName' : string,
   'name' : string,
-  'rank' : string,
-  'canisterIds' : Array<string>,
   'bonusPoints' : bigint,
   'score' : bigint,
   'cliPrincipalId' : string,
   'principalId' : string,
-  'strikes' : bigint,
 }
 export interface StudentList {
   'name' : string,
-  'rank' : string,
   'bonusPoints' : string,
   'score' : string,
 }
@@ -91,12 +183,14 @@ export interface Team {
   'name' : string,
   'teamMembers' : Array<string>,
   'score' : bigint,
+  'spanish' : boolean,
 }
 export interface TeamString {
   'name' : string,
   'teamMembers' : Array<string>,
   'score' : string,
 }
+export type UpdateCallsAggregatedData = BigUint64Array | bigint[];
 export type VerifyProject = { 'ok' : null } |
   {
     'err' : { 'NotAController' : string } |
@@ -107,45 +201,4 @@ export type VerifyProject = { 'ok' : null } |
       { 'AlreadyCompleted' : string } |
       { 'NotImplemented' : string }
   };
-export interface _SERVICE {
-  'adminAnnounceTimedEvent' : ActorMethod<[string], undefined>,
-  'adminCreateTeam' : ActorMethod<[string], Result_8>,
-  'adminDeleteTeam' : ActorMethod<[string], Result_5>,
-  'adminGrantBonusPoints' : ActorMethod<[string, string], Result>,
-  'adminManuallyVerifyStudentDay' : ActorMethod<[string, string], Result>,
-  'adminSpecialAnnouncement' : ActorMethod<[string], undefined>,
-  'adminSyncTeamScores' : ActorMethod<[], Result_5>,
-  'buildStudent' : ActorMethod<[string], Result_2>,
-  'buildTeam' : ActorMethod<[string], Team>,
-  'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
-  'getActivityFeed' : ActorMethod<[], Array<Activity>>,
-  'getAdmins' : ActorMethod<[], Result_7>,
-  'getAllStudents' : ActorMethod<[], Result_7>,
-  'getAllStudentsPrincipal' : ActorMethod<[], Array<Principal>>,
-  'getAllTeams' : ActorMethod<[], Array<TeamString>>,
-  'getCanisterInfo' : ActorMethod<[], CanisterStatus>,
-  'getHelpTickets' : ActorMethod<[], Array<HelpTicket>>,
-  'getStudent' : ActorMethod<[string], Result_2>,
-  'getStudentCompletedDays' : ActorMethod<[], Result_6>,
-  'getStudentPrincipalByName' : ActorMethod<[string], Result_5>,
-  'getStudentsForTeamDashboard' : ActorMethod<[string], Result_4>,
-  'getStudentsFromTeam' : ActorMethod<[string], Result_3>,
-  'getTeam' : ActorMethod<[string], Team>,
-  'getTotalCompletedPerDay' : ActorMethod<[], DailyTotalMetrics>,
-  'getTotalProjectsCompleted' : ActorMethod<[], string>,
-  'getTotalStudents' : ActorMethod<[], string>,
-  'getTotalTeams' : ActorMethod<[], string>,
-  'getUser' : ActorMethod<[], Result_2>,
-  'isEvenTest' : ActorMethod<[bigint], boolean>,
-  'isStudent' : ActorMethod<[string], boolean>,
-  'principalReverseMigration' : ActorMethod<[], undefined>,
-  'registerAdmin' : ActorMethod<[string], Result>,
-  'registerStudent' : ActorMethod<[string, string, string], Result_2>,
-  'resolveHelpTicket' : ActorMethod<[string, boolean], Result_1>,
-  'studentCreateHelpTicket' : ActorMethod<
-    [string, string, string, string],
-    Result_1
-  >,
-  'unregisterAdmin' : ActorMethod<[string], Result>,
-  'verifyProject' : ActorMethod<[string, bigint], VerifyProject>,
-}
+export interface _SERVICE extends Dashboard {}

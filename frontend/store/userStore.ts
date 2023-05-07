@@ -16,10 +16,9 @@ export interface UserStore {
   registerUser: (
     handle: string,
     teamName: string,
-    CLIPrincipal: string
-  ) => Promise<Result_2>;
+    isSpanish: boolean
+  ) => Promise<Result_1>;
   
-  studentCreateHelpTicket: (description : string, githubUrl : string, canisterId : string, day : string) => Promise<Result_1>;
   getUser: (principalId: string) => Promise<Student | undefined>;
   clearUser: () => Promise<void>;
   clearAll: () => void;
@@ -70,41 +69,17 @@ const createUserStore = (
   registered: true,
   result: undefined,
 
-  studentCreateHelpTicket: async (
-  description: string,
-  githubUrl: string,
-  canisterId: string,
-  day: string
-): Promise<Result_1> => {
-  const resultPromise = (
-    await getVerifierActor()
-  ).studentCreateHelpTicket(description, githubUrl, canisterId, day);
+  
 
-  toastPromise(resultPromise, {
-    loading: 'Creating help ticket...',
-    success: 'Your ticket has been created, please wait for admins to review!',
-    error: 'Error creating help ticket.',
-  }, ToastType.Success);
-
-  const result = await resultPromise;
-
-  if ('err' in result) {
-    console.error(result.err);
-    toastError(result.err);
-  } else {
-    set({ result: result.ok });
-  }
-
-  return result;
-},
+  
 
  
 registerUser: async (
   handle: string,
   teamName: string,
-  CLIPrincipal: string
-): Promise<Result_2> => {
-  const resultPromise = (await getVerifierActor()).registerStudent(handle, teamName, CLIPrincipal);
+  isSpanish: boolean
+): Promise<Result_1> => {
+  const resultPromise = (await getVerifierActor()).registerStudent(handle, teamName, isSpanish);
 
   await toastPromise(resultPromise, {
     loading: 'Registering...',

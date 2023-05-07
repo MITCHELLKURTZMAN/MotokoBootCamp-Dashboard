@@ -62,10 +62,10 @@ const Profile: React.FC<Props> = ({}) => {
               <span className="label">Team:</span>
               <span className="value">{user?.teamName}</span>
             </div>
-            <div className="profile-info-item">
+            {/* <div className="profile-info-item">
               <span className="label">Rank:</span>
               <span className="value">{user?.rank}</span>
-            </div>
+            </div> */}
             <div className="profile-info-item">
               <span className="label">Score:</span>
               <span className="value">{user?.score.toString()}</span>

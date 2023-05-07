@@ -4,8 +4,6 @@ import Heatmap from "../Charts/Heatmap"
 import BarChart from "../Charts/BarChart"
 import { useAdminDataStore } from "../../store/adminDataStore"
 import { getVerifierActor } from "../../services/actorService"
-
-import HelpTicketFeed from "./HelpTicketFeed"
 import { useAuthStore } from "../../store/authstore"
 import colors from "../../constants/colors"
 
@@ -18,6 +16,7 @@ const Admin: React.FC = () => {
   const [studentName, setStudentName] = useState("")
   const [eventTitle, setEventTitle] = useState("")
   const [eventDescription, setEventDescription] = useState("")
+  const [isSpanish, setIsSpanish] = useState(false)
 
   const handleTimeEventAnnouncement = (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,7 +68,7 @@ const Admin: React.FC = () => {
     // Handle team creation logic
     console.log("Team created:", teamName)
     setTeamName("")
-    adminCreateTeam(teamName)
+    adminCreateTeam(teamName, isSpanish)
   }
   const lookupStudentPrincipal = async () => {
     const studentPrincipal = await getStudentPrincipalFromName(studentName)
@@ -175,6 +174,14 @@ const Admin: React.FC = () => {
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
             />
+            <label>
+              <input
+                type="checkbox"
+                checked={isSpanish}
+                onChange={(e) => setIsSpanish(e.target.checked)}
+              />
+              Spanish
+            </label>
             <button className="admin-submit" type="submit">
               Create Team
             </button>

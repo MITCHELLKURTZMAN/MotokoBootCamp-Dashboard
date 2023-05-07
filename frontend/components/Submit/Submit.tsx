@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react"
 import "./_submit.scss"
 import { useUserStore } from "../../store/userStore"
 import { DailyProjectText } from "src/declarations/Verifier/Verifier.did"
-import HelpTicket from "./HelpTicket"
 
 const Submit: React.FC = () => {
   const [canisterId, setCanisterId] = useState<string>("")
@@ -20,7 +19,6 @@ const Submit: React.FC = () => {
     return completedDays.map((day) => ({
       day: day.day,
       timeStamp: day.timeStamp,
-      completed: day.completed,
       canisterId: day.canisterId,
     }))
   }
@@ -74,11 +72,7 @@ const Submit: React.FC = () => {
         <h2 className="submit__header">Submission Status</h2>
         <ul className="submission-status__list">
           {submissionStatusList.map((status, index) => (
-            <li key={index}>
-              {`Day ${status.day}: ${
-                status.completed ? "Completed" : "Incomplete"
-              }`}
-            </li>
+            <li key={index}>{`Day ${status.day}: ${"Completed"}`}</li>
           ))}
         </ul>
       </div>
