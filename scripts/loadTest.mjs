@@ -5,14 +5,12 @@ import { exec } from 'child_process';
 let loadTestCommands = [];
 
 for (let i = 1; i <= 30; i++) {
-  // Switch to the default identity for admin actions
   loadTestCommands.push({
     command: `dfx identity use default`,
     description: `Switching to default identity...`,
     emoji: emoji.get('key'),
   });
 
-  // Create a new team
   loadTestCommands.push({
     command: `dfx canister call Verifier adminCreateTeam '( "test team ${i}", false )'`,
     description: `Creating Team ${i}...`,
@@ -22,37 +20,18 @@ for (let i = 1; i <= 30; i++) {
   for (let j = 1; j <= 30; j++) {
     const identityName = `student${j}ofTeam${i}`;
 
-    //Create a new identity
-    // if (i > 10 ) {
-    // loadTestCommands.push({
-    //   command: `dfx identity new ${identityName}`,
-    //   description: `Creating Identity ${identityName}...`,
-    //   emoji: emoji.get('key'),
-    // });
-    // }
-
-    // Use the new identity
     loadTestCommands.push({
       command: `dfx identity use ${identityName}`,
       description: `Using Identity ${identityName}...`,
       emoji: emoji.get('key'),
     });
 
-    // Get the principal of the new identity
     loadTestCommands.push({
       command: `dfx identity get-principal`,
       description: `Getting Principal for Identity ${identityName}...`,
       emoji: emoji.get('id'),
       identity: identityName,
     });
-  
-  //   // Register the student
-  //   loadTestCommands.push({
-  //     command: `dfx canister call Verifier registerStudent '("${identityName}", "${identityName}", false)'`,
-  //     description: `Registering ${identityName} for Team ${i}...`,
-  //     emoji: emoji.get('student'),
-  //     identity: identityName,
-  //   });
   }
 }
 
@@ -78,13 +57,25 @@ function executeLoadTestCommands(index = 0) {
       const principal = stdout.trim();
       const identityName = command.identity;
 
-      // Replace the registerStudent command with the correct principal as the first argument
-      loadTestCommands[index + 1].command = `dfx canister call Verifier registerStudent '( "${identityName}", "${principal}", false)'`;
-    }
+      const registerStudentCommand = `dfx canister call Verifier registerStudent '(  "${identityName}","${principal}", false)'`;
+      console.log(chalk.blue(`\n${emoji.get('student')}  Registering ${identityName} for Team ${Math.floor(index / 30) + 1}...\n`));
 
-    executeLoadTestCommands(index + 1);
+      exec(registerStudentCommand, (registerError, registerStdout, registerStderr) => {
+        if (registerError) {
+          console.log(`\nError: ${registerError.message}\n`);
+          return;
+        }
+        if (registerStderr) {
+          console.log(`\nWarning: ${registerStderr}\n`);
+        }
+
+        console.log(`${emoji.get('student')}  ${registerStdout.trim()}\n`);
+        executeLoadTestCommands(index + 1);
+      });
+    } else {
+      executeLoadTestCommands(index + 1);
+    }
   });
 }
 
 executeLoadTestCommands();
-
