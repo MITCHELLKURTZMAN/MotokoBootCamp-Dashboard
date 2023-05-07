@@ -2,6 +2,8 @@ import chalk from 'chalk';
 import emoji from 'node-emoji';
 import { exec } from 'child_process';
 
+let network='ic';
+
 // Function to get random number of days between 1 and 5
 function getRandomDays() {
   return Math.floor(Math.random() * 6) + 1;
@@ -31,7 +33,7 @@ executeCommand(
 );
 
 // Get all students
-exec(`dfx canister call Verifier getAllStudentsPrincipal`, (error, stdout, stderr) => {
+exec(`dfx canister call --network ${network} Verifier getAllStudentsPrincipal`, (error, stdout, stderr) => {
   if (error) {
     console.log(`\nError: ${error.message}\n`);
     return;
@@ -52,7 +54,7 @@ exec(`dfx canister call Verifier getAllStudentsPrincipal`, (error, stdout, stder
     const days = getRandomDays();
 
     for (let day = 1; day <= days; day++) {
-      const command = `dfx canister call Verifier adminManuallyVerifyStudentDay '("${day}","${student}")'`;
+      const command = `dfx canister call  --network ${network} Verifier adminManuallyVerifyStudentDay '(${day},"${student}")'`;
       const description = `Verifying homework for student with principal ${student} on day ${day}...`;
       executeCommand(command, description, 'pencil');
     }

@@ -146,9 +146,9 @@ type Dashboard =
    getActivity: (nat, nat) -> (vec Activity) query;
    getActivityFeed: () -> (vec Activity) query;
    getAdmins: () -> (Result_6) query;
+   getAllStudents: () -> (Result_6);
    getAllStudentsPrincipal: () -> (vec principal);
    getAllTeams: () -> (vec TeamString) query;
-   getCanisterInfo: () -> (CanisterStatus);
    getCanisterLog: (opt CanisterLogRequest) ->
     (opt CanisterLogResponse) query;
    getCanisterMetrics: (GetMetricsParameters) -> (opt CanisterMetrics) query;
@@ -197,27 +197,6 @@ type DailyMetricsData =
    canisterMemorySize: NumericEntity;
    timeMillis: int;
    updateCalls: nat64;
- };
-type CanisterStatus = 
- record {
-   canisterId: text;
-   cycles: text;
-   idle_cycles_burned_per_day: text;
-   memory_size: text;
-   module_hash: opt blob;
-   settings: CanisterSettings;
-   status: variant {
-             running;
-             stopped;
-             stopping;
-           };
- };
-type CanisterSettings = 
- record {
-   compute_allocation: nat;
-   controllers: vec principal;
-   freezing_threshold: nat;
-   memory_allocation: nat;
  };
 type CanisterMetricsData = 
  variant {

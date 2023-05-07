@@ -110,7 +110,12 @@ shared ({ caller = creator }) actor class Dashboard() = this {
             return #err("Team name is already taken")
         };
 
-        var team : Team = { name = U.trim(U.lowerCase(teamName)); score = 0; teamMembers = []; spanish };
+        var team : Team = {
+            name = U.trim(U.lowerCase(teamName));
+            score = 0;
+            teamMembers = [];
+            spanish
+        };
         teamsHashMap.put(Nat.toText(teamIdCounter), team);
         teamIdCounter := teamIdCounter + 1;
 
@@ -210,7 +215,6 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         _Monitor.collectMetrics()
     };
 
-
     ///////////////
     // STUDENTS //
     /////////////
@@ -242,7 +246,6 @@ shared ({ caller = creator }) actor class Dashboard() = this {
             case (?_) { return true }
         }
     };
-
 
     func _isStudentNameTaken(name : Text) : Bool {
         for (student in studentsHashMap.vals()) {
@@ -314,9 +317,9 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     public shared ({ caller }) func getStudentCompletedDays() : async Result.Result<[DailyProjectText], Text> {
         let studentId = Principal.toText(caller);
         switch (studentsHashMap.get(studentId)) {
-            case (null) { 
+            case (null) {
                 _Logs.logMessage("ERROR: Attempting to get the completed dats of a non-registered student : " # studentId);
-                return #err("Student not registered") 
+                return #err("Student not registered")
             };
             case (?student) {
                 var completedDaysBuffer = Buffer.Buffer<DailyProjectText>(student.completedDays.size());
@@ -407,11 +410,10 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         return Nat.toText(studentsHashMap.size())
     };
 
-
     ///////////////
     // TEAMS /////
     /////////////
-    
+
     func _updateTeamScore(teamName : Text) : () {
         switch (teamsHashMap.get(teamName)) {
             case (null) {
@@ -481,7 +483,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 for (studentId in team.teamMembers.vals()) {
                     switch (studentsHashMap.get(studentId)) {
                         case (null) {
-                        _Logs.logMessage("ERROR: Student not found in team : " # teamName);
+                            _Logs.logMessage("ERROR: Student not found in team : " # teamName);
                             return #err("Student not found")
                         };
                         case (?student) {
@@ -494,7 +496,6 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         };
         return #err("Team not found")
     };
-
 
     public shared query func getStudentsForTeamDashboard(teamName : Text) : async Result.Result<[StudentList], Text> {
         var studentBuffer = Buffer.Buffer<StudentList>(studentsHashMap.size());
@@ -527,9 +528,6 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         };
         return Buffer.toArray(teamBuffer)
     };
-
-   
-
 
     /////////////////////
     // VERIFICATION /////
@@ -731,11 +729,10 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         return Array.reverse(Buffer.toArray(activityBuffer))
     };
 
-
     public shared query func getTotalProjectsCompleted() : async Text {
         var projectsCompleted = 0;
         for (student in studentsHashMap.vals()) {
-            projectsCompleted +=  Array.size(student.completedDays);
+            projectsCompleted += Array.size(student.completedDays)
         };
         Nat.toText(projectsCompleted)
     };

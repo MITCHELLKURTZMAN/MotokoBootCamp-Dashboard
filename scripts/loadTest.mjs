@@ -3,6 +3,7 @@ import emoji from 'node-emoji';
 import { exec } from 'child_process';
 
 let loadTestCommands = [];
+let network='ic';
 
 for (let i = 1; i <= 30; i++) {
   loadTestCommands.push({
@@ -12,7 +13,7 @@ for (let i = 1; i <= 30; i++) {
   });
 
   loadTestCommands.push({
-    command: `dfx canister call Verifier adminCreateTeam '( "test team ${i}", false )'`,
+    command: `dfx canister call --network ${network} Verifier adminCreateTeam '( "test team ${i}", false )'`,
     description: `Creating Team ${i}...`,
     emoji: emoji.get('triangular_flag_on_post'),
   });
@@ -57,7 +58,7 @@ function executeLoadTestCommands(index = 0) {
       const principal = stdout.trim();
       const identityName = command.identity;
 
-      const registerStudentCommand = `dfx canister call Verifier registerStudent '(  "${identityName}","${principal}", false)'`;
+      const registerStudentCommand = `dfx canister call --network ${network} Verifier registerStudent '(  "${identityName}","${principal}", false)'`;
       console.log(chalk.blue(`\n${emoji.get('student')}  Registering ${identityName} for Team ${Math.floor(index / 30) + 1}...\n`));
 
       exec(registerStudentCommand, (registerError, registerStdout, registerStderr) => {

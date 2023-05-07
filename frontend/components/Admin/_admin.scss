@@ -54,6 +54,7 @@
   box-shadow: 0 2px 4px $shadow-color;
   transition: background-color 0.3s, box-shadow 0.3s;
   cursor: pointer;
+  margin: 20px;
 }
 
 .admin-submit:hover {
@@ -86,4 +87,11 @@
     font-weight: bold;
     color: $primary-color;
   }
+
 }
+.spanish-checkbox-container{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+

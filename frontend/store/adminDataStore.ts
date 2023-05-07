@@ -1,4 +1,4 @@
-import { CanisterStatus, DailyTotalMetrics, Result, Result_1, Result_2, Result_4, Result_5, Result_6, Result_7 } from 'src/declarations/Verifier/Verifier.did';
+import { DailyTotalMetrics, Result, Result_1, Result_2, Result_4, Result_5, Result_6, Result_7 } from 'src/declarations/Verifier/Verifier.did';
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getVerifierActor } from '../services/actorService';
@@ -18,14 +18,14 @@ export interface AdminDataStore {
     adminGrantsBonusPoints: (principalId: string, description: string) => Promise<Result>;
     getStudentPrincipalByName: (name: string) => Promise<Result_4>;
     adminAnnounceTimedEvent: (message: string) => Promise<void>;
-    getCanisterInfo: () => Promise<CanisterStatus>;
+    
     totalTeams: string;
     totalStudents: string;
     totalProjectsCompleted: string;
   
     totalCompletedPerDay: DailyTotalMetrics;
     nameToPrincipalId : string;
-    canisterInfo: CanisterStatus;
+  
 }
 
 const createAdminDataStore = (
@@ -37,16 +37,10 @@ const createAdminDataStore = (
     totalProjectsCompleted: "0",
     totalCompletedPerDay: {day1: "0", day2: "0", day3: "0", day4: "0", day5: "0"},
     nameToPrincipalId: "0",
-    canisterInfo : {status : null, memory_size: "0", cycles: "0", settings: null, idle_cycles_burned_per_day: "0", module_hash: [], canisterId: ""}, 
-
+    
     
 
-    getCanisterInfo: async (): Promise<CanisterStatus> => {
-      
-      const canisterInfo = await (await getVerifierActor()).getCanisterInfo();
-      set({canisterInfo});
-      return canisterInfo;
-    },
+  
 
 
     adminAnnounceTimedEvent: async (message: string): Promise<void> => {

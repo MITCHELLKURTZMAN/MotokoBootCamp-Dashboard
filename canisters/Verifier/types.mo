@@ -1,13 +1,15 @@
 import Test "test";
 import Result "mo:base/Result";
+import Nat "mo:base/Nat";
 module {
-      public type Student = {
+    public type Student = {
         principalId : Text;
         cliPrincipalId : Text;
         name : Text;
-        teamId : Text;
+        teamName : Text;
         score : Nat;
-        completedDays : [DailyProject]
+        completedDays : [DailyProject];
+        bonusPoints : Nat
     };
 
     public type Team = {
@@ -63,12 +65,12 @@ module {
         #quantumConsul : Text
     };
 
-
     public type StudentList = {
         name : Text;
-        score : Text
+        score : Text;
+        bonusPoints : Text
     };
 
     public type TestResult = Test.TestResult;
-    public type VerifyProject = TestResult or Result.Result<(), { #NotAController : Text; #NotAStudent : Text; #InvalidDay : Text; #AlreadyCompleted : Text }>;
+    public type VerifyProject = TestResult or Result.Result<(), { #NotAController : Text; #NotAStudent : Text; #InvalidDay : Text; #AlreadyCompleted : Text }>
 }

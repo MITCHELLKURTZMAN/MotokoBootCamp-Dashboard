@@ -18,25 +18,6 @@ export const idlFactory = ({ IDL }) => {
     'teamMembers' : IDL.Vec(IDL.Text),
     'score' : IDL.Text,
   });
-  const CanisterSettings = IDL.Record({
-    'freezing_threshold' : IDL.Nat,
-    'controllers' : IDL.Vec(IDL.Principal),
-    'memory_allocation' : IDL.Nat,
-    'compute_allocation' : IDL.Nat,
-  });
-  const CanisterStatus = IDL.Record({
-    'status' : IDL.Variant({
-      'stopped' : IDL.Null,
-      'stopping' : IDL.Null,
-      'running' : IDL.Null,
-    }),
-    'memory_size' : IDL.Text,
-    'cycles' : IDL.Text,
-    'settings' : CanisterSettings,
-    'idle_cycles_burned_per_day' : IDL.Text,
-    'module_hash' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'canisterId' : IDL.Text,
-  });
   const GetLogMessagesFilter = IDL.Record({
     'analyzeCount' : IDL.Nat32,
     'messageRegex' : IDL.Opt(IDL.Text),
@@ -193,9 +174,9 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getActivityFeed' : IDL.Func([], [IDL.Vec(Activity)], ['query']),
     'getAdmins' : IDL.Func([], [Result_6], ['query']),
+    'getAllStudents' : IDL.Func([], [Result_6], []),
     'getAllStudentsPrincipal' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
     'getAllTeams' : IDL.Func([], [IDL.Vec(TeamString)], ['query']),
-    'getCanisterInfo' : IDL.Func([], [CanisterStatus], []),
     'getCanisterLog' : IDL.Func(
         [IDL.Opt(CanisterLogRequest)],
         [IDL.Opt(CanisterLogResponse)],

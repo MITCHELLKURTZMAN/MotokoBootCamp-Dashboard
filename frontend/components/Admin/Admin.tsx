@@ -59,9 +59,6 @@ const Admin: React.FC = () => {
     (state) => state.adminAnnounceTimedEvent,
   )
 
-  const getCanisterinfo = useAdminDataStore((state) => state.getCanisterInfo)
-  const canisterInfo = useAdminDataStore((state) => state.canisterInfo)
-
   const principalString = useAuthStore((state) => state.principalString)
 
   const handleTeamCreation = (e: React.FormEvent) => {
@@ -108,10 +105,6 @@ const Admin: React.FC = () => {
 
   useEffect(() => {
     getTotalCompletedPerDay()
-  }, [])
-
-  useEffect(() => {
-    getCanisterinfo()
   }, [])
 
   const formatCycles = (cycles: number) => {
@@ -176,14 +169,17 @@ const Admin: React.FC = () => {
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
             />
-            <label>
+
+            <label className="spanish-checkbox-container">
               <input
                 type="checkbox"
                 checked={isSpanish}
                 onChange={(e) => setIsSpanish(e.target.checked)}
+                className="form-label"
               />
-              Spanish
+              <span className="form-label">Spanish</span>
             </label>
+
             <button className="admin-submit" type="submit">
               Create Team
             </button>
@@ -310,29 +306,6 @@ const Admin: React.FC = () => {
               Student Principal ID: {nameToPrincipal}
             </p>
           )}
-        </div>
-        <div className="card canister-info">
-          <h2>Canister Information</h2>
-          <div className="canister-data">
-            <p>
-              <span className="canister-data-title">Canister ID:</span>{" "}
-              {canisterInfo.canisterId}
-            </p>
-            <p>
-              <span className="canister-data-title">Cycles:</span>{" "}
-              {formatCycles(parseInt(canisterInfo.cycles))}
-            </p>
-            <p>
-              <span className="canister-data-title">
-                Idle Cycles Burned Per Day:
-              </span>{" "}
-              {formatCycles(parseInt(canisterInfo.idle_cycles_burned_per_day))}
-            </p>
-            <p>
-              <span className="canister-data-title">Status:</span>{" "}
-              {JSON.stringify(canisterInfo.status)}
-            </p>
-          </div>
         </div>
       </div>
       {/* <div className="card double width">

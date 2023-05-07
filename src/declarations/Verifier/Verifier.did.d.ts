@@ -29,23 +29,6 @@ export type CanisterMemoryAggregatedData = BigUint64Array | bigint[];
 export interface CanisterMetrics { 'data' : CanisterMetricsData }
 export type CanisterMetricsData = { 'hourly' : Array<HourlyMetricsData> } |
   { 'daily' : Array<DailyMetricsData> };
-export interface CanisterSettings {
-  'freezing_threshold' : bigint,
-  'controllers' : Array<Principal>,
-  'memory_allocation' : bigint,
-  'compute_allocation' : bigint,
-}
-export interface CanisterStatus {
-  'status' : { 'stopped' : null } |
-    { 'stopping' : null } |
-    { 'running' : null },
-  'memory_size' : string,
-  'cycles' : string,
-  'settings' : CanisterSettings,
-  'idle_cycles_burned_per_day' : string,
-  'module_hash' : [] | [Uint8Array | number[]],
-  'canisterId' : string,
-}
 export interface DailyMetricsData {
   'updateCalls' : bigint,
   'canisterHeapMemorySize' : NumericEntity,
@@ -82,9 +65,9 @@ export interface Dashboard {
   'getActivity' : ActorMethod<[bigint, bigint], Array<Activity>>,
   'getActivityFeed' : ActorMethod<[], Array<Activity>>,
   'getAdmins' : ActorMethod<[], Result_6>,
+  'getAllStudents' : ActorMethod<[], Result_6>,
   'getAllStudentsPrincipal' : ActorMethod<[], Array<Principal>>,
   'getAllTeams' : ActorMethod<[], Array<TeamString>>,
-  'getCanisterInfo' : ActorMethod<[], CanisterStatus>,
   'getCanisterLog' : ActorMethod<
     [[] | [CanisterLogRequest]],
     [] | [CanisterLogResponse]
