@@ -1,14 +1,12 @@
 @import "../../_variables";
 
 .admin-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  grid-auto-rows: minmax(200px, auto);
-  align-items: start;
-  justify-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   padding: 20px;
   background-color: $secondary-color;
+  gap: 20px;
 }
 
 .card {
@@ -17,10 +15,13 @@
   border-radius: 15px;
   box-shadow: 0 4px 6px $shadow-color;
   min-height: 410px;
+  flex: 1;
+  margin: 10px;
+  min-width: 500px;
 }
 
 .card.double-width {
-  grid-column: span 2;
+  flex: 2;
 }
 
 .stats,
