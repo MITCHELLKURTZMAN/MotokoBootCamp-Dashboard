@@ -24,6 +24,7 @@ import Cycles "mo:base/ExperimentalCycles";
 import Canistergeek "mo:canistergeek/canistergeek";
 import Admins "admins";
 import Types "types";
+import Option "mo:base/Option";
 
 shared ({ caller = creator }) actor class Dashboard() = this {
 
@@ -121,6 +122,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
 
         activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = "Welcome new team, " # name # ", to Motoko Bootcamp!"; specialAnnouncement = "newTeam" });
         activityIdCounter := activityIdCounter + 1;
+        _Logs.logMessage("ADMIN :: Created team " # name # " by " # Principal.toText(caller));
         #ok(team)
     };
 
@@ -256,19 +258,31 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         false
     };
 
-    // Returns the name of the team to assign to a newly registered student (the one with the least member corresponding to the language of the student)
-    func _assignTeam(spanish : Bool) : Text {
-        var teamName = "";
+    // Returns the id of the team to assign to a newly registered student (the one with the least member corresponding to the language of the student)
+    func _assignTeamId(spanish : Bool) : Text {
+        var finalId = "";
         var minimum = 100000;
-        for ((name, team) in teamsHashMap.entries()) {
+        for ((id, team) in teamsHashMap.entries()) {
             if (team.spanish == spanish) {
                 if (team.teamMembers.size() < minimum) {
-                    teamName := name;
+                    finalId := id;
                     minimum := team.teamMembers.size()
-                }
+                } 
             }
         };
-        teamName
+        finalId
+    };
+
+    func _getTeamName(teamId : Text) : Text {
+        switch (teamsHashMap.get(teamId)) {
+            case (null) {
+                assert (false);
+                return ""
+            };
+            case (?team) {
+                return team.name
+            }
+        }
     };
 
     func _addStudentToTeam(teamName : Text, studentId : Text) : () {
@@ -292,7 +306,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     func _getStudentScore(studentId : Text) : Nat {
         switch (studentsHashMap.get(studentId)) {
             case (null) {
-                assert (false);
+                _Logs.logMessage("ERROR :: Student " # studentId # " not found");
                 return 0
             };
             case (?student) {
@@ -338,7 +352,8 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     public shared ({ caller }) func registerStudent(userName : Text, cliPrincipal : Text, spanish : Bool) : async Result.Result<Student, Text> {
         let name = U.trim(U.lowerCase(userName));
         let principalId = Principal.toText(caller);
-        let team = _assignTeam(spanish);
+        let teamId = _assignTeamId(spanish);
+        let teamName = _getTeamName(teamId);
 
         if (Principal.isAnonymous(caller)) {
             return #err("Anonymous user cannot register")
@@ -358,7 +373,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
             principalId = principalId;
             cliPrincipalId = cliPrincipal;
             name = U.trim(U.lowerCase(name));
-            teamName = team;
+            teamName = teamName;
             score = 0;
             bonusPoints = 0;
             rank = "recruit";
@@ -366,10 +381,8 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         };
 
         studentsHashMap.put(principalId, student);
-        _addStudentToTeam(team, principalId);
-        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = name # " has registered for Motoko Bootcamp"; specialAnnouncement = "newStudent" });
-        activityIdCounter := activityIdCounter + 1;
-        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = "A new team member has joined team " # team; specialAnnouncement = "newTeamMember" });
+        _addStudentToTeam(teamId, principalId);
+        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = name # " has joined team " # teamName; specialAnnouncement = "newTeamMember" });
         activityIdCounter := activityIdCounter + 1;
         return #ok(student)
     };
@@ -417,7 +430,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     func _updateTeamScore(teamName : Text) : () {
         switch (teamsHashMap.get(teamName)) {
             case (null) {
-                assert (false);
+                _Logs.logMessage("ERROR: Attempting to update the score of a non-registered team : " # teamName);
                 return
             };
             case (?team) {
@@ -680,8 +693,8 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         switch (studentsHashMap.get(studentId)) {
             case (null) { return #err("Student not found") };
             case (?student) {
-                let score = student.score + 10;
-                var newStudent = { student with score = score };
+                let bonus = student.bonusPoints + 10;
+                var newStudent = { student with bonusPoints = bonus };
                 studentsHashMap.put(studentId, newStudent);
                 activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = student.name # " has been granted bonus points for " # reason; specialAnnouncement = "BonusPoints" });
                 activityIdCounter := activityIdCounter + 1
@@ -770,7 +783,9 @@ shared ({ caller = creator }) actor class Dashboard() = this {
 
     //#Upgrade hooks
     system func preupgrade() {
+        _MonitorUD := ?_Monitor.preupgrade();
         _AdminsUD := ?_Admins.preupgrade();
+        _LogsUD := ?_Logs.preupgrade();
         studentsEntries := Iter.toArray(studentsHashMap.entries());
         teamsEntries := Iter.toArray(teamsHashMap.entries());
         activityEntries := Iter.toArray(activityHashMap.entries())
@@ -778,9 +793,14 @@ shared ({ caller = creator }) actor class Dashboard() = this {
 
     system func postupgrade() {
         _Admins.postupgrade(_AdminsUD);
+        _AdminsUD := null;
+        _Monitor.postupgrade(_MonitorUD);
+        _MonitorUD := null;
+        _Logs.postupgrade(_LogsUD);
+        _LogsUD := null;
         studentsEntries := [];
         teamsEntries := [];
-        activityEntries := []
+        activityEntries := [];
     };
 
 }
