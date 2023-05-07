@@ -770,12 +770,14 @@ shared ({ caller = creator }) actor class Dashboard() = this {
 
     //#Upgrade hooks
     system func preupgrade() {
+        _AdminsUD := ?_Admins.preupgrade();
         studentsEntries := Iter.toArray(studentsHashMap.entries());
         teamsEntries := Iter.toArray(teamsHashMap.entries());
         activityEntries := Iter.toArray(activityHashMap.entries())
     };
 
     system func postupgrade() {
+        _Admins.postupgrade(_AdminsUD);
         studentsEntries := [];
         teamsEntries := [];
         activityEntries := []
