@@ -455,8 +455,8 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         false
     };
 
-    func _getTeamNameFromId(teamName : Text) : Text {
-        switch (teamsHashMap.get(teamName)) {
+    func _getTeamNameFromId(teamId : Text) : Text {
+        switch (teamsHashMap.get(teamId)) {
             case (null) {
                 assert (false);
                 //Unreachable
@@ -468,8 +468,20 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         }
     };
 
+    func _getTeamIdFromName(teamName : Text) : Text {
+        for((id, team) in teamsHashMap.entries()){
+            if (U.trim(U.lowerCase(team.name)) == U.trim(U.lowerCase(teamName))) {
+                return id
+            }
+        };
+        Debug.print("ERROR: Team not found : " # teamName);
+        assert (false);
+        return ""
+    };
+
     public shared func getTeam(teamName : Text) : async Team {
-        switch (teamsHashMap.get(teamName)) {
+        let teamId = _getTeamIdFromName(teamName);
+        switch (teamsHashMap.get(teamId)) {
             case (null) {
                 _Logs.logMessage("ERROR: Team not found : " # teamName);
                 return {
@@ -513,8 +525,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     public shared query func getStudentsForTeamDashboard(teamName : Text) : async Result.Result<[StudentList], Text> {
         var studentBuffer = Buffer.Buffer<StudentList>(studentsHashMap.size());
         for (student in studentsHashMap.vals()) {
-            let studentTeamName = _getTeamNameFromId(student.teamName);
-            if (studentTeamName == teamName) {
+            if (student.teamName == teamName) {
                 let studentListItem : StudentList = {
                     name = student.name;
                     score = Nat.toText(student.score);
