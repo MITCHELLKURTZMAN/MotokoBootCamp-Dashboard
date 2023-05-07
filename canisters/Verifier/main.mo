@@ -23,21 +23,39 @@ import IC "ic";
 import Cycles "mo:base/ExperimentalCycles";
 import Canistergeek "mo:canistergeek/canistergeek";
 import Admins "admins";
+import Types "types";
 
 shared ({ caller = creator }) actor class Dashboard() = this {
-    var maxHashmapSize = 1000000;
 
-    stable var principalIdReverseEntries : [(Text, Text)] = [];
+    ////////////
+    // TYPES //
+    ///////////
+
+    public type Student = Types.Student;
+    public type Team = Types.Team;
+    public type DailyProject = Types.DailyProject;
+    public type DailyProjectText = Types.DailyProjectText;
+    public type DailyTotalMetrics = Types.DailyTotalMetrics;
+    public type TeamString = Types.TeamString;
+    public type Activity = Types.Activity;
+    public type Rank = Types.Rank;
+    public type StudentList = Types.StudentList;
+    public type TestResult = Types.TestResult;
+    public type VerifyProject = Types.VerifyProject;
+
+    ////////////
+    // STATE //
+    ///////////
 
     stable var studentsEntries : [(Text, Student)] = [];
-    stable var teamsEntries : [(Text, Team)] = [];
-    stable var activityEntries : [(Text, Activity)] = [];
-
     var studentsHashMap : HashMap.HashMap<Text, Student> = HashMap.fromIter<Text, Student>(studentsEntries.vals(), studentsEntries.size(), Text.equal, Text.hash); //the student stored by principal id
 
-    var teamsHashMap : HashMap.HashMap<Text, Team> = HashMap.fromIter<Text, Team>(teamsEntries.vals(), teamsEntries.size(), Text.equal, Text.hash); //the team stored by team name
+    stable var teamIdCounter : Nat = 0;
+    stable var teamsEntries : [(Text, Team)] = [];
+    var teamsHashMap : HashMap.HashMap<Text, Team> = HashMap.fromIter<Text, Team>(teamsEntries.vals(), teamsEntries.size(), Text.equal, Text.hash); //the team stored by team id
 
     stable var activityIdCounter : Nat = 0;
+    stable var activityEntries : [(Text, Activity)] = [];
     var activityHashMap : HashMap.HashMap<Text, Activity> = HashMap.fromIter<Text, Activity>(activityEntries.vals(), activityEntries.size(), Text.equal, Text.hash); //the activity feed stored by activity id
 
     ///////////
@@ -92,16 +110,10 @@ shared ({ caller = creator }) actor class Dashboard() = this {
             return #err("Team name is already taken")
         };
 
-        var team : Team = {
-            name = U.trim(U.lowerCase(teamName));
-            score = 0;
-            teamMembers = [];
-            spanish
-        };
-        // Register the team
-        teamsHashMap.put(name, team);
+        var team : Team = { name = U.trim(U.lowerCase(teamName)); score = 0; teamMembers = []; spanish };
+        teamsHashMap.put(Nat.toText(teamIdCounter), team);
+        teamIdCounter := teamIdCounter + 1;
 
-        // Activity feed
         activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = "Welcome new team, " # name # ", to Motoko Bootcamp!"; specialAnnouncement = "newTeam" });
         activityIdCounter := activityIdCounter + 1;
         #ok(team)
@@ -198,86 +210,13 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         _Monitor.collectMetrics()
     };
 
-    //types
-    public type Student = {
-        principalId : Text;
-        cliPrincipalId : Text;
-        name : Text;
-        teamName : Text;
-        score : Nat;
-        completedDays : [DailyProject];
-        bonusPoints : Nat
-    };
 
-    public type Team = {
-        name : Text;
-        score : Nat;
-        spanish : Bool;
-        teamMembers : [Text]
-    };
+    ///////////////
+    // STUDENTS //
+    /////////////
 
-    public type DailyProject = {
-        day : Nat;
-        canisterId : Principal;
-        timeStamp : Nat64
-    };
+    // Utils
 
-    public type DailyProjectText = {
-        day : Text;
-        canisterId : Text;
-        timeStamp : Text
-    };
-
-    public type DailyTotalMetrics = {
-        day1 : Text;
-        day2 : Text;
-        day3 : Text;
-        day4 : Text;
-        day5 : Text
-    };
-
-    public type TeamString = {
-        name : Text;
-        teamMembers : [Text];
-        score : Text
-    };
-
-    public type Activity = {
-        activityId : Text;
-        activity : Text;
-        specialAnnouncement : Text; //We may want to customize these and add more as we go to parse on the frontend.
-        //so far, we can use: "newProject", "newStudent", "newTeam", "newAdmin", "newRank", "newTeamScore", "LectureEvent"
-    };
-
-    public type Rank = {
-        #recruit : Text;
-        #cyberNovice : Text;
-        #dataDefender : Text;
-        #motokoMarksman : Text;
-        #asyncSergeant : Text;
-        #ghostNavigator : Text;
-        #digitalCaptain : Text;
-        #networkNoble : Text;
-        #aiArchitect : Text;
-        #quantumConsul : Text
-    };
-
-    var rankArray = [
-        "Recruit",
-        "Cyber Novice",
-        "Data Defender",
-        "Motoko Marksman",
-        "Async Sergeant",
-        "Ghost Navigator",
-        "Digital Captain",
-        "Network Noble",
-        "AI Architect",
-        "Quantum Consul",
-    ];
-
-    //ENDS - ADMINS
-
-    //BEGINS - STUDENTS
     // Returns a boolean indicating whether the given principal has completed the given day.
     // If the principal doesn't correspond to a student, returns false.
     func _hasStudentCompletedDay(day : Nat, p : Principal) : Bool {
@@ -304,9 +243,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         }
     };
 
-    // BEGINS - STUDENTS
 
-    // UTILS
     func _isStudentNameTaken(name : Text) : Bool {
         for (student in studentsHashMap.vals()) {
             if (student.name == U.trim(U.lowerCase(name))) {
@@ -349,6 +286,18 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         }
     };
 
+    func _getStudentScore(studentId : Text) : Nat {
+        switch (studentsHashMap.get(studentId)) {
+            case (null) {
+                assert (false);
+                return 0
+            };
+            case (?student) {
+                return student.score
+            }
+        }
+    };
+
     public shared query func isStudent(principal : Text) : async Bool {
         _isStudent(Principal.fromText(principal))
     };
@@ -365,7 +314,10 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     public shared ({ caller }) func getStudentCompletedDays() : async Result.Result<[DailyProjectText], Text> {
         let studentId = Principal.toText(caller);
         switch (studentsHashMap.get(studentId)) {
-            case (null) { return #err("Student not registered") };
+            case (null) { 
+                _Logs.logMessage("ERROR: Attempting to get the completed dats of a non-registered student : " # studentId);
+                return #err("Student not registered") 
+            };
             case (?student) {
                 var completedDaysBuffer = Buffer.Buffer<DailyProjectText>(student.completedDays.size());
                 for (d in student.completedDays.vals()) {
@@ -419,29 +371,13 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         return #ok(student)
     };
 
-    // public shared ({ caller }) func getStudentCompletedDays() : async Result.Result<[DailyProjectText], Text> {
-    //     let studentId = Principal.toText(caller);
-    //     let studentCompletedDays = U.safeGet(studentCompletedDaysHashMap, studentId, []).vals();
-    //     let studentCompletedDaysString = Buffer.Buffer<DailyProjectText>(1);
-    //     for (d in studentCompletedDays) {
-    //         studentCompletedDaysString.add({
-    //             day = Nat.toText(d.day);
-    //             canisterId = d.canisterId;
-    //             completed = Bool.toText(d.completed);
-    //             timeStamp = Nat64.toText(d.timeStamp)
-    //         })
-    //     };
-    //     #ok(Buffer.toArray(studentCompletedDaysString))
-
-    // };
-
-    // public shared func getAllStudents() : async Result.Result<[Text], Text> {
-    //     var studentsBuffer = Buffer.Buffer<Text>(principalIdHashMap.size());
-    //     for (student in principalIdHashMap.keys()) {
-    //         studentsBuffer.add(student)
-    //     };
-    //     #ok(Buffer.toArray(studentsBuffer))
-    // };
+    public shared func getAllStudents() : async Result.Result<[Text], Text> {
+        var studentsBuffer = Buffer.Buffer<Text>(studentsHashMap.size());
+        for (student in studentsHashMap.vals()) {
+            studentsBuffer.add(student.name)
+        };
+        #ok(Buffer.toArray(studentsBuffer))
+    };
 
     public shared func getStudent(principalId : Text) : async Result.Result<Student, Text> {
         switch (studentsHashMap.get(principalId)) {
@@ -467,20 +403,15 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         }
     };
 
-    //teams
-    func _getStudentScore(studentId : Text) : Nat {
-        switch (studentsHashMap.get(studentId)) {
-            case (null) {
-                assert (false);
-                //Unreachable
-                return 0
-            };
-            case (?student) {
-                return student.score
-            }
-        }
+    public shared query func getTotalStudents() : async Text {
+        return Nat.toText(studentsHashMap.size())
     };
 
+
+    ///////////////
+    // TEAMS /////
+    /////////////
+    
     func _updateTeamScore(teamName : Text) : () {
         switch (teamsHashMap.get(teamName)) {
             case (null) {
@@ -525,8 +456,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     public shared func getTeam(teamName : Text) : async Team {
         switch (teamsHashMap.get(teamName)) {
             case (null) {
-                assert (false);
-                //Unreachable
+                _Logs.logMessage("ERROR: Team not found : " # teamName);
                 return {
                     name = "";
                     score = 0;
@@ -540,6 +470,10 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         }
     };
 
+    public shared query func getTotalTeams() : async Text {
+        return Nat.toText(teamsHashMap.size())
+    };
+
     public shared func getStudentsFromTeam(teamName : Text) : async Result.Result<[Student], Text> {
         for (team in teamsHashMap.vals()) {
             if (U.trim(U.lowerCase(team.name)) == U.trim(U.lowerCase(teamName))) {
@@ -547,8 +481,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 for (studentId in team.teamMembers.vals()) {
                     switch (studentsHashMap.get(studentId)) {
                         case (null) {
-                            assert (false);
-                            //Unreachable
+                        _Logs.logMessage("ERROR: Student not found in team : " # teamName);
                             return #err("Student not found")
                         };
                         case (?student) {
@@ -562,11 +495,6 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         return #err("Team not found")
     };
 
-    public type StudentList = {
-        name : Text;
-        score : Text;
-        bonusPoints : Text
-    };
 
     public shared query func getStudentsForTeamDashboard(teamName : Text) : async Result.Result<[StudentList], Text> {
         var studentBuffer = Buffer.Buffer<StudentList>(studentsHashMap.size());
@@ -600,17 +528,18 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         return Buffer.toArray(teamBuffer)
     };
 
-    public type TestResult = Test.TestResult;
-    // Expand the base type with additional errors.
-    public type VerifyProject = TestResult or Result.Result<(), { #NotAController : Text; #NotAStudent : Text; #InvalidDay : Text; #AlreadyCompleted : Text }>;
+   
 
-    //Utils
+
+    /////////////////////
+    // VERIFICATION /////
+    ///////////////////
+
     func _getCliPrincipal(caller : Principal) : Principal {
         let studentId = Principal.toText(caller);
         switch (studentsHashMap.get(studentId)) {
             case (null) {
-                assert (false);
-                //Unreachable
+                _Logs.logMessage("ERROR: Student not found in _getCliPrincipal with id: " # studentId);
                 return Principal.fromText("")
             };
             case (?student) {
@@ -718,7 +647,9 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         }
     };
 
-    //activity section
+    /////////////////////
+    // ACTIVITY ////////
+    ///////////////////
 
     public shared ({ caller }) func adminSpecialAnnouncement(announcement : Text) : async () {
         assert (_Admins.isAdmin(caller));
@@ -799,64 +730,14 @@ shared ({ caller = creator }) actor class Dashboard() = this {
 
         return Array.reverse(Buffer.toArray(activityBuffer))
     };
-    //metrics section
-    // TODO in the metrics section, these are computed on the fly. we can definitely add caching later.
-    public type CanisterId = Principal;
-    public type CanisterSettings = {
-        controllers : [Principal];
-        compute_allocation : Nat;
-        memory_allocation : Nat;
-        freezing_threshold : Nat
-    };
 
-    public type CanisterStatus = {
-        status : { #running; #stopping; #stopped };
-        settings : CanisterSettings;
-        module_hash : ?Blob;
-        memory_size : Text;
-        cycles : Text;
-        idle_cycles_burned_per_day : Text;
-        canisterId : Text
-
-    };
-    public shared func getCanisterInfo() : async CanisterStatus {
-
-        let managementCanister : IC.ManagementCanister = actor ("aaaaa-aa");
-        let canisterId : CanisterId = Principal.fromActor(this);
-        let canisterStatus = await managementCanister.canister_status({
-            canister_id = canisterId
-        });
-        return {
-            status = canisterStatus.status;
-            settings = canisterStatus.settings;
-            module_hash = canisterStatus.module_hash;
-            memory_size = Nat.toText(canisterStatus.memory_size);
-            cycles = Nat.toText(canisterStatus.cycles);
-            idle_cycles_burned_per_day = Nat.toText(canisterStatus.idle_cycles_burned_per_day);
-            canisterId = Principal.toText(canisterId)
-        }
-
-    };
-
-    public shared query func getTotalStudents() : async Text {
-        return Nat.toText(studentsHashMap.size())
-    };
-
-    public shared query func getTotalTeams() : async Text {
-        return Nat.toText(teamsHashMap.size())
-    };
 
     public shared query func getTotalProjectsCompleted() : async Text {
-        //todo return the data per student for a heat map
-        var days = 0;
-
+        var projectsCompleted = 0;
         for (student in studentsHashMap.vals()) {
-            let completedDays = student.completedDays;
-            if (Array.size(completedDays) > 0) {
-                days := days + Array.size(completedDays)
-            }
+            projectsCompleted +=  Array.size(student.completedDays);
         };
-        return Nat.toText(days)
+        Nat.toText(projectsCompleted)
     };
 
     public shared query func getTotalCompletedPerDay() : async DailyTotalMetrics {
@@ -875,7 +756,9 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                     case (3) { day3 := day3 + 1 };
                     case (4) { day4 := day4 + 1 };
                     case (5) { day5 := day5 + 1 };
-                    case (_) {}
+                    case (_) {
+                        _Logs.logMessage("ERROR : Invalid day number in getTotalCompletedPerDay")
+                    }
                 }
             }
         };
