@@ -1,4 +1,4 @@
-import { CanisterStatus, DailyTotalMetrics, HelpTicket, Result, Result_1, Result_2, Result_5, Result_8 } from 'src/declarations/Verifier/Verifier.did';
+import { CanisterStatus, DailyTotalMetrics, Result, Result_1, Result_2, Result_4, Result_5, Result_6, Result_7 } from 'src/declarations/Verifier/Verifier.did';
 import {create} from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getVerifierActor } from '../services/actorService';
@@ -11,20 +11,18 @@ export interface AdminDataStore {
     getTotalStudents: () => Promise<string>;
     getTotalTeams: () => Promise<string>;
     getTotalProjectsCompleted: () => Promise<string>;
-    adminCreateTeam: (teamName: string) => Promise<Result_8>;
+    adminCreateTeam: (teamName: string, isSpanish: boolean) => Promise<Result_7>;
     registerAdmin: (principalId: string) => Promise<Result>;
-    getHelpTickets: () => Promise<HelpTicket[]>;
-    resolveHelpTicket: (helpTicketId: string, resolved: boolean) => Promise<Result_1>;
     adminManuallyVerifyStudentDay:(day: string, principalId: string) => Promise<Result_1>;
     getTotalCompletedPerDay: () => Promise<DailyTotalMetrics>;
     adminGrantsBonusPoints: (principalId: string, description: string) => Promise<Result>;
-    getStudentPrincipalByName: (name: string) => Promise<Result_5>;
+    getStudentPrincipalByName: (name: string) => Promise<Result_4>;
     adminAnnounceTimedEvent: (message: string) => Promise<void>;
     getCanisterInfo: () => Promise<CanisterStatus>;
     totalTeams: string;
     totalStudents: string;
     totalProjectsCompleted: string;
-    helpTickets: [HelpTicket];
+  
     totalCompletedPerDay: DailyTotalMetrics;
     nameToPrincipalId : string;
     canisterInfo: CanisterStatus;
@@ -37,7 +35,6 @@ const createAdminDataStore = (
     totalStudents: "0",
     totalTeams: "0",
     totalProjectsCompleted: "0",
-    helpTickets: [{day: "0", resolved: false, helpTicketId: "0", description: "0", gitHubUrl: "0", principalId: "0", canisterId: "0"}],
     totalCompletedPerDay: {day1: "0", day2: "0", day3: "0", day4: "0", day5: "0"},
     nameToPrincipalId: "0",
     canisterInfo : {status : null, memory_size: "0", cycles: "0", settings: null, idle_cycles_burned_per_day: "0", module_hash: [], canisterId: ""}, 
@@ -89,7 +86,7 @@ const createAdminDataStore = (
         return result;
     },
 
-    getStudentPrincipalByName : async (name: string): Promise<Result_5> => {
+    getStudentPrincipalByName : async (name: string): Promise<Result_4> => {
    
         const resultPromise = (await getVerifierActor()).getStudentPrincipalByName(name);
 
@@ -150,30 +147,9 @@ const createAdminDataStore = (
     },
     
     
-    getHelpTickets: async (): Promise<HelpTicket[]> => {
-        const result = await (await getVerifierActor()).getHelpTickets();
-        console.log("getHelpTickets", result)
-        if ('err' in result) {
-            console.error(result.err);
-            toastError(result.err);
-            } 
-            set({
-                helpTickets: result as [HelpTicket],
-            });
-            return result;
-    },
+   
 
-    resolveHelpTicket: async (helpTicketId: string, resolved: boolean): Promise<Result_1> => {
-        const resultPromise = (await getVerifierActor()).resolveHelpTicket(helpTicketId, resolved);
-        await toastPromise(resultPromise, {
-          loading: 'Resolving Help Ticket...',
-          success: 'Help Ticket Resolved!',
-          error: 'Error resolving Help Ticket.',
-        }, ToastType.Success);
-        const result = await resultPromise;
-        console.log("resolveHelpTicket", result);
-        return result;
-      },
+   
    
       registerAdmin: async (principalId: string): Promise<Result> => {
         const resultPromise = (await getVerifierActor()).registerAdmin(principalId);
@@ -186,8 +162,8 @@ const createAdminDataStore = (
         console.log("registerAdmin", result);
         return result;
       },
-      adminCreateTeam: async (teamName: string): Promise<Result_8> => {
-        const resultPromise = (await getVerifierActor()).adminCreateTeam(teamName);
+      adminCreateTeam: async (teamName: string, isSpanish: boolean): Promise<Result_7> => {
+        const resultPromise = (await getVerifierActor()).adminCreateTeam(teamName, isSpanish);
         await toastPromise(resultPromise, {
           loading: 'Creating team...',
           success: 'Team Created!',

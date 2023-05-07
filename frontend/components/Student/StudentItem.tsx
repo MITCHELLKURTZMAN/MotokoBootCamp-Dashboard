@@ -58,7 +58,7 @@ const StudentItem: React.FC<StudentItemProps> = ({ student }) => {
     <div className="Student-item">
       <h4>{student.name}</h4>
       {renderBonusIcons(parseInt(student.bonusPoints))}
-      <p>Rank: {student.rank}</p>
+      {/* <p>Rank: {student.rank}</p> */}
       <p>Progress: {student.score.toString()}%</p>
       <div className="progress-bar">
         <div className="progress" style={{ width: `${student.score}%` }}></div>

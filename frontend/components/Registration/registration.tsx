@@ -17,6 +17,7 @@ const Registration: React.FC<Props> = ({}) => {
   const [username, setUsername] = useState("")
   const [team, setTeam] = useState("")
   const [cliPrincipal, setCliPrincipal] = useState("")
+  const [isSpanish, setIsSpanish] = useState(false)
   const teams = useTeamStore((state) => state.teams)
 
   const login = useAuthStore((state) => state.login)
@@ -37,7 +38,7 @@ const Registration: React.FC<Props> = ({}) => {
     e.preventDefault()
     // getUser(useAuthStore.getState().principal);
 
-    registerUser(username, team, cliPrincipal)
+    registerUser(username, team, isSpanish)
   }
 
   return (
