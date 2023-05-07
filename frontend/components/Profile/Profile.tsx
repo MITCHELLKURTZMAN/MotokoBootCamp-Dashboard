@@ -17,10 +17,11 @@ const Profile: React.FC<Props> = ({}) => {
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState<boolean>(true)
   const [login, setLogin] = useState<string>("")
+  let getUser = useUserStore((state) => state.getUser)
 
   useEffect(() => {
     console.log("Profile component mounted")
-    useUserStore.getState().getUser(useAuthStore.getState().principalText)
+    getUser(useAuthStore.getState().principalText)
 
     return () => {
       console.log("Profile component unmounted")

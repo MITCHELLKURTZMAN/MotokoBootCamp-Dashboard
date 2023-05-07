@@ -18,6 +18,7 @@ const isLocal: boolean =
   window.location.origin.includes('127.0.0.1');
 
 export async function getVerifierActor(): Promise<ActorSubclass<VerifierService>> {
+  console.log( "local ? ", isLocal)
   await useAuthStore?.getState().getIdentity();
   console.log ("useAuthStore?.getState().identity", useAuthStore?.getState().identity);
   var identity =

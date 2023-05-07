@@ -9,10 +9,10 @@ const isLocal = process.env.NODE_ENV === "development";
 const identityProvider = isLocal ? 'http://qhbym-qaaaa-aaaaa-aaafq-cai.localhost:8080/#authorize' : "https://identity.ic0.app/#authorize";
 const sessionTimeout = BigInt(480) * BigInt(60) * BigInt(1_000_000_000);
 const fakeProvider = process.env.II_PROVIDER_USE_FAKE == "true";
+const derivationOrigin = "https://24ytc-bqaaa-aaaan-qdl7q-cai.ic0.app/";
+var authClient: AuthClient;
 
-var authClient;
-
-interface AuthState {
+export interface AuthState {
   principal: Principal | null;
   principalString: string | null;
   identity: Identity | null;
@@ -35,6 +35,7 @@ async function getAuthClient() {
 const loginOptions = {
   identityProvider: identityProvider,
   maxTimeToLive: BigInt(7) * BigInt(24) * BigInt(3_600_000_000_000), // 1 week
+  derivationOrigin: isLocal ? undefined : derivationOrigin,
   windowOpenerFeatures:
     "toolbar=0,location=0,menubar=0,width=500,height=500,left=100,top=100",
   onSuccess: async () => {
