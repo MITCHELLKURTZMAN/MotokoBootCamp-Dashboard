@@ -20,6 +20,9 @@ import Test "test";
 import U "utils";
 import Bool "mo:base/Bool";
 import IC "ic";
+import Cycles "mo:base/ExperimentalCycles";
+import Canistergeek "mo:canistergeek/canistergeek";
+import Admins "admins";
 
 shared ({ caller = creator }) actor class Dashboard() = this {
     var maxHashmapSize = 1000000;
@@ -33,11 +36,176 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     var studentsHashMap : HashMap.HashMap<Text, Student> = HashMap.fromIter<Text, Student>(studentsEntries.vals(), studentsEntries.size(), Text.equal, Text.hash); //the student stored by principal id
 
     stable var teamIdCounter : Nat = 0;
-    var teamsHashMap : HashMap.HashMap<Text, Team> = HashMap.fromIter<Text, Team>(teamsEntries.vals(),teamsEntries.size(), Text.equal, Text.hash); //the team stored by team id
-    
-    stable var activityIdCounter : Nat = 0;
-    var activityHashMap : HashMap.HashMap<Text, Activity>  = HashMap.fromIter<Text, Activity>(activityEntries.vals(), activityEntries.size(), Text.equal, Text.hash); //the activity feed stored by activity id
+    var teamsHashMap : HashMap.HashMap<Text, Team> = HashMap.fromIter<Text, Team>(teamsEntries.vals(), teamsEntries.size(), Text.equal, Text.hash); //the team stored by team id
 
+    stable var activityIdCounter : Nat = 0;
+    var activityHashMap : HashMap.HashMap<Text, Activity> = HashMap.fromIter<Text, Activity>(activityEntries.vals(), activityEntries.size(), Text.equal, Text.hash); //the activity feed stored by activity id
+
+    ///////////
+    // ADMIN //
+    ///////////
+
+    stable var master : Principal = creator;
+
+    stable var _AdminsUD : ?Admins.UpgradeData = null;
+    let _Admins = Admins.Admins(creator);
+
+    /**
+        * Returns a boolean indicating if the specified principal is an admin
+        */
+    public query func is_admin(p : Principal) : async Bool {
+        _Admins.isAdmin(p)
+    };
+
+    /**
+        * Returns a list of all the admins
+        */
+    public query func getAdmins() : async Result.Result<[Text], Text> {
+        _Monitor.collectMetrics();
+        let adminsPrincipals : [Principal] = _Admins.getAdmins();
+        let adminsText : [Text] = Array.map<Principal, Text>(adminsPrincipals, Principal.toText);
+        return #ok(adminsText)
+    };
+
+    /**
+        * Adds the specified principal as an admin
+        * @auth : admin
+        */
+    public shared ({ caller }) func registerAdmin(id : Text) : async Result.Result<(), Text> {
+        _Admins.addAdmin(Principal.fromText(id), caller);
+        _Monitor.collectMetrics();
+        _Logs.logMessage("CONFIG :: Added admin : " # id # " by " # Principal.toText(caller));
+        return #ok()
+    };
+
+    /**
+        * Removes the specified principal from the admin list
+        * @auth : master
+        */
+    public shared ({ caller }) func unregisterAdmin(id : Text) : async Result.Result<(), Text> {
+        assert (caller == master);
+        _Monitor.collectMetrics();
+        let p = Principal.fromText(id);
+        _Admins.removeAdmin(p, caller);
+        _Logs.logMessage("CONFIG :: Removed admin : " # Principal.toText(p) # " by " # Principal.toText(caller));
+        return #ok()
+    };
+
+    public shared ({ caller }) func adminCreateTeam(teamName : Text, spanish : Bool) : async Result.Result<Team, Text> {
+        let name = U.trim(U.lowerCase(teamName));
+        if (not _Admins.isAdmin(caller)) {
+            return #err("You are not an admin")
+        };
+        if (_isTeamNameTaken(name)) {
+            return #err("Team name is already taken")
+        };
+
+        var team : Team = {
+            name = U.trim(U.lowerCase(teamName));
+            score = 0;
+            teamMembers = [];
+            spanish
+        };
+        // Register the team
+        teamsHashMap.put(Nat.toText(teamIdCounter), team);
+        teamIdCounter := teamIdCounter + 1;
+
+        // Activity feed
+        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = "Welcome new team, " # name # ", to Motoko Bootcamp!"; specialAnnouncement = "newTeam" });
+        activityIdCounter := activityIdCounter + 1;
+        #ok(team)
+    };
+
+    public shared ({ caller }) func adminManuallyVerifyStudentDay(day : Text, student : Text) : async Result.Result<(), Text> {
+        if (not _Admins.isAdmin(caller)) {
+            return #err("Unauthorized to verify student day")
+        };
+
+        if (_hasStudentCompletedDay(U.textToNat(day), Principal.fromText(student))) {
+            return #err("Student has already completed this project")
+        };
+
+        _validated(
+            U.textToNat(day),
+            Principal.fromActor(this),
+            Principal.fromText(student),
+        );
+        _Logs.logMessage("ADMIN :: Manually verified student day " # day # " for " # student # " by " # Principal.toText(caller));
+        return #ok()
+    };
+
+    ////////////
+    // LOGS ///
+    //////////
+
+    stable var _LogsUD : ?Canistergeek.LoggerUpgradeData = null;
+    private let _Logs : Canistergeek.Logger = Canistergeek.Logger();
+
+    /**
+        * Returns collected log messages based on passed parameters.
+        * Called from browser.
+        * @auth : admin
+        */
+    public query ({ caller }) func getCanisterLog(request : ?Canistergeek.CanisterLogRequest) : async ?Canistergeek.CanisterLogResponse {
+        assert (_Admins.isAdmin(caller));
+        _Logs.getLog(request)
+    };
+
+    /**
+        * Set the maximum number of saved log messages.
+        * @auth : admin
+        */
+    public shared ({ caller }) func setMaxMessagesCount(n : Nat) : async () {
+        assert (_Admins.isAdmin(caller));
+        _Logs.setMaxMessagesCount(n)
+    };
+
+    //////////////
+    // CYCLES  //
+    /////////////
+
+    /**
+        * Add the cycles attached to the incoming message to the balance of the canister.
+        */
+    public func acceptCycles() : async () {
+        let available = Cycles.available();
+        let accepted = Cycles.accept(available);
+        assert (accepted == available)
+    };
+
+    /**
+        * Returns the cycle balance of the canister.
+        */
+    public query func availableCycles() : async Nat {
+        return Cycles.balance()
+    };
+
+    ///////////////
+    // METRICS ///
+    /////////////
+
+    stable var _MonitorUD : ?Canistergeek.UpgradeData = null;
+    private let _Monitor : Canistergeek.Monitor = Canistergeek.Monitor();
+
+    /**
+        * Returns collected data based on passed parameters.
+        * Called from browser.
+        * @auth : admin
+        */
+    public query ({ caller }) func getCanisterMetrics(parameters : Canistergeek.GetMetricsParameters) : async ?Canistergeek.CanisterMetrics {
+        assert (_Admins.isAdmin(caller));
+        _Monitor.getMetrics(parameters)
+    };
+
+    /**
+        * Force collecting the data at current time.
+        * Called from browser or any canister "update" method.
+        * @auth : admin
+        */
+    public shared ({ caller }) func collectCanisterMetrics() : async () {
+        assert (_Admins.isAdmin(caller));
+        _Monitor.collectMetrics()
+    };
 
     //types
     public type Student = {
@@ -46,20 +214,20 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         name : Text;
         teamId : Text;
         score : Nat;
-        completedDays : [DailyProject];
+        completedDays : [DailyProject]
     };
 
     public type Team = {
         name : Text;
         score : Nat;
         spanish : Bool;
-        teamMembers : [Text];
+        teamMembers : [Text]
     };
 
     public type DailyProject = {
         day : Nat;
         canisterId : Principal;
-        timeStamp : Nat64;
+        timeStamp : Nat64
     };
 
     public type DailyProjectText = {
@@ -76,7 +244,6 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         day5 : Text
     };
 
-  
     public type TeamString = {
         name : Text;
         teamMembers : [Text];
@@ -116,75 +283,6 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         "Quantum Consul",
     ];
 
-
-    //BEGIN - ADMINS
-    stable var admins : List.List<Text> = List.nil<Text>();
-    func _isAdmin(p : Principal) : Bool {
-        let id = Principal.toText(p);
-        List.some<Text>(admins, func(val : Text) : Bool { val == id })
-    };
-
-    public shared query ({ caller }) func getAdmins() : async Result.Result<[Text], Text> {
-        if (not _isAdmin(caller)) {
-            return #err("Unauthorized to get admins")
-        };
-
-        #ok(List.toArray(admins))
-    };
-
-    public shared ({ caller }) func registerAdmin(id : Text) : async Result.Result<(), Text> {
-
-        if (id == "2vxsx-fae") {
-            return #err("Unauthorized to register anonymous admin")
-        };
-
-        if (List.size<Text>(admins) > 0 and not _isAdmin(caller)) {
-            return #err("Unauthorized to register admin")
-        };
-
-        if (not List.some<Text>(admins, func(val : Text) : Bool { val == id })) {
-            admins := List.push<Text>(id, admins)
-        };
-
-        activityHashMap.put(
-            Nat.toText(activityIdCounter),
-            {
-                activityId = Nat.toText(activityIdCounter);
-                activity = "Attention on Deck! A new admin has registered";
-                specialAnnouncement = "newAdmin"
-            },
-        );
-        activityIdCounter += 1;
-
-        #ok()
-    };
-
-    public shared ({ caller }) func unregisterAdmin(id : Text) : async Result.Result<(), Text> {
-        if (not _isAdmin(caller)) {
-            return #err("Unauthorized to unregister admin")
-        };
-        admins := List.filter<Text>(admins, func(val : Text) : Bool { val != id });
-        #ok()
-    };
-
-    public shared ({ caller }) func adminManuallyVerifyStudentDay(day : Text, student : Text) : async Result.Result<(), Text> {
-        if (not _isAdmin(caller)) {
-            return #err("Unauthorized to verify student day")
-        };
-
-        if (_hasStudentCompletedDay(U.textToNat(day), Principal.fromText(student))) {
-            return #err("Student has already completed this project")
-        };
-
-        _validated(
-            U.textToNat(day),
-            Principal.fromActor(this),
-            Principal.fromText(student),
-        );
-
-        return #ok()
-    };
-
     //ENDS - ADMINS
 
     //BEGINS - STUDENTS
@@ -214,11 +312,9 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         }
     };
 
-
     // BEGINS - STUDENTS
 
-
-    // UTILS 
+    // UTILS
     func _isStudentNameTaken(name : Text) : Bool {
         for (student in studentsHashMap.vals()) {
             if (student.name == U.trim(U.lowerCase(name))) {
@@ -228,43 +324,38 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         false
     };
 
-     // Returns the name of the team to assign to a newly registered student (the one with the least member corresponding to the language of the student)
+    // Returns the name of the team to assign to a newly registered student (the one with the least member corresponding to the language of the student)
     func _assignTeam(spanish : Bool) : Text {
         var teamId = "";
         var minimum = 100000;
-        for((id, team) in teamsHashMap.entries()) {
-            if(team.spanish == spanish){
-                if(team.teamMembers.size() < minimum){
+        for ((id, team) in teamsHashMap.entries()) {
+            if (team.spanish == spanish) {
+                if (team.teamMembers.size() < minimum) {
                     teamId := id;
-                    minimum := team.teamMembers.size();
-                };
-            };
+                    minimum := team.teamMembers.size()
+                }
+            }
         };
-        teamId;
+        teamId
     };
 
     func _addStudentToTeam(studentId : Text, teamId : Text) : () {
-        switch(teamsHashMap.get(teamId)){
-            case(null) {
-                assert(false);
-                return;
+        switch (teamsHashMap.get(teamId)) {
+            case (null) {
+                assert (false);
+                return
             };
-            case(? team){
+            case (?team) {
                 var newTeam : Team = {
                     teamMembers = Array.append<Text>(team.teamMembers, [studentId]);
                     name = team.name;
                     score = team.score;
-                    spanish = team.spanish;  
+                    spanish = team.spanish
                 };
-                teamsHashMap.put(teamId, newTeam);
-            };
-        };
+                teamsHashMap.put(teamId, newTeam)
+            }
+        }
     };
-
-
-
-
-
 
     public shared query func isStudent(principal : Text) : async Bool {
         _isStudent(Principal.fromText(principal))
@@ -279,13 +370,11 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         Buffer.toArray(studentsBuffer)
     };
 
-  
-
     // public shared ({ caller }) func getStudentCompletedDays() :  async Result.Result<[DailyProjectText], Text> {
 
     // };
 
-     public shared ({ caller }) func registerStudent(userName : Text, cliPrincipal : Text, spanish : Bool) : async Result.Result<Student, Text> {
+    public shared ({ caller }) func registerStudent(userName : Text, cliPrincipal : Text, spanish : Bool) : async Result.Result<Student, Text> {
         let name = U.trim(U.lowerCase(userName));
         let principalId = Principal.toText(caller);
         let team = _assignTeam(spanish);
@@ -312,16 +401,16 @@ shared ({ caller = creator }) actor class Dashboard() = this {
             score = 0;
             bonusPoints = 0;
             rank = "recruit";
-            completedDays = [];
+            completedDays = []
         };
 
         studentsHashMap.put(principalId, student);
         _addStudentToTeam(team, principalId);
-        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = name # " has registered for Motoko Bootcamp"; specialAnnouncement = "newStudent"});
+        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = name # " has registered for Motoko Bootcamp"; specialAnnouncement = "newStudent" });
         activityIdCounter := activityIdCounter + 1;
-        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = "A new team member has joined team " # team; specialAnnouncement = "newTeamMember"});
+        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = "A new team member has joined team " # team; specialAnnouncement = "newTeamMember" });
         activityIdCounter := activityIdCounter + 1;
-        return #ok(student);
+        return #ok(student)
     };
 
     // public shared ({ caller }) func getStudentCompletedDays() : async Result.Result<[DailyProjectText], Text> {
@@ -348,62 +437,61 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     //     #ok(Buffer.toArray(studentsBuffer))
     // };
 
-
     public shared func getStudent(principalId : Text) : async Result.Result<Student, Text> {
-        switch(studentsHashMap.get(principalId)){
-            case(null) {
+        switch (studentsHashMap.get(principalId)) {
+            case (null) {
                 return #err("Student not found")
             };
-            case(? student) {
+            case (?student) {
                 #ok(student)
-            };
-        };
+            }
+        }
     };
 
     //consider methods to use a query for frontend speed
     public shared ({ caller }) func getUser() : async Result.Result<Student, Text> {
         let principalId = Principal.toText(caller);
-        switch(studentsHashMap.get(principalId)){
-            case(null) {
+        switch (studentsHashMap.get(principalId)) {
+            case (null) {
                 return #err("Student not found")
             };
-            case(? student) {
+            case (?student) {
                 #ok(student)
-            };
-        };
+            }
+        }
     };
 
     //teams
     func _getStudentScore(studentId : Text) : Nat {
-        switch(studentsHashMap.get(studentId)) {
-            case(null) {  
-                assert(false);
+        switch (studentsHashMap.get(studentId)) {
+            case (null) {
+                assert (false);
                 //Unreachable
-                return 0;
+                return 0
             };
-            case(?student) {
-                return student.score;
-             };
-        };
+            case (?student) {
+                return student.score
+            }
+        }
     };
 
-    func _updateTeamScore(teamId : Text) :  () {
-        switch(teamsHashMap.get(teamId)){
-            case(null) {
-                assert(false);
-                return;
+    func _updateTeamScore(teamId : Text) : () {
+        switch (teamsHashMap.get(teamId)) {
+            case (null) {
+                assert (false);
+                return
             };
-            case(? team){
+            case (?team) {
                 var score = 0;
-                for(studentId in team.teamMembers.vals()) {
+                for (studentId in team.teamMembers.vals()) {
                     let studentScore = _getStudentScore(studentId);
-                    score += studentScore;
+                    score += studentScore
                 };
                 let size : Nat = team.teamMembers.size();
                 score := Nat.div(score, size);
-                teamsHashMap.put(teamId, { team with score = score });
-            };
-        };
+                teamsHashMap.put(teamId, { team with score = score })
+            }
+        }
     };
 
     func _isTeamNameTaken(name : Text) : Bool {
@@ -415,117 +503,75 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         false
     };
 
-    public shared ({ caller }) func adminCreateTeam(teamName : Text, spanish : Bool) : async Result.Result<Team, Text> {
-        let name = U.trim(U.lowerCase(teamName));
-        if (not _isAdmin(caller)) {
-            return #err("You are not an admin")
-        };
-        if (_isTeamNameTaken(name)) {
-            return #err("Team name is already taken")
-        };
-
-       var team : Team = {
-            name = U.trim(U.lowerCase(teamName));
-            score = 0;
-            teamMembers = [];
-            spanish;
-       };
-       // Register the team 
-        teamsHashMap.put(Nat.toText(teamIdCounter), team);
-        teamIdCounter := teamIdCounter + 1;
-
-        // Activity feed
-        activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = "Welcome new team, " # name # ", to Motoko Bootcamp!"; specialAnnouncement = "newTeam"} );
-        activityIdCounter := activityIdCounter + 1;
-        #ok(team);
-    };
-
-    public shared ({ caller }) func adminDeleteTeam(teamId : Text) : async Result.Result<Text, Text> {
-        if (not _isAdmin(caller)) {
-            return #err("You are not an admin")
-        };
-        // let principalId = Principal.toText(caller);
-
-        // if (U.safeGet(teamNameHashMap, teamId, "") != "") {
-
-        //     teamNameHashMap.delete(teamId);
-        //     #ok("Team " # teamId # "deleted...")
-        // } else {
-        //     #err("Team does not exist")
-        // }
-        #err("Func not fully implemented")
-    };
-
-  
     func _getTeamNameFromId(teamId : Text) : Text {
-        switch(teamsHashMap.get(teamId)){
-            case(null) {
-                assert(false);
+        switch (teamsHashMap.get(teamId)) {
+            case (null) {
+                assert (false);
                 //Unreachable
-                return "";
+                return ""
             };
-            case(? team) {
+            case (?team) {
                 team.name
-            };
-        };
+            }
+        }
     };
 
     public shared func getTeam(teamName : Text) : async Team {
-        switch(teamsHashMap.get(teamName)){
-            case(null) {
-                assert(false);
+        switch (teamsHashMap.get(teamName)) {
+            case (null) {
+                assert (false);
                 //Unreachable
                 return {
                     name = "";
                     score = 0;
                     spanish = false;
-                    teamMembers = [];
-                };
+                    teamMembers = []
+                }
             };
-            case(? team) {
+            case (?team) {
                 team
-            };
-        };
+            }
+        }
     };
 
     public shared func getStudentsFromTeam(teamName : Text) : async Result.Result<[Student], Text> {
-        for(team in teamsHashMap.vals()) {
+        for (team in teamsHashMap.vals()) {
             if (U.trim(U.lowerCase(team.name)) == U.trim(U.lowerCase(teamName))) {
                 var buffer : Buffer.Buffer<Student> = Buffer.Buffer<Student>(team.teamMembers.size());
-                for(studentId in team.teamMembers.vals()) {
-                    switch(studentsHashMap.get(studentId)) {
-                        case(null) {
-                            assert(false);
+                for (studentId in team.teamMembers.vals()) {
+                    switch (studentsHashMap.get(studentId)) {
+                        case (null) {
+                            assert (false);
                             //Unreachable
-                            return #err("Student not found");
+                            return #err("Student not found")
                         };
-                        case(?student) {
-                            buffer.add(student);
-                        };
-                    };
+                        case (?student) {
+                            buffer.add(student)
+                        }
+                    }
                 };
-                return #ok(Buffer.toArray(buffer));
-            };
+                return #ok(Buffer.toArray(buffer))
+            }
         };
         return #err("Team not found")
     };
 
     public type StudentList = {
         name : Text;
-        score : Text;
+        score : Text
     };
 
     public shared query func getStudentsForTeamDashboard(teamName : Text) : async Result.Result<[StudentList], Text> {
         var studentBuffer = Buffer.Buffer<StudentList>(studentsHashMap.size());
         for (student in studentsHashMap.vals()) {
             let studentTeamName = _getTeamNameFromId(student.teamId);
-            if(studentTeamName == teamName) {
-                let studentListItem : StudentList =  {
+            if (studentTeamName == teamName) {
+                let studentListItem : StudentList = {
                     name = student.name;
-                    score = Nat.toText(student.score);
+                    score = Nat.toText(student.score)
                 };
                 studentBuffer.add(studentListItem)
-            };
+            }
         };
 
         #ok(Buffer.toArray(studentBuffer))
@@ -539,31 +585,30 @@ shared ({ caller = creator }) actor class Dashboard() = this {
             let teamString : TeamString = {
                 name = team.name;
                 teamMembers = team.teamMembers;
-                score = Nat.toText(team.score); 
+                score = Nat.toText(team.score)
             };
             teamBuffer.add(teamString)
         };
         return Buffer.toArray(teamBuffer)
     };
 
-
     public type TestResult = Test.TestResult;
     // Expand the base type with additional errors.
     public type VerifyProject = TestResult or Result.Result<(), { #NotAController : Text; #NotAStudent : Text; #InvalidDay : Text; #AlreadyCompleted : Text }>;
 
     //Utils
-    func _getCliPrincipal(caller : Principal) :  Principal {
+    func _getCliPrincipal(caller : Principal) : Principal {
         let studentId = Principal.toText(caller);
-        switch(studentsHashMap.get(studentId)) {
-            case(null) {
-                assert(false);
+        switch (studentsHashMap.get(studentId)) {
+            case (null) {
+                assert (false);
                 //Unreachable
-                return Principal.fromText("");
+                return Principal.fromText("")
             };
-            case(?student) {
-                return Principal.fromText(student.cliPrincipalId);
-            };
-        };
+            case (?student) {
+                return Principal.fromText(student.cliPrincipalId)
+            }
+        }
     };
 
     public shared ({ caller }) func verifyProject(canisterIdText : Text, day : Nat) : async VerifyProject {
@@ -578,8 +623,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
             return #err(#AlreadyCompleted("You have already completed this project"))
         };
         // // Step 3: Verify that the caller is the controller of the submitted canister.
-        let cliPrincipal = 
-        if (not (await Test.verifyOwnership(canisterId, _getCliPrincipal(caller)))) {
+        let cliPrincipal = if (not (await Test.verifyOwnership(canisterId, _getCliPrincipal(caller)))) {
             return #err(#NotAController("You are not the controller of this canister"))
         };
         // Step 4: Run the tests (see test.mo)
@@ -620,7 +664,6 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         };
         // Step 5: Update the necessary variables
         _validated(day, canisterId, caller);
-        let updatedStudent = await getStudent(Principal.toText(caller));
         return #ok()
     };
 
@@ -633,8 +676,8 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     // 5. Update the team members (teamMembersHashMap)
     func _validated(day : Nat, canisterId : Principal, student : Principal) : () {
         let studentId = Principal.toText(student);
-        switch(studentsHashMap.get(studentId)) {
-            case (null) { assert(false); return () };
+        switch (studentsHashMap.get(studentId)) {
+            case (null) { assert (false); return () };
             case (?student) {
                 // Step 1: Add the new completed project to the student's completed projects (studentCompletedDaysHashMap)
                 let completedDays = student.completedDays;
@@ -653,70 +696,62 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = student.name # " has completed day " # Nat.toText(day) # " of the competition!"; specialAnnouncement = "ProjectCompleted" });
                 activityIdCounter := activityIdCounter + 1;
                 return
-            };
-        };
+            }
+        }
     };
-
 
     //activity section
 
     public shared ({ caller }) func adminSpecialAnnouncement(announcement : Text) : async () {
-        if (_isAdmin(caller)) {
-            activityHashMap.put(
-                Nat.toText(activityIdCounter),
-                {
-                    activityId = Nat.toText(activityIdCounter);
-                    activity = announcement;
-                    specialAnnouncement = "Admin"
-                },
-            );
-            activityIdCounter := activityIdCounter + 1
-        }
+        assert (_Admins.isAdmin(caller));
+        activityHashMap.put(
+            Nat.toText(activityIdCounter),
+            {
+                activityId = Nat.toText(activityIdCounter);
+                activity = announcement;
+                specialAnnouncement = "Admin"
+            },
+        );
+        activityIdCounter := activityIdCounter + 1
     };
 
     public shared ({ caller }) func adminAnnounceTimedEvent(announcement : Text) : async () {
-        if (_isAdmin(caller)) {
-            activityHashMap.put(
-                Nat.toText(activityIdCounter),
-                {
-                    activityId = Nat.toText(activityIdCounter);
-                    activity = announcement;
-                    specialAnnouncement = "AdminTimeEvent"
-                },
-            );
-            activityIdCounter := activityIdCounter + 1
-        }
+        assert (_Admins.isAdmin(caller));
+        activityHashMap.put(
+            Nat.toText(activityIdCounter),
+            {
+                activityId = Nat.toText(activityIdCounter);
+                activity = announcement;
+                specialAnnouncement = "AdminTimeEvent"
+            },
+        );
+        activityIdCounter := activityIdCounter + 1
     };
 
     public shared ({ caller }) func adminGrantBonusPoints(studentId : Text, reason : Text) : async Result.Result<(), Text> {
-        if (_isAdmin(caller)) {
-            switch(studentsHashMap.get(studentId)){
-                case(null) { return #err("Student not found") };
-                case(? student){
-                    let score = student.score + 10;
-                    var newStudent = { student with score = score };
-                    studentsHashMap.put(studentId, newStudent);
-                    activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = student.name # " has been granted bonus points for " # reason; specialAnnouncement = "BonusPoints"});
-                    activityIdCounter := activityIdCounter + 1;
-                };  
-            };
-            return #ok(())
-        } else {
-            return #err("You are not the admin")
+        assert (_Admins.isAdmin(caller));
+        switch (studentsHashMap.get(studentId)) {
+            case (null) { return #err("Student not found") };
+            case (?student) {
+                let score = student.score + 10;
+                var newStudent = { student with score = score };
+                studentsHashMap.put(studentId, newStudent);
+                activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = student.name # " has been granted bonus points for " # reason; specialAnnouncement = "BonusPoints" });
+                activityIdCounter := activityIdCounter + 1
+            }
         };
-
+        return #ok(())
     };
 
     public shared func getStudentPrincipalByName(studentName : Text) : async Result.Result<Text, Text> {
         let nameTrimmed = U.trim(U.lowerCase(studentName));
-        for((studentId, student) in studentsHashMap.entries()){
+        for ((studentId, student) in studentsHashMap.entries()) {
             if (U.trim(U.lowerCase(student.name)) == nameTrimmed) {
                 return #ok(studentId)
             }
         };
         return #err("The student does not exist")
     };
-
 
     public shared query func getActivity(lowerBound : Nat, upperBound : Nat) : async [Activity] {
         var activityBuffer = Buffer.Buffer<Activity>(1);
@@ -835,20 +870,17 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         }
     };
 
-
-
-
     //#Upgrade hooks
     system func preupgrade() {
         studentsEntries := Iter.toArray(studentsHashMap.entries());
         teamsEntries := Iter.toArray(teamsHashMap.entries());
-        activityEntries := Iter.toArray(activityHashMap.entries());
+        activityEntries := Iter.toArray(activityHashMap.entries())
     };
 
     system func postupgrade() {
         studentsEntries := [];
         teamsEntries := [];
-        activityEntries := [];
+        activityEntries := []
     };
 
 }
