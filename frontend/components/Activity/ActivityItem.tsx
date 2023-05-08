@@ -41,9 +41,11 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
       case "adminTimeEvent":
         return <span className="emoji">{"⏰"}</span>
       case "newAdmin":
-        return <span className="emoji">{"🫡"}</span>
+        return <span className="emoji">{"👨‍🏫"}</span>
       case "newTeamMember":
         return <span className="emoji">{"💪"}</span>
+      case "Admin":
+        return <span className="emoji">{"📢"}</span>
 
       default:
         return (
