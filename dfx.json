@@ -4,26 +4,7 @@
       "main": "canisters/Verifier/main.mo",
       "type": "motoko"
     },
-    "day_1": {
-      "main": "canisters/TestProject/day_1/main.mo",
-      "type": "motoko"
-    },
-    "day_2": {
-      "main": "canisters/TestProject/day_2/main.mo",
-      "type": "motoko"
-    },
-    "day_3": {
-      "main": "canisters/TestProject/day_3/main.mo",
-      "type": "motoko"
-    },
-    "day_4": {
-      "main": "canisters/TestProject/day_4/main.mo",
-      "type": "motoko"
-    },
-    "day_5": {
-      "main": "canisters/TestProject/day_5/main.mo",
-      "type": "motoko"
-    },
+
     "assets": {
       "dependencies": ["Verifier"],
       "frontend": {

@@ -9,7 +9,7 @@ const isLocal = process.env.NODE_ENV === "development";
 const identityProvider = isLocal ? 'http://qhbym-qaaaa-aaaaa-aaafq-cai.localhost:8080/#authorize' : "https://identity.ic0.app/#authorize";
 const sessionTimeout = BigInt(480) * BigInt(60) * BigInt(1_000_000_000);
 const fakeProvider = process.env.II_PROVIDER_USE_FAKE == "true";
-const derivationOrigin = "https://24ytc-bqaaa-aaaan-qdl7q-cai.ic0.app/";
+const derivationOrigin: string = "https://24ytc-bqaaa-aaaan-qdl7q-cai.ic0.app";
 var authClient: AuthClient;
 
 export interface AuthState {

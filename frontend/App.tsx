@@ -9,7 +9,6 @@ const ActivityList = lazy(() => import("./components/Activity/ActivityList"))
 const Footer = lazy(() => import("./components/Footer/Footer"))
 import Admin from "./components/Admin/Admin"
 import Profile from "./components/Profile/Profile"
-import * as Verifier from "../src/declarations/Verifier"
 import { Team, Activity, TeamString } from "./types/types"
 
 import LoadingScreen from "./components/Loading/LoadingScreen"

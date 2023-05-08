@@ -26,7 +26,7 @@ export async function getVerifierActor(): Promise<ActorSubclass<VerifierService>
   return createVerifierActor(verifierCanisterId as string, {
     agentOptions: {
       identity,
-      host: isLocal ? undefined : 'https://icp-api.io ',
+      host: 'https://icp-api.io ',
     },
   });
 }
