@@ -62,22 +62,22 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     // Only keep the 50 last activity
     func _purgeActivity() : () {
         let numberActivity = activityBuffer.size();
-        if(numberActivity < 100) {
-            return 
+        if (numberActivity < 100) {
+            return
         };
         let numberToPurge = numberActivity - 50;
         var activities = Buffer.toArray(activityBuffer);
         activityBuffer.clear();
         let purgedBuffer = Buffer.Buffer<Activity>(numberToPurge);
-        for(i in Iter.range(0, numberActivity - 1)) {
-            if(i < numberToPurge){
-                purgedBuffer.add(activities[i]);
+        for (i in Iter.range(0, numberActivity - 1)) {
+            if (i < numberToPurge) {
+                purgedBuffer.add(activities[i])
             };
-            if(i >= numberToPurge) {
-                activityBuffer.add(activities[i]);
-            };
+            if (i >= numberToPurge) {
+                activityBuffer.add(activities[i])
+            }
         };
-        purgedActivities := Array.append<Activity>(purgedActivities, Buffer.toArray(purgedBuffer));
+        purgedActivities := Array.append<Activity>(purgedActivities, Buffer.toArray(purgedBuffer))
     };
 
     ///////////
@@ -141,7 +141,11 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         teamsHashMap.put(Nat.toText(teamIdCounter), team);
         teamIdCounter := teamIdCounter + 1;
 
-        activityBuffer.add({ activityId = Nat.toText(activityBuffer.size()); activity = "Welcome new team, " # name # ", to Motoko Bootcamp!"; specialAnnouncement = "newTeam" });
+        activityBuffer.add({
+            activityId = Nat.toText(activityBuffer.size());
+            activity = "Welcome new team, " # name # ", to Motoko Bootcamp!";
+            specialAnnouncement = "newTeam"
+        });
         _purgeActivity();
         _Logs.logMessage("ADMIN :: Created team " # name # " by " # Principal.toText(caller));
         #ok(team)
@@ -288,7 +292,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 if (team.teamMembers.size() < minimum) {
                     finalId := id;
                     minimum := team.teamMembers.size()
-                } 
+                }
             }
         };
         finalId
@@ -403,7 +407,11 @@ shared ({ caller = creator }) actor class Dashboard() = this {
 
         studentsHashMap.put(principalId, student);
         _addStudentToTeam(teamId, principalId);
-        activityBuffer.add({ activityId = Nat.toText(activityBuffer.size());  activity = name # " has joined team " # teamName; specialAnnouncement = "newTeamMember" });
+        activityBuffer.add({
+            activityId = Nat.toText(activityBuffer.size());
+            activity = name # " has joined team " # teamName;
+            specialAnnouncement = "newTeamMember"
+        });
         _purgeActivity();
         return #ok(student)
     };
@@ -449,7 +457,9 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     /////////////
 
     func _updateTeamScore(teamName : Text) : () {
-        switch (teamsHashMap.get(teamName)) {
+        let teamId = _getTeamIdFromName(teamName);
+
+        switch (teamsHashMap.get(teamId)) {
             case (null) {
                 _Logs.logMessage("ERROR: Attempting to update the score of a non-registered team : " # teamName);
                 return
@@ -462,7 +472,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 };
                 let size : Nat = team.teamMembers.size();
                 score := Nat.div(score, size);
-                teamsHashMap.put(teamName, { team with score = score })
+                teamsHashMap.put(teamId, { team with score = score })
             }
         }
     };
@@ -490,7 +500,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     };
 
     func _getTeamIdFromName(teamName : Text) : Text {
-        for((id, team) in teamsHashMap.entries()){
+        for ((id, team) in teamsHashMap.entries()) {
             if (U.trim(U.lowerCase(team.name)) == U.trim(U.lowerCase(teamName))) {
                 return id
             }
@@ -683,7 +693,11 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 // Step 3: Update the team score
                 _updateTeamScore(student.teamName);
                 // Step 4: Update the activity feed & the activity counter
-                activityBuffer.add({ activityId = Nat.toText(activityBuffer.size()); activity = student.name # " has completed day " # Nat.toText(day) # " of the competition!"; specialAnnouncement = "ProjectCompleted" });
+                activityBuffer.add({
+                    activityId = Nat.toText(activityBuffer.size());
+                    activity = student.name # " has completed day " # Nat.toText(day) # " of the competition!";
+                    specialAnnouncement = "ProjectCompleted"
+                });
                 _purgeActivity();
                 return
             }
@@ -696,14 +710,22 @@ shared ({ caller = creator }) actor class Dashboard() = this {
 
     public shared ({ caller }) func adminSpecialAnnouncement(announcement : Text) : async () {
         assert (_Admins.isAdmin(caller));
-        activityBuffer.add({ activityId = Nat.toText(activityBuffer.size()); activity = announcement; specialAnnouncement = "Admin"});
-         _purgeActivity();
+        activityBuffer.add({
+            activityId = Nat.toText(activityBuffer.size());
+            activity = announcement;
+            specialAnnouncement = "Admin"
+        });
+        _purgeActivity()
     };
 
     public shared ({ caller }) func adminAnnounceTimedEvent(announcement : Text) : async () {
         assert (_Admins.isAdmin(caller));
-        activityBuffer.add({activityId = Nat.toText(activityBuffer.size()); activity = announcement; specialAnnouncement = "AdminTimeEvent"});
-        _purgeActivity();
+        activityBuffer.add({
+            activityId = Nat.toText(activityBuffer.size());
+            activity = announcement;
+            specialAnnouncement = "AdminTimeEvent"
+        });
+        _purgeActivity()
     };
 
     public shared ({ caller }) func adminGrantBonusPoints(studentId : Text, reason : Text) : async Result.Result<(), Text> {
@@ -714,8 +736,12 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 let bonus = student.bonusPoints + 10;
                 var newStudent = { student with bonusPoints = bonus };
                 studentsHashMap.put(studentId, newStudent);
-                activityBuffer.add({ activityId = Nat.toText(activityBuffer.size()); activity = student.name # " has been granted bonus points for " # reason; specialAnnouncement = "BonusPoints" });
-                _purgeActivity();
+                activityBuffer.add({
+                    activityId = Nat.toText(activityBuffer.size());
+                    activity = student.name # " has been granted bonus points for " # reason;
+                    specialAnnouncement = "BonusPoints"
+                });
+                _purgeActivity()
             }
         };
         return #ok(())
@@ -743,7 +769,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     // };
 
     public shared query func getActivityFeed() : async [Activity] {
-            Buffer.toArray(activityBuffer)
+        Buffer.toArray(activityBuffer)
     };
 
     public shared query func getTotalProjectsCompleted() : async Text {
@@ -805,7 +831,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         studentsEntries := [];
         teamsEntries := [];
         activityBuffer := Buffer.fromArray(activities);
-        activities := [];
+        activities := []
     };
 
 }
