@@ -428,7 +428,9 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     /////////////
 
     func _updateTeamScore(teamName : Text) : () {
-        switch (teamsHashMap.get(teamName)) {
+        let teamId = _getTeamIdFromName(teamName);
+
+        switch (teamsHashMap.get(teamId)) {
             case (null) {
                 _Logs.logMessage("ERROR: Attempting to update the score of a non-registered team : " # teamName);
                 return
@@ -441,7 +443,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 };
                 let size : Nat = team.teamMembers.size();
                 score := Nat.div(score, size);
-                teamsHashMap.put(teamName, { team with score = score })
+                teamsHashMap.put(teamId, { team with score = score })
             }
         }
     };
