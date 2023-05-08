@@ -267,7 +267,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 if (team.teamMembers.size() < minimum) {
                     finalId := id;
                     minimum := team.teamMembers.size()
-                } 
+                }
             }
         };
         finalId
@@ -469,7 +469,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     };
 
     func _getTeamIdFromName(teamName : Text) : Text {
-        for((id, team) in teamsHashMap.entries()){
+        for ((id, team) in teamsHashMap.entries()) {
             if (U.trim(U.lowerCase(team.name)) == U.trim(U.lowerCase(teamName))) {
                 return id
             }
@@ -704,7 +704,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         switch (studentsHashMap.get(studentId)) {
             case (null) { return #err("Student not found") };
             case (?student) {
-                let bonus = student.bonusPoints + 10;
+                let bonus = student.bonusPoints + 1;
                 var newStudent = { student with bonusPoints = bonus };
                 studentsHashMap.put(studentId, newStudent);
                 activityHashMap.put(Nat.toText(activityIdCounter), { activityId = Nat.toText(activityIdCounter); activity = student.name # " has been granted bonus points for " # reason; specialAnnouncement = "BonusPoints" });
@@ -811,7 +811,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         _LogsUD := null;
         studentsEntries := [];
         teamsEntries := [];
-        activityEntries := [];
+        activityEntries := []
     };
 
 }
