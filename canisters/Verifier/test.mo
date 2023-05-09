@@ -242,7 +242,7 @@ module Test {
 
     // BEGIN - Day 5
     public func verifyDay5(canisterId : Principal) : async TestResult {
-        return #ok() 
+        return #err(#UnexpectedValue("Test not released yet"))
     };
     // END - Day 5
 
