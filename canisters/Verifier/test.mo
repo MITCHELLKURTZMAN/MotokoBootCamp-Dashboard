@@ -210,7 +210,7 @@ module Test {
         symbol : shared query () -> async Text;
         totalSupply : shared query () -> async Nat;
         balanceOf : shared query (account : Account) -> async (Nat);
-        transfer : shared (to : Account, amount : Nat) -> async Result.Result<(), Text>;
+        transfer : shared (from : Account, to : Account, amount : Nat) -> async Result.Result<(), Text>;
         airdrop : shared () -> async Result.Result<(),Text>;
     };
     public func verifyDay4(canisterId : Principal) : async TestResult {
