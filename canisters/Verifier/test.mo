@@ -114,7 +114,7 @@ module Test {
                 completed = false;
             };
             let id = await day2Actor.addHomework(homeworkTest);
-            ignore day2Actor.markAsCompleted(id); 
+            let result = await day2Actor.markAsCompleted(id); 
             switch(await day2Actor.getHomework(id)){
                 case (#ok(homework)) {
                     if (homework.completed == true and homework.title == "Test" and homework.description == "Test") {
