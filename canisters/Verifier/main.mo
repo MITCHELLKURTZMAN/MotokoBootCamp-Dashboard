@@ -169,6 +169,30 @@ shared ({ caller = creator }) actor class Dashboard() = this {
         return #ok()
     };
 
+    public shared ({ caller }) func adminManuallyChangeCliPrincipal(studentId : Text, cliPrincipal: Text) : async Result.Result<(), Text> {
+        if (not _Admins.isAdmin(caller)) {
+            return #err("Unauthorized to verify student day")
+        };
+        switch(studentsHashMap.get(studentId)){
+           case(null){
+            return #err("Student not found")
+           };
+           case(? student){
+            let newStudent : Student = {
+                principalId = student.principalId;
+                cliPrincipalId = cliPrincipal;
+                name = student.name;
+                teamName = student.teamName;
+                score = student.score;
+                completedDays = student.completedDays;
+                bonusPoints = student.bonusPoints;
+            };
+            studentsHashMap.put(studentId, newStudent);
+            return #ok()
+           };
+        };
+    };
+
     ////////////
     // LOGS ///
     //////////
