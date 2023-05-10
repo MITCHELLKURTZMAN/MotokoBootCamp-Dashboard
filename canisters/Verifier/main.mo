@@ -308,7 +308,10 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     };
 
     // Returns the id of the team to assign to a newly registered student (the one with the least member corresponding to the language of the student)
-    func _assignTeamId(spanish : Bool) : Text {
+    func _assignTeamId(spanish : Bool, name : Text) : Text {
+        if(Text.contains(name, #text("_BA"))){
+            return "10";
+        };
         var finalId = "";
         var minimum = 100000;
         for ((id, team) in teamsHashMap.entries()) {
@@ -319,7 +322,15 @@ shared ({ caller = creator }) actor class Dashboard() = this {
                 }
             }
         };
-        finalId
+        if(finalId == "10"){
+            return "9";
+        } else {
+            finalId;
+        };
+    };
+
+    public func getTeamName(teamId : Text) : async Text {
+        _getTeamName(teamId)
     };
 
     func _getTeamName(teamId : Text) : Text {
@@ -401,7 +412,7 @@ shared ({ caller = creator }) actor class Dashboard() = this {
     public shared ({ caller }) func registerStudent(userName : Text, cliPrincipal : Text, spanish : Bool) : async Result.Result<Student, Text> {
         let name = U.trim(U.lowerCase(userName));
         let principalId = Principal.toText(caller);
-        let teamId = _assignTeamId(spanish);
+        let teamId = _assignTeamId(spanish, userName);
         let teamName = _getTeamName(teamId);
 
         if (Principal.isAnonymous(caller)) {

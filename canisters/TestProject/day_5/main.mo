@@ -8,15 +8,14 @@ import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import Int "mo:base/Int";
 import Timer "mo:base/Timer";
+import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import IC "ic";
-import HTTP "http";
-import Buffer "mo:base/Buffer";
 actor Verifier {
 
     public type StudentProfile = {
         name : Text;
-        Team : Text;
+        team : Text;
         graduate : Bool;
     };
 
@@ -49,14 +48,6 @@ actor Verifier {
         };
     };
 
-
-    // system func preupgrade() : async () {
-    // TODO
-    // }
-     
-    // system func postupgradde() : async () {
-    // TODO
-    // };
 
     // STEP 1 - END
     // STEP 2 - BEGIN
@@ -109,11 +100,25 @@ actor Verifier {
     // STEP 3 - END
 
     // STEP 4 - BEGIN
-    public shared ({ caller }) func verifyWork(canisterId: Principal, p : Principal): async Result.Result<Bool, Text> {
-       switch(await verifyOwnership(canisterId, p)){
+    public shared ({ caller }) func verifyWork(canisterId: Principal, studentId : Principal): async Result.Result<Bool, Text> {
+       switch(await verifyOwnership(canisterId, studentId)){
         case(#ok(true)){
             switch(await test(canisterId)){
-                case(#ok(_)) { return #ok(true) };
+                case(#ok(_)) { 
+                    switch(studentProfilesStore.get(studentId)){
+                        case(null){
+                            return #err("Student not found, please register first!");
+                        };
+                        case(? profile) {
+                            studentProfilesStore.put(studentId, {
+                                name = profile.name;
+                                team = profile.team;
+                                graduate = true;
+                            });
+                            return #ok(true);
+                        };
+                    };
+                };
                 case(#err(_)) { return #ok(false) };
             };
         };
@@ -122,59 +127,4 @@ actor Verifier {
        };
     };
     // STEP 4 - END
-
-    // STEP 5 - BEGIN
-    var graduates : [Text] = ["Sara", "Sofia", "Sergio", "Santiago"];
-
-    public type HttpRequest = HTTP.HttpRequest;
-    public type HttpResponse = HTTP.HttpResponse;
-
-    public type Duration = Timer.Duration;
-    public type TimerId = Timer.TimerId;
-
-    // One hour in seconds
-    let oneHour : Duration = #seconds(3600);
-    stable var id : ?TimerId = null;
-
-    public func activateGraduation() : async () {
-        switch(id){
-            case (?_) { return };
-            case null { 
-                 id := ?Timer.recurringTimer(oneHour, _addGraduate);
-            };
-        };
-    };
-
-    public func deactivateGraduation() : async () {
-        switch(id){
-            case (? value) { 
-                Timer.cancelTimer(value);
-                id := null;
-            };
-            case null { return };
-        };
-    };
-
-    func _addGraduate() : async () {
-        var buffer : Buffer.Buffer<Text> = Buffer.Buffer<Text>(0);
-        for(profile in studentProfilesStore.vals()) {
-            if(profile.graduate){ 
-                buffer.add(profile.name)
-            };
-        };
-        graduates := Buffer.toArray(buffer);
-    };
-
-    
-    public query func http_request(request : HttpRequest) : async HttpResponse {
-        return({
-            status_code = 200;
-            headers = [];
-            body = Text.encodeUtf8("Congratulations to all graduates: \n" # Text.join("\n", graduates.vals()));
-            streaming_strategy = null;
-        })
-    };
-    // STEP 5 - END
-
-
 };
