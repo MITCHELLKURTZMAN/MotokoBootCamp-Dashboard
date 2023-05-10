@@ -274,7 +274,7 @@ module Test {
             let simpleCalculator2Async = day5Actor.verifyWork(Principal.fromText(simpleCalculator2Id), Principal.fromText(verifierId));
             let simpleCalculator3Async = day5Actor.verifyWork(Principal.fromText(simpleCalculator3Id), Principal.fromText(verifierId));
 
-            // Expect [ok, err, err]
+            // Expected [ok, err, err]
             let results = [await simpleCalculator1Async, await simpleCalculator2Async, await simpleCalculator3Async];
             switch(results[0]){
                 case(#ok(isVerified)){
