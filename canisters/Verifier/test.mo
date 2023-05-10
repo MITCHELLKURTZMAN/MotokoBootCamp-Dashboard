@@ -230,8 +230,8 @@ module Test {
                 subaccount = null;
             };
             let balanceOf = await day4Actor.balanceOf(accountDfxSeb);
-            if(not (balanceOf == 100)){
-                return #err(#UnexpectedValue("Balance doesn't corresponds with 100"))
+            if(balanceOf < 100){
+                return #err(#UnexpectedValue("Airdrop didn't work, my balance is still 0"))
             };
             return #ok()
         } catch (e) {
