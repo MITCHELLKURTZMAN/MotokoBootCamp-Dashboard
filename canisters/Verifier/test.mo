@@ -9,6 +9,7 @@ import Bool "mo:base/Bool";
 import Time "mo:base/Time";
 import Prelude "mo:base/Prelude";
 import Blob "mo:base/Blob";
+import Text "mo:base/Text";
 module Test {
     // Assumptions during tests
     // No other actor/user is calling the canister and modifying the state
@@ -231,7 +232,7 @@ module Test {
             };
             let balanceOf = await day4Actor.balanceOf(accountDfxSeb);
             if(balanceOf < 100){
-                return #err(#UnexpectedValue("Airdrop didn't work, my balance is still 0"))
+                return #err(#UnexpectedValue("Airdrop didn't work, my balance is still git "))
             };
             return #ok()
         } catch (e) {
@@ -241,8 +242,75 @@ module Test {
     // END - Day 4
 
     // BEGIN - Day 5
+    public type Result = { #ok : Bool; #err : Text };
+    public type Result_1 = { #ok; #err : Text };
+    public type Result_2 = { #ok : StudentProfile; #err : Text };
+    public type StudentProfile = { graduate : Bool; name : Text; team : Text };
+
+    public type day5Interface = actor {
+        acceptCycles : shared () -> async ();
+        addMyProfile : shared StudentProfile -> async Result_1;
+        availableCycles : shared query () -> async Nat;
+        deleteMyProfile : shared () -> async Result_1;
+        seeAProfile : shared Principal -> async Result_2;
+        test : shared Principal -> async TestResult;
+        updateMyProfile : shared StudentProfile -> async Result_1;
+        verifyOwnership : shared (Principal, Principal) -> async Result;
+        verifyWork : shared (Principal, Principal) -> async Result;
+    };
+
+    let verifierId : Text = "rww3b-zqaaa-aaaam-abioa-cai";
+    let simpleCalculator1Id : Text = "e35fa-wyaaa-aaaaj-qa2dq-cai"; // Pass ✅
+    let simpleCalculator2Id : Text = "fwtbo-zqaaa-aaaaj-qa2ea-cai"; // Fail ❌
+    let simpleCalculator3Id : Text = "frsh2-uiaaa-aaaaj-qa2eq-cai"; // Not owner 🟡
+
     public func verifyDay5(canisterId : Principal) : async TestResult {
-        return #err(#UnexpectedValue("Test not released yet"))
+         let day5Actor : day5Interface = actor (Principal.toText(canisterId));
+         try {
+            ignore day5Actor.addMyProfile({ graduate = false; name = "Seb"; team = "Motoko Bootcamp" });
+
+            // Verifying three projects 
+            let simpleCalculator1Async = day5Actor.verifyWork(Principal.fromText(simpleCalculator1Id), Principal.fromText(verifierId));
+            let simpleCalculator2Async = day5Actor.verifyWork(Principal.fromText(simpleCalculator2Id), Principal.fromText(verifierId));
+            let simpleCalculator3Async = day5Actor.verifyWork(Principal.fromText(simpleCalculator3Id), Principal.fromText(verifierId));
+
+            // Expected [ok, err, err]
+            let results = [await simpleCalculator1Async, await simpleCalculator2Async, await simpleCalculator3Async];
+            switch(results[0]){
+                case(#ok(isVerified)){
+                    if(not(isVerified)){
+                        return #err(#UnexpectedValue("Calculator with id : " # simpleCalculator1Id # " should pass verification through your verifier"));
+                    };
+                };
+                case(#err(e)){
+                    return #err(#UnexpectedError("Unexpected error : " # e))
+                };
+            };
+            switch(results[1]){
+                case(#ok(isVerified)){
+                    if(isVerified){
+                        return #err(#UnexpectedValue("Calculator with id : " # simpleCalculator2Id # " should fail verification through your verifier"));
+                    };
+                };
+                case(#err(e)){
+                    return #err(#UnexpectedError("Unexpected error : " # e))
+                };
+            };
+            switch(results[2]){
+                case(#ok(isVerified)){
+                    if(isVerified){
+                        return #err(#UnexpectedValue("Calculator with id : " # simpleCalculator3Id # " should fail verification through your verifier"));
+                    };
+                };
+                case(#err(e)){
+                    return #err(#UnexpectedError("Unexpected error : " # e))
+                };
+            };
+            return #ok()
+        } catch (e) {
+            return #err(#UnexpectedError(Error.message(e)))
+        }
+
     };
     // END - Day 5
 
